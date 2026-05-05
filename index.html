@@ -1,19 +1,703 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="tiktok-developers-site-verification" content="oR5jYkKuDIQWDBOci7aPpyZ97oVs5eWa">
-<title>HyPurShot</title>
-<style>
-  body { margin: 0; background: #0D0D0D; color: #F0EDE8; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-  a { color: #D4A017; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="tiktok-developers-site-verification" content="oR5jYkKuDIQWDBOci7aPpyZ97oVs5eWa">
+  <meta name="description" content="HyPurShot is the mobile toolkit for detailers and service professionals. Capture your best work, post to TikTok, Instagram, and Facebook, and collect five-star reviews.">
+  <meta property="og:title" content="HyPurShot — Capture. Post. Get Reviewed.">
+  <meta property="og:description" content="The mobile toolkit for detailers and service professionals. Capture your best work, post across social, collect five-star reviews.">
+  <meta property="og:image" content="https://hypurshot.com/logo-full.webp">
+  <meta property="og:url" content="https://hypurshot.com">
+  <meta property="og:type" content="website">
+  <title>HyPurShot — Capture. Post. Get Reviewed.</title>
+
+  <link rel="icon" type="image/webp" href="/logo-nav.webp">
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0D0D0D;
+      --surface: #161616;
+      --surface-2: #1c1c1c;
+      --gold: #D4A017;
+      --gold-hover: #c2920f;
+      --gold-dim: rgba(212,160,23,0.15);
+      --ice: #A8D4E6;
+      --text: #F0EDE8;
+      --text-dim: #b8b3aa;
+      --rule: rgba(240,237,232,0.10);
+      --font-heading: 'Cabinet Grotesk', system-ui, sans-serif;
+      --font-body: 'Satoshi', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    a { color: var(--gold); text-decoration: none; }
+    a:hover { color: var(--gold-hover); }
+
+    h1, h2, h3, h4 {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.5em;
+      line-height: 1.1;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ================================================================
+       NAV
+    ================================================================ */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(13,13,13,0.92);
+      backdrop-filter: saturate(140%) blur(6px);
+      -webkit-backdrop-filter: saturate(140%) blur(6px);
+      border-bottom: 1px solid var(--rule);
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      text-transform: uppercase;
+    }
+    .nav-brand img {
+      height: 30px;
+      width: auto;
+      display: block;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+    .nav-links a {
+      color: var(--text-dim);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--gold);
+      color: var(--bg) !important;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .nav-cta:hover { background: var(--gold-hover); color: var(--bg) !important; }
+
+    @media (max-width: 720px) {
+      .nav-links a:not(.nav-cta) { display: none; }
+    }
+
+    /* ================================================================
+       HERO
+    ================================================================ */
+    .hero {
+      padding: 72px 0 56px;
+      border-bottom: 1px solid var(--rule);
+    }
+    .hero-eyebrow {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 18px;
+    }
+    .hero h1 {
+      font-size: clamp(40px, 6vw, 68px);
+      max-width: 880px;
+    }
+    .hero h1 .ice { color: var(--ice); }
+    .hero-sub {
+      font-size: clamp(17px, 1.6vw, 20px);
+      color: var(--text-dim);
+      max-width: 640px;
+      margin: 18px 0 32px;
+    }
+    .hero-ctas {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .btn {
+      display: inline-block;
+      padding: 14px 24px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.01em;
+      text-decoration: none;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+      border: 1px solid transparent;
+    }
+    .btn-primary {
+      background: var(--gold);
+      color: var(--bg);
+    }
+    .btn-primary:hover { background: var(--gold-hover); color: var(--bg); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--rule);
+    }
+    .btn-secondary:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    /* ================================================================
+       FEATURES
+    ================================================================ */
+    .section {
+      padding: 72px 0;
+      border-bottom: 1px solid var(--rule);
+    }
+    .section-eyebrow {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 14px;
+    }
+    .section-title {
+      font-size: clamp(30px, 3.6vw, 44px);
+      max-width: 720px;
+      margin-bottom: 14px;
+    }
+    .section-lede {
+      color: var(--text-dim);
+      font-size: 17px;
+      max-width: 640px;
+      margin-bottom: 48px;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 880px) {
+      .feature-grid { grid-template-columns: 1fr; }
+    }
+    .feature {
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      padding: 28px;
+      transition: border-color 0.15s ease, transform 0.15s ease;
+    }
+    .feature:hover {
+      border-color: var(--gold);
+      transform: translateY(-2px);
+    }
+    .feature-num {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      color: var(--gold);
+      margin-bottom: 18px;
+    }
+    .feature h3 {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+    .feature p {
+      color: var(--text-dim);
+      margin: 0;
+      font-size: 15px;
+    }
+
+    /* ================================================================
+       PRODUCT SCREENSHOT
+    ================================================================ */
+    .product {
+      background: linear-gradient(180deg, var(--bg) 0%, var(--surface) 100%);
+    }
+    .product-frame {
+      margin-top: 32px;
+      border: 1px solid var(--rule);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--surface-2);
+      max-width: 720px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .product-frame img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .product-caption {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 14px;
+      margin-top: 14px;
+      max-width: 720px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .product-platforms {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 28px;
+      margin-top: 36px;
+      color: var(--text-dim);
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 700;
+      font-family: var(--font-heading);
+    }
+    .product-platforms span {
+      padding: 8px 14px;
+      border: 1px solid var(--rule);
+      border-radius: 999px;
+    }
+
+    /* ================================================================
+       PRICING
+    ================================================================ */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 880px) {
+      .pricing-grid { grid-template-columns: 1fr; }
+    }
+    .price {
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+    }
+    .price.featured {
+      border-color: var(--gold);
+    }
+    .price-name {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 14px;
+    }
+    .price-amount {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 44px;
+      line-height: 1;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .price-amount .per {
+      font-size: 14px;
+      color: var(--text-dim);
+      font-weight: 500;
+      letter-spacing: 0;
+      margin-left: 4px;
+    }
+    .price-tag {
+      color: var(--text-dim);
+      font-size: 14px;
+      margin-bottom: 22px;
+    }
+    .price ul {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 26px;
+      flex: 1;
+    }
+    .price li {
+      padding: 8px 0;
+      border-bottom: 1px solid var(--rule);
+      font-size: 14px;
+      color: var(--text);
+    }
+    .price li:last-child { border-bottom: none; }
+    .price li::before {
+      content: "—";
+      color: var(--gold);
+      margin-right: 10px;
+      font-weight: 700;
+    }
+    .price .btn {
+      text-align: center;
+      width: 100%;
+    }
+
+    /* ================================================================
+       TIKTOK INTEGRATION CALLOUT
+    ================================================================ */
+    .integration {
+      background: var(--surface);
+    }
+    .integration-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+    @media (max-width: 880px) {
+      .integration-grid { grid-template-columns: 1fr; }
+    }
+    .integration-list {
+      list-style: none;
+      padding: 0;
+      margin: 24px 0 0;
+    }
+    .integration-list li {
+      padding: 12px 0;
+      border-top: 1px solid var(--rule);
+      display: grid;
+      grid-template-columns: 145px 1fr;
+      gap: 18px;
+      align-items: baseline;
+    }
+    .integration-list li:last-child { border-bottom: 1px solid var(--rule); }
+    .integration-list .scope {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.10em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+    .integration-list .desc {
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+
+    /* ================================================================
+       FOOTER
+    ================================================================ */
+    .footer {
+      padding: 48px 0 36px;
+      background: var(--bg);
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr 1fr;
+      gap: 36px;
+    }
+    @media (max-width: 720px) {
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .footer-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .footer-brand img {
+      height: 36px;
+      width: auto;
+    }
+    .footer-brand p {
+      color: var(--text-dim);
+      font-size: 14px;
+      margin: 0;
+      max-width: 280px;
+    }
+    .footer h4 {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text);
+      margin: 0 0 14px;
+    }
+    .footer ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .footer li { padding: 6px 0; }
+    .footer li a {
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+    .footer li a:hover { color: var(--gold); }
+    .footer-bottom {
+      margin-top: 36px;
+      padding-top: 24px;
+      border-top: 1px solid var(--rule);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+    .footer-bottom .legal-links {
+      display: flex;
+      gap: 20px;
+    }
+    .footer-bottom .legal-links a { color: var(--text-dim); }
+    .footer-bottom .legal-links a:hover { color: var(--gold); }
+  </style>
 </head>
 <body>
-<div style="text-align:center">
-  <h1>HyPurShot</h1>
-  <p><a href="terms.html">Terms of Service</a> · <a href="privacy.html">Privacy Policy</a></p>
-</div>
+
+  <!-- ============================================================
+       NAV
+  ============================================================ -->
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a href="/" class="nav-brand">
+        <img src="/logo-nav.webp" alt="HyPurShot logo">
+        HYPURSHOT
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#integration">Integrations</a>
+        <a href="#pricing">Pricing</a>
+        <a href="/auth.html" class="nav-cta">Sign in</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============================================================
+       HERO
+  ============================================================ -->
+  <header class="hero">
+    <div class="container">
+      <div class="hero-eyebrow">Mobile toolkit for service pros</div>
+      <h1>Capture. Post. <span class="ice">Get Reviewed.</span></h1>
+      <p class="hero-sub">HyPurShot is the all-in-one workflow for mobile detailers, auto service shops, and field professionals. Capture your best work, post directly to TikTok, Instagram, and Facebook, and collect five-star reviews automatically.</p>
+      <div class="hero-ctas">
+        <a href="/auth.html" class="btn btn-primary">Get started</a>
+        <a href="#features" class="btn btn-secondary">See how it works</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       FEATURES — three blocks
+  ============================================================ -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-eyebrow">How it works</div>
+      <h2 class="section-title">Three steps from job site to five-star review.</h2>
+      <p class="section-lede">A single mobile workflow replaces the three or four apps every detailer ends up bouncing between. Built for field crews, designed for repeat business.</p>
+
+      <div class="feature-grid">
+        <article class="feature">
+          <div class="feature-num">01 — Capture</div>
+          <h3>Shoot once, organize automatically.</h3>
+          <p>Before-and-after photos, vertical video for short-form social, and customer notes are tagged to the job and the vehicle. No more digging through a camera roll at the end of a long day.</p>
+        </article>
+
+        <article class="feature">
+          <div class="feature-num">02 — Post</div>
+          <h3>One publish button, every platform.</h3>
+          <p>Direct Post to TikTok, Instagram, and Facebook with the right format, caption, and disclosures for each. Privacy controls, branded-content toggles, and music-usage acknowledgements are built into the form, not bolted on.</p>
+        </article>
+
+        <article class="feature">
+          <div class="feature-num">03 — Get Reviewed</div>
+          <h3>Turn every job into a five-star review.</h3>
+          <p>Automated, brand-safe review requests fire after the work is done — text, email, or both — and route customers to your Google Business profile, Nextdoor, and Facebook in one tap.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       PRODUCT SCREENSHOT
+  ============================================================ -->
+  <section class="section product" id="product">
+    <div class="container">
+      <div class="section-eyebrow">The product</div>
+      <h2 class="section-title">A New Post tab with every disclosure already in place.</h2>
+      <p class="section-lede">No more hunting for the music-usage checkbox or the branded-content toggle. The HyPurShot post composer is built to TikTok and Meta UX rules out of the box, so your team posts faster and your account stays in good standing.</p>
+
+      <div class="product-frame">
+        <img src="/new-post-screenshot.jpg" alt="HyPurShot New Post composer showing privacy dropdown, disclosure toggles, and platform targets">
+      </div>
+      <p class="product-caption">Live screenshot of the New Post composer at hypurshot.com/team.html — privacy dropdown, comment / duet / stitch controls, branded-content disclosure, and music-usage confirmation are all in one place.</p>
+
+      <div class="product-platforms">
+        <span>TikTok</span>
+        <span>Instagram</span>
+        <span>Facebook</span>
+        <span>Google Business</span>
+        <span>Nextdoor</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       INTEGRATION — TikTok deep dive (helps reviewers)
+  ============================================================ -->
+  <section class="section integration" id="integration">
+    <div class="container">
+      <div class="integration-grid">
+        <div>
+          <div class="section-eyebrow">TikTok integration</div>
+          <h2 class="section-title">Built on the TikTok Content Posting and Login Kit APIs.</h2>
+          <p class="section-lede">HyPurShot uses TikTok's official APIs to authenticate creators, pull profile metadata, and publish video — with full creator control on every post. Tokens are stored server-side and revoked on disconnect or account deletion.</p>
+          <p style="color: var(--text-dim); font-size: 14px;">Operators can connect their TikTok account from <a href="/auth.html">Sign in</a> and manage permissions on the team dashboard. We never post without explicit user action.</p>
+        </div>
+        <div>
+          <ul class="integration-list">
+            <li><span class="scope">Login Kit</span><span class="desc">OAuth sign-in with the operator's TikTok account.</span></li>
+            <li><span class="scope">user.info.basic</span><span class="desc">Display the connected creator's nickname and avatar.</span></li>
+            <li><span class="scope">user.info.profile</span><span class="desc">Show the verified handle and profile link.</span></li>
+            <li><span class="scope">video.publish</span><span class="desc">Direct Post a video the operator just composed.</span></li>
+            <li><span class="scope">video.upload</span><span class="desc">Save a video to the operator's TikTok drafts.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       PRICING
+  ============================================================ -->
+  <section class="section" id="pricing">
+    <div class="container">
+      <div class="section-eyebrow">Pricing</div>
+      <h2 class="section-title">Simple monthly pricing. Cancel any time.</h2>
+      <p class="section-lede">Start solo, grow into a team, or run a multi-location operation — every plan includes the full Capture, Post, and Get Reviewed workflow.</p>
+
+      <div class="pricing-grid">
+        <div class="price">
+          <div class="price-name">Starter</div>
+          <div class="price-amount">$19<span class="per">/ month</span></div>
+          <div class="price-tag">For solo operators getting started.</div>
+          <ul>
+            <li>1 user</li>
+            <li>Capture and post workflow</li>
+            <li>TikTok, Instagram, Facebook</li>
+            <li>Google review requests</li>
+            <li>Email support</li>
+          </ul>
+          <a href="/auth.html" class="btn btn-secondary">Start with Starter</a>
+        </div>
+
+        <div class="price featured">
+          <div class="price-name">Pro</div>
+          <div class="price-amount">$39<span class="per">/ month</span></div>
+          <div class="price-tag">For growing detailers and small teams.</div>
+          <ul>
+            <li>Up to 5 users</li>
+            <li>Everything in Starter</li>
+            <li>Branded review requests</li>
+            <li>Nextdoor and Google Business</li>
+            <li>Priority support</li>
+          </ul>
+          <a href="/auth.html" class="btn btn-primary">Start with Pro</a>
+        </div>
+
+        <div class="price">
+          <div class="price-name">Agency</div>
+          <div class="price-amount">$79<span class="per">/ month</span></div>
+          <div class="price-tag">For multi-location operators and franchises.</div>
+          <ul>
+            <li>Unlimited users</li>
+            <li>Everything in Pro</li>
+            <li>Multi-location dashboard</li>
+            <li>Custom branding</li>
+            <li>Dedicated onboarding</li>
+          </ul>
+          <a href="/auth.html" class="btn btn-secondary">Start with Agency</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       FOOTER — Privacy and Terms must be visible without a menu
+  ============================================================ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <img src="/logo-full.webp" alt="HyPurShot">
+          <p>The mobile toolkit for detailers and service professionals. Capture. Post. Get Reviewed.</p>
+        </div>
+        <div>
+          <h4>Product</h4>
+          <ul>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#product">The product</a></li>
+            <li><a href="#integration">Integrations</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Account</h4>
+          <ul>
+            <li><a href="/auth.html">Sign in</a></li>
+            <li><a href="/auth.html">Create an account</a></li>
+            <li><a href="/team.html">Team dashboard</a></li>
+            <li><a href="/review.html">Leave a review</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="/privacy.html">Privacy Policy</a></li>
+            <li><a href="/terms.html">Terms of Service</a></li>
+            <li><a href="mailto:hello@hypurshot.com">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 HyPurShot. All rights reserved.</div>
+        <div class="legal-links">
+          <a href="/privacy.html">Privacy Policy</a>
+          <a href="/terms.html">Terms of Service</a>
+          <a href="mailto:hello@hypurshot.com">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
 </body>
 </html>
