@@ -1108,6 +1108,18 @@
           <button class="toggle" data-platform="nextdoor" onclick="toggleSocial(this)"></button>
         </div>
 
+        <!-- TikTok -->
+        <div class="social-row">
+          <div class="social-icon">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M19.6 6.3a5.6 5.6 0 01-3.4-1.2 5.5 5.5 0 01-2.1-3.6h-3.4v13.6a2.7 2.7 0 11-2.7-2.7c.3 0 .6 0 .9.1V8.9a6 6 0 00-.9-.1 6.1 6.1 0 106.1 6.1V8.7a8.9 8.9 0 005.5 1.9V7.2a5.5 5.5 0 01-0 -.9z"/></svg>
+          </div>
+          <div class="social-name">TikTok</div>
+          <div class="social-input">
+            <span style="color: var(--text-dim); font-size: 13px;">Connect with TikTok on the team dashboard after sign-up.</span>
+          </div>
+          <button type="button" class="toggle" data-platform="tiktok" onclick="connectTikTokFromAuth(this)" aria-label="Continue with TikTok"></button>
+        </div>
+
         <div style="height: 24px;"></div>
 
         <div class="btn-row">
@@ -1478,8 +1490,25 @@ function toggleSocial(btn) {
   btn.classList.toggle('on');
   const row = btn.closest('.social-row');
   const input = row.querySelector('input');
-  input.disabled = isOn;
-  if (isOn) input.value = '';
+  if (input) {
+    input.disabled = isOn;
+    if (isOn) input.value = '';
+  }
+}
+
+// ──────────────── TIKTOK CONNECT (from auth.html signup) ────────────────
+// TikTok OAuth needs an authenticated business_id, which doesn't exist until
+// the user completes signup. We mark the platform as selected here and the
+// real OAuth handshake runs from the team dashboard after Create Account.
+function connectTikTokFromAuth(btn) {
+  const willEnable = !btn.classList.contains('on');
+  btn.classList.toggle('on');
+  if (willEnable) {
+    sessionStorage.setItem('connect_tiktok_after_signup', '1');
+    showToast('TikTok will be connected on the team dashboard right after you create your account.', 'success');
+  } else {
+    sessionStorage.removeItem('connect_tiktok_after_signup');
+  }
 }
 
 // ──────────────── FORGOT PASSWORD ────────────────
