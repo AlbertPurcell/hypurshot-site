@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HyPurShot — Capture. Post. Get Reviewed.</title>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0D0D0D;
+    --surface: #161616;
+    --border: rgba(255,255,255,0.08);
+    --gold: #D4A017;
+    --gold-hover: #c2920f;
+    --gold-dim: rgba(212,160,23,0.15);
+    --ice: #A8D4E6;
+    --text: #f0ede8;
+    --text-muted: #888680;
+    --error: #e05c6c;
+    --success: #5db875;
+    --font-heading: 'Cabinet Grotesk', sans-serif;
+    --font-body: 'Satoshi', sans-serif;
+  }
+
+  html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    overflow-x: hidden;
+  }
+
+  /* ───── LEFT PANEL ───── */
+  .left-panel {
+    width: 420px;
+    min-width: 420px;
+    min-height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 48px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+  }
+
+  .logo-img {
+    display: block;
+    height: 80px;
+    width: auto;
+    margin-bottom: 20px;
+    object-fit: contain;
+  }
+
+  .tagline {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.35rem;
+    line-height: 1.4;
+    margin-bottom: 24px;
+    color: var(--text);
+  }
+
+  .tagline .ice { color: var(--ice); }
+
+  .brand-desc {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--text-muted);
+    max-width: 320px;
+  }
+
+  .brand-features {
+    margin-top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .brand-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .brand-feature svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--gold);
+  }
+
+  /* ───── RIGHT PANEL ───── */
+  .right-panel {
+    flex: 1;
+    margin-left: 420px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+
+  .form-container {
+    width: 100%;
+    max-width: 480px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ───── MOBILE HEADER ───── */
+  .mobile-header {
+    display: none;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .mobile-header .logo-img {
+    height: 40px;
+    margin-bottom: 0;
+  }
+
+  /* ───── STEP INDICATOR ───── */
+  .step-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 36px;
+  }
+
+  .step-dot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: color 0.3s;
+  }
+
+  .step-dot.active { color: var(--gold); }
+  .step-dot.completed { color: var(--gold); }
+
+  .step-dot .dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: 2px solid rgba(255,255,255,0.12);
+    color: var(--text-muted);
+    background: transparent;
+    transition: all 0.3s;
+  }
+
+  .step-dot.active .dot {
+    border-color: var(--gold);
+    background: var(--gold-dim);
+    color: var(--gold);
+  }
+
+  .step-dot.completed .dot {
+    border-color: var(--gold);
+    background: var(--gold);
+    color: var(--bg);
+  }
+
+  .step-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 0 12px;
+    position: relative;
+  }
+
+  .step-line .fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: var(--gold);
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .step-line.filled .fill { width: 100%; }
+
+  /* ───── FORM HEADINGS ───── */
+  .form-title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+
+  .form-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  /* ───── VIEWS (slide transitions) ───── */
+  .view {
+    display: none;
+    animation: fadeSlideIn 0.35s ease forwards;
+  }
+
+  .view.active { display: block; }
+
+  .view.slide-left { animation: slideLeft 0.35s ease forwards; }
+  .view.slide-right { animation: slideRight 0.35s ease forwards; }
+
+  /* Step panels — hidden by default, shown via .active */
+  .step-panel { display: none; }
+  .step-panel.active { display: block; }
+
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes slideLeft {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes slideRight {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ───── FORM ELEMENTS ───── */
+  .field-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .field-row .field-group { flex: 1; }
+
+  .field-group {
+    margin-bottom: 18px;
+    position: relative;
+  }
+
+  .field-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 7px;
+    letter-spacing: 0.02em;
+  }
+
+  .field-group label .required {
+    color: var(--gold);
+    margin-left: 2px;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="url"],
+  select {
+    width: 100%;
+    height: 46px;
+    padding: 0 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--gold);
+  }
+
+  input::placeholder { color: rgba(255,255,255,0.2); }
+
+  input:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  select {
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%23888680' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+
+  select option {
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  /* ───── PASSWORD WRAPPER ───── */
+  .password-wrap {
+    position: relative;
+  }
+
+  .password-wrap input { padding-right: 46px; }
+
+  .toggle-pw {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+  }
+
+  .toggle-pw:hover { color: var(--text); }
+
+  /* ───── PASSWORD STRENGTH ───── */
+  .strength-meter {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+    margin-bottom: 4px;
+  }
+
+  .strength-meter .bar {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.08);
+    transition: background 0.3s;
+  }
+
+  .strength-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+    min-height: 16px;
+    transition: color 0.3s;
+  }
+
+  /* ───── BUTTONS ───── */
+  .btn {
+    height: 46px;
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 24px;
+    transition: all 0.2s;
+    width: 100%;
+    position: relative;
+  }
+
+  .btn-gold {
+    background: var(--gold);
+    color: var(--bg);
+  }
+
+  .btn-gold:hover { background: var(--gold-hover); }
+
+  .btn-gold:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .btn-outline:hover {
+    border-color: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.03);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .btn-ghost:hover {
+    border-color: rgba(255,255,255,0.16);
+    color: var(--text);
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .btn-row .btn-ghost { width: auto; flex: 0 0 auto; padding: 0 20px; }
+  .btn-row .btn-gold { flex: 1; }
+
+  .btn .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(0,0,0,0.2);
+    border-top-color: var(--bg);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: none;
+  }
+
+  .btn.loading .spinner { display: block; }
+  .btn.loading .btn-text { opacity: 0; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ───── OAUTH BUTTONS ───── */
+  .oauth-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 24px 0;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  .oauth-divider::before,
+  .oauth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .oauth-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .oauth-buttons .btn { flex: 1; height: 44px; font-size: 0.85rem; font-weight: 500; }
+
+  .oauth-buttons .btn svg { flex-shrink: 0; }
+
+  /* ───── SOCIAL ACCOUNTS (Step 3) ───── */
+  .social-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .social-row:last-of-type { border-bottom: none; }
+
+  .social-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--text-muted);
+  }
+
+  .social-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text);
+    min-width: 90px;
+  }
+
+  .social-input {
+    flex: 1;
+  }
+
+  .social-input input {
+    height: 38px;
+    font-size: 0.82rem;
+  }
+
+  /* ───── TOGGLE SWITCH ───── */
+  .toggle {
+    width: 42px;
+    height: 24px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.1);
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+    transition: background 0.25s;
+    border: none;
+    padding: 0;
+  }
+
+  .toggle.on {
+    background: var(--gold);
+  }
+
+  .toggle::after {
+    content: '';
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.25s;
+  }
+
+  .toggle.on::after {
+    transform: translateX(18px);
+  }
+
+  /* ───── TOOLTIP ───── */
+  .info-tip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+    cursor: help;
+  }
+
+  .info-tip .tip-icon {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 1px solid var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    line-height: 1;
+  }
+
+  .info-tip .tip-text {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 10;
+  }
+
+  .info-tip .tip-text a {
+    color: var(--gold);
+    text-decoration: none;
+  }
+
+  .info-tip .tip-text a:hover { text-decoration: underline; }
+
+  .info-tip:hover .tip-text { opacity: 1; pointer-events: auto; }
+
+  /* ───── LINKS ───── */
+  .form-link {
+    font-size: 0.82rem;
+    color: var(--gold);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s;
+    background: none;
+    border: none;
+    font-family: var(--font-body);
+    padding: 0;
+  }
+
+  .form-link:hover { color: var(--ice); }
+
+  .form-footer {
+    text-align: center;
+    margin-top: 28px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+
+  .form-footer a { color: var(--gold); text-decoration: none; cursor: pointer; }
+  .form-footer a:hover { color: var(--ice); }
+
+  /* ───── TOAST ───── */
+  .toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .toast {
+    padding: 14px 20px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-family: var(--font-body);
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    animation: toastIn 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 380px;
+  }
+
+  .toast.error { border-color: var(--error); }
+  .toast.error .toast-dot { background: var(--error); }
+  .toast.success { border-color: var(--success); }
+  .toast.success .toast-dot { background: var(--success); }
+
+  .toast-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .toast.exiting { animation: toastOut 0.3s ease forwards; }
+
+  @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(20px); } }
+
+  /* ───── FORGOT PASSWORD INLINE ───── */
+  .forgot-panel {
+    display: none;
+    margin-top: 16px;
+    padding: 20px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    animation: fadeSlideIn 0.3s ease;
+  }
+
+  .forgot-panel.active { display: block; }
+
+  .forgot-panel .form-title { font-size: 1.1rem; margin-bottom: 4px; }
+  .forgot-panel .form-subtitle { margin-bottom: 16px; }
+
+  /* ───── INLINE ERROR ───── */
+  .field-error {
+    font-size: 0.75rem;
+    color: var(--error);
+    margin-top: 5px;
+    display: none;
+  }
+
+  .field-group.has-error input,
+  .field-group.has-error select {
+    border-color: var(--error);
+  }
+
+  .field-group.has-error .field-error { display: block; }
+
+  /* ───── ACCOUNT MODE SELECTOR ───── */
+  .mode-selector {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .mode-card {
+    flex: 1;
+    padding: 18px 16px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.25s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-body);
+  }
+
+  .mode-card:hover {
+    border-color: rgba(255,255,255,0.16);
+  }
+
+  .mode-card.selected {
+    border-color: var(--gold);
+  }
+
+  .mode-card .mode-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: color 0.25s;
+  }
+
+  .mode-card.selected .mode-icon {
+    color: var(--gold);
+  }
+
+  .mode-card .mode-title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    transition: color 0.25s;
+  }
+
+  .mode-card.selected .mode-title {
+    color: var(--text);
+  }
+
+  .mode-card .mode-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    transition: color 0.25s;
+  }
+
+  .mode-card.selected .mode-desc {
+    color: var(--text-muted);
+  }
+
+  /* ───── TEAM JOIN SECTION ───── */
+  .team-join-section {
+    display: none;
+    text-align: center;
+    animation: fadeSlideIn 0.3s ease;
+  }
+
+  .team-join-section.visible {
+    display: block;
+  }
+
+  .team-join-section .join-label {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+  }
+
+  .invite-code-input {
+    width: 220px;
+    height: 54px;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    color: var(--gold);
+    outline: none;
+    transition: border-color 0.2s;
+    margin: 0 auto;
+    display: block;
+  }
+
+  .invite-code-input:focus {
+    border-color: var(--gold);
+  }
+
+  .invite-code-input::placeholder {
+    color: rgba(255,255,255,0.15);
+    letter-spacing: 0.15em;
+    font-size: 1rem;
+  }
+
+  .join-hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 10px;
+    margin-bottom: 20px;
+  }
+
+  .solo-fields {
+    animation: fadeSlideIn 0.3s ease;
+  }
+
+  /* ───── RESPONSIVE ───── */
+  @media (max-width: 900px) {
+    .left-panel { display: none; }
+    .mobile-header { display: flex; }
+    .right-panel { margin-left: 0; }
+    body { flex-direction: column; }
+  }
+
+  @media (max-width: 500px) {
+    .right-panel { padding: 24px 16px; }
+    .form-container { max-width: 100%; }
+    .field-row { flex-direction: column; gap: 0; }
+    .field-row .field-group { flex: none; }
+    .oauth-buttons { flex-direction: column; }
+    .btn-row { flex-direction: column-reverse; }
+    .btn-row .btn-ghost { width: 100%; }
+    .social-row { flex-wrap: wrap; }
+    .social-name { min-width: 80px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LEFT PANEL -->
+<div class="left-panel">
+  <img src="logo-full.webp" alt="HyPurShot" class="logo-img">
+  <div class="tagline">Capture. Post. <span class="ice">Get Reviewed.</span></div>
+  <p class="brand-desc">The mobile toolkit for detailers and service professionals. Capture your best work, edit for social media, automate distribution across platforms, and collect five-star reviews from happy clients.</p>
+  <div class="brand-features">
+    <div class="brand-feature">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/></svg>
+      <span>Capture photos and video on the job</span>
+    </div>
+    <div class="brand-feature">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      <span>Edit and brand for social media</span>
+    </div>
+    <div class="brand-feature">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="16 6 12 2 8 6"/><line stroke="currentColor" stroke-width="2" stroke-linecap="round" x1="12" y1="2" x2="12" y2="15"/></svg>
+      <span>Post to Instagram, Facebook, Google, Nextdoor</span>
+    </div>
+    <div class="brand-feature">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><polygon stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span>Collect and manage five-star reviews</span>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE HEADER -->
+<div class="mobile-header">
+  <img src="logo-nav.webp" alt="HyPurShot" class="logo-img">
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="right-panel">
+  <div class="form-container">
+
+    <!-- ════════════ SIGN UP VIEW ════════════ -->
+    <div id="signup-view" class="view active">
+
+      <!-- Step Indicator -->
+      <div class="step-indicator">
+        <div class="step-dot active" data-step="1"><div class="dot">1</div><span>Account</span></div>
+        <div class="step-line" data-line="1"><div class="fill"></div></div>
+        <div class="step-dot" data-step="2"><div class="dot">2</div><span>Business</span></div>
+        <div class="step-line" data-line="2"><div class="fill"></div></div>
+        <div class="step-dot" data-step="3"><div class="dot">3</div><span>Social</span></div>
+      </div>
+
+      <!-- STEP 1 — ACCOUNT -->
+      <div id="step-1" class="step-panel active">
+        <h2 class="form-title">Create your account</h2>
+        <p class="form-subtitle">Start capturing and sharing your best work.</p>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label>First Name <span class="required">*</span></label>
+            <input type="text" id="su-first" placeholder="First name" autocomplete="given-name">
+            <div class="field-error">First name is required</div>
+          </div>
+          <div class="field-group">
+            <label>Last Name <span class="required">*</span></label>
+            <input type="text" id="su-last" placeholder="Last name" autocomplete="family-name">
+            <div class="field-error">Last name is required</div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Email Address <span class="required">*</span></label>
+          <input type="email" id="su-email" placeholder="you@example.com" autocomplete="email">
+          <div class="field-error">Enter a valid email address</div>
+        </div>
+
+        <div class="field-group">
+          <label>Password <span class="required">*</span></label>
+          <div class="password-wrap">
+            <input type="password" id="su-password" placeholder="Create a password" autocomplete="new-password">
+            <button type="button" class="toggle-pw" onclick="togglePassword('su-password', this)" aria-label="Toggle password visibility">
+              <svg class="eye-open" width="18" height="18" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/></svg>
+              <svg class="eye-closed" width="18" height="18" fill="none" viewBox="0 0 24 24" style="display:none"><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line stroke="currentColor" stroke-width="1.5" stroke-linecap="round" x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+          <div class="strength-meter">
+            <div class="bar" id="str-bar-1"></div>
+            <div class="bar" id="str-bar-2"></div>
+            <div class="bar" id="str-bar-3"></div>
+            <div class="bar" id="str-bar-4"></div>
+          </div>
+          <div class="strength-label" id="str-label"></div>
+          <div class="field-error">Password is required</div>
+        </div>
+
+        <button class="btn btn-gold" onclick="goToStep(2)">
+          <span class="btn-text">Continue</span>
+        </button>
+
+        <div class="oauth-divider">or continue with</div>
+
+        <div class="oauth-buttons">
+          <button class="btn btn-outline" onclick="oauthSignIn('google')">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A11.96 11.96 0 001 12c0 1.94.46 3.77 1.18 5.07l3.66-2.98z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Google
+          </button>
+          <button class="btn btn-outline" onclick="oauthSignIn('apple')">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+            Apple
+          </button>
+        </div>
+
+        <div class="form-footer">
+          Already have an account? <a onclick="showView('login')">Sign in</a>
+        </div>
+      </div>
+
+      <!-- STEP 2 — BUSINESS DETAILS -->
+      <div id="step-2" class="step-panel">
+        <h2 class="form-title">Business details</h2>
+        <p class="form-subtitle">Tell us about your business so we can customize your experience.</p>
+
+        <!-- SOLO / TEAM MODE SELECTOR -->
+        <div class="mode-selector">
+          <button class="mode-card selected" id="mode-solo" onclick="setAccountMode('solo')">
+            <div class="mode-icon">
+              <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+            <div class="mode-title">Solo</div>
+            <div class="mode-desc">I run my own business</div>
+          </button>
+          <button class="mode-card" id="mode-team" onclick="setAccountMode('team')">
+            <div class="mode-icon">
+              <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.5"/><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+            </div>
+            <div class="mode-title">Team</div>
+            <div class="mode-desc">I work for a company</div>
+          </button>
+        </div>
+
+        <!-- SOLO MODE: Original business fields -->
+        <div class="solo-fields" id="solo-fields">
+          <div class="field-group">
+            <label>Business / Portfolio Name <span class="required">*</span></label>
+            <input type="text" id="su-business" placeholder="e.g. Elite Mobile Detailing">
+            <div class="field-error">Business name is required</div>
+          </div>
+
+          <div class="field-group">
+            <label>Business Type <span class="required">*</span></label>
+            <select id="su-biz-type">
+              <option value="" disabled selected>Select your business type</option>
+              <option>Mobile Detailing</option>
+              <option>PPF/Paint Protection</option>
+              <option>Ceramic Coating</option>
+              <option>Photography</option>
+              <option>Landscaping</option>
+              <option>Pressure Washing</option>
+              <option>House Cleaning</option>
+              <option>Barbershop</option>
+              <option>Nail Tech</option>
+              <option>Other</option>
+            </select>
+            <div class="field-error">Select a business type</div>
+          </div>
+
+          <div class="field-group">
+            <label>Business Phone</label>
+            <input type="tel" id="su-phone" placeholder="(555) 123-4567" autocomplete="tel">
+          </div>
+
+          <div class="field-group">
+            <label>City / Location</label>
+            <input type="text" id="su-city" placeholder="e.g. Austin, TX">
+          </div>
+
+          <div class="field-group">
+            <label>
+              Google 5-Star Place ID
+              <span class="info-tip">
+                <span class="tip-icon">?</span>
+                <span class="tip-text">Find yours at <a href="https://developers.google.com/maps/documentation/places/web-service/place-id" target="_blank">Google's Place ID Finder</a></span>
+              </span>
+            </label>
+            <input type="text" id="su-place-id" placeholder="ChIJ...">
+          </div>
+
+          <div class="field-group">
+            <label>Website URL <span style="color:var(--text-muted);font-weight:400;font-size:0.72rem;">(optional)</span></label>
+            <input type="url" id="su-website" placeholder="https://yourbusiness.com">
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-ghost" onclick="goToStep(1)">Back</button>
+            <button class="btn btn-gold" onclick="goToStep(3)">
+              <span class="btn-text">Continue</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- TEAM MODE: Join with invite code -->
+        <div class="team-join-section" id="team-join-section">
+          <div class="join-label">Join a Team</div>
+          <input type="text" class="invite-code-input" id="su-invite-code" placeholder="ABC123" maxlength="6" autocomplete="off">
+          <div class="join-hint">Ask your manager for the invite code</div>
+          <div class="field-error" id="invite-code-error" style="display:none;text-align:center;">Enter a valid 6-character invite code</div>
+          <button class="btn btn-gold" id="btn-join-team" onclick="joinTeam()" style="max-width:280px;margin:0 auto;">
+            <span class="btn-text">Join Team</span>
+            <span class="spinner"></span>
+          </button>
+          <div style="height:12px;"></div>
+          <button class="btn btn-ghost" onclick="goToStep(1)" style="max-width:280px;margin:0 auto;">Back</button>
+        </div>
+      </div>
+
+      <!-- STEP 3 — SOCIAL ACCOUNTS -->
+      <div id="step-3" class="step-panel">
+        <h2 class="form-title">Connect your platforms</h2>
+        <p class="form-subtitle">Link your social accounts for automated posting. You can always update these later.</p>
+
+        <!-- Instagram -->
+        <div class="social-row">
+          <div class="social-icon">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="1.5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/></svg>
+          </div>
+          <div class="social-name">Instagram</div>
+          <div class="social-input">
+            <input type="text" id="social-instagram" placeholder="@username">
+          </div>
+          <button class="toggle on" data-platform="instagram" onclick="toggleSocial(this)"></button>
+        </div>
+
+        <!-- Facebook -->
+        <div class="social-row">
+          <div class="social-icon">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+          </div>
+          <div class="social-name">Facebook</div>
+          <div class="social-input">
+            <input type="text" id="social-facebook" placeholder="Page URL or username" disabled>
+          </div>
+          <button class="toggle" data-platform="facebook" onclick="toggleSocial(this)"></button>
+        </div>
+
+        <!-- Google Business -->
+        <div class="social-row">
+          <div class="social-icon">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/></svg>
+          </div>
+          <div class="social-name">Google Business</div>
+          <div class="social-input">
+            <input type="text" id="social-google" placeholder="Business profile URL">
+          </div>
+          <button class="toggle on" data-platform="google" onclick="toggleSocial(this)"></button>
+        </div>
+
+        <!-- Nextdoor -->
+        <div class="social-row">
+          <div class="social-icon">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div class="social-name">Nextdoor</div>
+          <div class="social-input">
+            <input type="text" id="social-nextdoor" placeholder="Business page URL" disabled>
+          </div>
+          <button class="toggle" data-platform="nextdoor" onclick="toggleSocial(this)"></button>
+        </div>
+
+        <div style="height: 24px;"></div>
+
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="goToStep(2)">Back</button>
+          <button class="btn btn-gold" id="btn-create" onclick="createAccount()">
+            <span class="btn-text">Create Account</span>
+            <span class="spinner"></span>
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /signup-view -->
+
+    <!-- ════════════ LOGIN VIEW ════════════ -->
+    <div id="login-view" class="view">
+      <h2 class="form-title">Welcome back</h2>
+      <p class="form-subtitle">Sign in to your HyPurShot account.</p>
+
+      <div class="field-group">
+        <label>Email Address</label>
+        <input type="email" id="li-email" placeholder="you@example.com" autocomplete="email">
+        <div class="field-error">Enter a valid email address</div>
+      </div>
+
+      <div class="field-group">
+        <label>Password</label>
+        <div class="password-wrap">
+          <input type="password" id="li-password" placeholder="Your password" autocomplete="current-password">
+          <button type="button" class="toggle-pw" onclick="togglePassword('li-password', this)" aria-label="Toggle password visibility">
+            <svg class="eye-open" width="18" height="18" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/></svg>
+            <svg class="eye-closed" width="18" height="18" fill="none" viewBox="0 0 24 24" style="display:none"><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line stroke="currentColor" stroke-width="1.5" stroke-linecap="round" x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
+        <div class="field-error">Password is required</div>
+      </div>
+
+      <button class="btn btn-gold" id="btn-login" onclick="signIn()">
+        <span class="btn-text">Sign In</span>
+        <span class="spinner"></span>
+      </button>
+
+      <div style="text-align:right;margin-top:10px;">
+        <button class="form-link" onclick="toggleForgot()">Forgot password?</button>
+      </div>
+
+      <!-- Forgot Password Inline Panel -->
+      <div class="forgot-panel" id="forgot-panel">
+        <h3 class="form-title">Reset your password</h3>
+        <p class="form-subtitle">Enter your email and we'll send a reset link.</p>
+        <div class="field-group" style="margin-bottom:14px;">
+          <input type="email" id="fp-email" placeholder="you@example.com">
+          <div class="field-error">Enter a valid email address</div>
+        </div>
+        <button class="btn btn-gold" id="btn-reset" onclick="resetPassword()">
+          <span class="btn-text">Send Reset Link</span>
+          <span class="spinner"></span>
+        </button>
+      </div>
+
+      <div class="oauth-divider">or continue with</div>
+
+      <div class="oauth-buttons">
+        <button class="btn btn-outline" onclick="oauthSignIn('google')">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A11.96 11.96 0 001 12c0 1.94.46 3.77 1.18 5.07l3.66-2.98z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Google
+        </button>
+        <button class="btn btn-outline" onclick="oauthSignIn('apple')">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+          Apple
+        </button>
+      </div>
+
+      <div class="form-footer">
+        Don't have an account? <a onclick="showView('signup')">Create an account</a>
+      </div>
+    </div><!-- /login-view -->
+
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ──────────────── STATE ────────────────
+let currentStep = 1;
+let currentView = 'signup';
+let accountMode = 'solo'; // 'solo' or 'team'
+
+// ──────────────── SUPABASE INIT ────────────────
+const supabaseUrl = 'https://xjsicupdpzawxlwcvxzv.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhqc2ljdXBkcHphd3hsd2N2eHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MjgxNjEsImV4cCI6MjA5MDMwNDE2MX0.ZIuEFOCz1T7aVv6a39hXzvUucSZKgTJhDW5iPyXh1KM';
+let _supabase;
+try {
+  _supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+} catch (e) {
+  console.warn('Supabase not configured:', e.message);
+}
+
+// ──────────────── VIEW SWITCHING ────────────────
+function showView(view) {
+  currentView = view;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById(view === 'signup' ? 'signup-view' : 'login-view');
+  el.classList.add('active');
+  if (view === 'signup') {
+    currentStep = 1;
+    accountMode = 'solo';
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('step-1').classList.add('active');
+    updateStepIndicator();
+    // Reset mode selector to solo
+    setAccountMode('solo');
+  }
+}
+
+// ──────────────── STEP NAVIGATION ────────────────
+function goToStep(step) {
+  // Validate current step before moving forward
+  if (step > currentStep && !validateStep(currentStep)) return;
+
+  const direction = step > currentStep ? 'slide-left' : 'slide-right';
+  const prevPanel = document.getElementById('step-' + currentStep);
+  const nextPanel = document.getElementById('step-' + step);
+
+  // Hide all step panels
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+
+  // Show next panel with animation
+  nextPanel.classList.remove('slide-left', 'slide-right');
+  void nextPanel.offsetWidth;
+  nextPanel.classList.add('active', direction);
+
+  currentStep = step;
+  updateStepIndicator();
+}
+
+function updateStepIndicator() {
+  // Update step dots
+  document.querySelectorAll('.step-dot').forEach(dot => {
+    const s = parseInt(dot.dataset.step);
+    dot.classList.remove('active', 'completed');
+    if (s === currentStep) dot.classList.add('active');
+    else if (s < currentStep) dot.classList.add('completed');
+  });
+
+  // Update step lines
+  document.querySelectorAll('.step-line').forEach(line => {
+    const l = parseInt(line.dataset.line);
+    line.classList.toggle('filled', l < currentStep);
+  });
+}
+
+// ──────────────── ACCOUNT MODE ────────────────
+function setAccountMode(mode) {
+  accountMode = mode;
+
+  // Update card selection
+  document.getElementById('mode-solo').classList.toggle('selected', mode === 'solo');
+  document.getElementById('mode-team').classList.toggle('selected', mode === 'team');
+
+  // Show/hide sections
+  document.getElementById('solo-fields').style.display = mode === 'solo' ? 'block' : 'none';
+  document.getElementById('team-join-section').classList.toggle('visible', mode === 'team');
+
+  // Update step 3 visibility in indicator
+  const step3Dot = document.querySelector('.step-dot[data-step="3"]');
+  const step2Line = document.querySelector('.step-line[data-line="2"]');
+  if (step3Dot) step3Dot.style.display = mode === 'team' ? 'none' : 'flex';
+  if (step2Line) step2Line.style.display = mode === 'team' ? 'none' : 'block';
+
+  // Clear invite code error
+  document.getElementById('invite-code-error').style.display = 'none';
+}
+
+// Auto-uppercase invite code input
+document.addEventListener('DOMContentLoaded', function() {
+  const codeInput = document.getElementById('su-invite-code');
+  if (codeInput) {
+    codeInput.addEventListener('input', function() {
+      this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    });
+  }
+});
+
+// ──────────────── JOIN TEAM ────────────────
+async function joinTeam() {
+  const codeInput = document.getElementById('su-invite-code');
+  const inviteCode = codeInput.value.trim();
+  const errorEl = document.getElementById('invite-code-error');
+
+  // Validate invite code
+  if (!inviteCode || inviteCode.length < 4) {
+    errorEl.style.display = 'block';
+    codeInput.style.borderColor = 'var(--error)';
+    return;
+  }
+  errorEl.style.display = 'none';
+  codeInput.style.borderColor = '';
+
+  const btn = document.getElementById('btn-join-team');
+  setLoading(btn, true);
+
+  if (!_supabase) {
+    showToast('Supabase is not configured. Set your project URL and anon key.', 'error');
+    setLoading(btn, false);
+    return;
+  }
+
+  const email = document.getElementById('su-email').value.trim();
+  const password = document.getElementById('su-password').value;
+  const firstName = document.getElementById('su-first').value.trim();
+  const lastName = document.getElementById('su-last').value.trim();
+
+  try {
+    // Step 1: Create the auth user
+    const { data: { user }, error: signUpError } = await _supabase.auth.signUp({
+      email: email,
+      password: password,
+    });
+
+    if (signUpError) {
+      showToast(signUpError.message, 'error');
+      setLoading(btn, false);
+      return;
+    }
+
+    // Detect duplicate email
+    if (user && (!user.identities || user.identities.length === 0)) {
+      showToast('An account with this email already exists. Please sign in instead.', 'error');
+      setLoading(btn, false);
+      return;
+    }
+
+    // Step 2: Join the team via manage-team edge function
+    const { data, error: joinError } = await _supabase.functions.invoke('manage-team', {
+      body: {
+        action: 'join',
+        invite_code: inviteCode,
+        user_id: user.id,
+        display_name: firstName + ' ' + lastName
+      }
+    });
+
+    if (joinError) {
+      showToast(joinError.message || 'Failed to join team. Check your invite code.', 'error');
+      setLoading(btn, false);
+      return;
+    }
+
+    showToast('You joined the team! Check your email to confirm your account.', 'success');
+    setLoading(btn, false);
+    // Redirect to dashboard
+    // window.location.href = '/dashboard';
+
+  } catch (err) {
+    showToast('Something went wrong. Please try again.', 'error');
+    setLoading(btn, false);
+  }
+}
+
+// ──────────────── VALIDATION ────────────────
+function validateStep(step) {
+  clearErrors();
+
+  if (step === 1) {
+    let valid = true;
+    const first = document.getElementById('su-first');
+    const last = document.getElementById('su-last');
+    const email = document.getElementById('su-email');
+    const pw = document.getElementById('su-password');
+
+    if (!first.value.trim()) { setError(first); valid = false; }
+    if (!last.value.trim()) { setError(last); valid = false; }
+    if (!isValidEmail(email.value)) { setError(email); valid = false; }
+    if (pw.value.length < 6) {
+      setError(pw, 'Password must be at least 6 characters');
+      valid = false;
+    }
+    return valid;
+  }
+
+  if (step === 2) {
+    // Team mode doesn't need Step 2 validation for business fields
+    // (team join is handled by joinTeam function directly)
+    if (accountMode === 'team') return true;
+
+    let valid = true;
+    const biz = document.getElementById('su-business');
+    const type = document.getElementById('su-biz-type');
+
+    if (!biz.value.trim()) { setError(biz); valid = false; }
+    if (!type.value) { setError(type); valid = false; }
+    return valid;
+  }
+
+  return true;
+}
+
+function setError(input, msg) {
+  const group = input.closest('.field-group');
+  group.classList.add('has-error');
+  if (msg) {
+    const errEl = group.querySelector('.field-error');
+    if (errEl) errEl.textContent = msg;
+  }
+}
+
+function clearErrors() {
+  document.querySelectorAll('.field-group.has-error').forEach(g => {
+    g.classList.remove('has-error');
+  });
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+// ──────────────── PASSWORD TOGGLE ────────────────
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const isPassword = input.type === 'password';
+  input.type = isPassword ? 'text' : 'password';
+  btn.querySelector('.eye-open').style.display = isPassword ? 'none' : 'block';
+  btn.querySelector('.eye-closed').style.display = isPassword ? 'block' : 'none';
+}
+
+// ──────────────── PASSWORD STRENGTH ────────────────
+document.getElementById('su-password').addEventListener('input', function() {
+  const val = this.value;
+  const strength = getStrength(val);
+  updateStrengthUI(strength);
+});
+
+function getStrength(pw) {
+  if (pw.length === 0) return { level: 0, label: '' };
+  if (pw.length < 6) return { level: 0, label: 'Too Short', color: 'var(--text-muted)' };
+
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
+  if (/\d/.test(pw)) score++;
+  if (/[^a-zA-Z0-9]/.test(pw)) score++;
+
+  if (score <= 1) return { level: 1, label: 'Weak', color: var_error };
+  if (score <= 2) return { level: 2, label: 'Fair', color: '#e6a817' };
+  if (score <= 3) return { level: 3, label: 'Strong', color: 'var(--gold)' };
+  return { level: 4, label: 'Strong', color: 'var(--success)' };
+}
+
+const var_error = '#e05c6c';
+
+function updateStrengthUI(s) {
+  const colors = ['rgba(255,255,255,0.08)', var_error, '#e6a817', '#D4A017', '#5db875'];
+  for (let i = 1; i <= 4; i++) {
+    const bar = document.getElementById('str-bar-' + i);
+    bar.style.background = i <= s.level ? colors[s.level] : 'rgba(255,255,255,0.08)';
+  }
+  const label = document.getElementById('str-label');
+  label.textContent = s.label;
+  label.style.color = s.color || 'var(--text-muted)';
+}
+
+// ──────────────── SOCIAL TOGGLES ────────────────
+function toggleSocial(btn) {
+  const isOn = btn.classList.contains('on');
+  btn.classList.toggle('on');
+  const row = btn.closest('.social-row');
+  const input = row.querySelector('input');
+  input.disabled = isOn;
+  if (isOn) input.value = '';
+}
+
+// ──────────────── FORGOT PASSWORD ────────────────
+function toggleForgot() {
+  const panel = document.getElementById('forgot-panel');
+  panel.classList.toggle('active');
+}
+
+// ──────────────── TOAST ────────────────
+function showToast(message, type = 'error') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.innerHTML = '<span class="toast-dot"></span>' + escapeHtml(message);
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('exiting');
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ──────────────── LOADING STATE ────────────────
+function setLoading(btn, loading) {
+  if (loading) {
+    btn.classList.add('loading');
+    btn.disabled = true;
+  } else {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+}
+
+// ──────────────── CREATE ACCOUNT ────────────────
+async function createAccount() {
+  const btn = document.getElementById('btn-create');
+  setLoading(btn, true);
+
+  if (!_supabase) {
+    showToast('Supabase is not configured. Set your project URL and anon key.', 'error');
+    setLoading(btn, false);
+    return;
+  }
+
+  const email = document.getElementById('su-email').value.trim();
+  const password = document.getElementById('su-password').value;
+
+  try {
+    const { data: { user }, error } = await _supabase.auth.signUp({
+      email: email,
+      password: password,
+    });
+
+    if (error) {
+      showToast(error.message, 'error');
+      setLoading(btn, false);
+      return;
+    }
+
+    // Detect duplicate email — Supabase returns a fake user with no
+    // identities when the email is already registered.
+    if (user && (!user.identities || user.identities.length === 0)) {
+      showToast('An account with this email already exists. Please sign in instead.', 'error');
+      setLoading(btn, false);
+      return;
+    }
+
+    // Build the business payload
+    const socialAccounts = [
+      {
+        platform: 'instagram',
+        handle: document.getElementById('social-instagram').value.trim(),
+        enabled: document.querySelector('[data-platform="instagram"]').classList.contains('on')
+      },
+      {
+        platform: 'facebook',
+        handle: document.getElementById('social-facebook').value.trim(),
+        enabled: document.querySelector('[data-platform="facebook"]').classList.contains('on')
+      },
+      {
+        platform: 'google',
+        handle: document.getElementById('social-google').value.trim(),
+        enabled: document.querySelector('[data-platform="google"]').classList.contains('on')
+      },
+      {
+        platform: 'nextdoor',
+        handle: document.getElementById('social-nextdoor').value.trim(),
+        enabled: document.querySelector('[data-platform="nextdoor"]').classList.contains('on')
+      }
+    ];
+
+    const businessPayload = {
+      user_id: user.id,
+      first_name: document.getElementById('su-first').value.trim(),
+      last_name: document.getElementById('su-last').value.trim(),
+      business_name: document.getElementById('su-business').value.trim(),
+      business_type: document.getElementById('su-biz-type').value,
+      phone: document.getElementById('su-phone').value.trim(),
+      city: document.getElementById('su-city').value.trim(),
+      google_place_id: document.getElementById('su-place-id').value.trim(),
+      website: document.getElementById('su-website').value.trim(),
+      social_accounts: socialAccounts,
+    };
+
+    const { error: fnError } = await _supabase.functions.invoke('register-user', {
+      body: businessPayload,
+    });
+
+    if (fnError) {
+      showToast(fnError.message || 'Registration failed. Please try again.', 'error');
+      setLoading(btn, false);
+      return;
+    }
+
+    showToast('Account created! Check your email to confirm.', 'success');
+    setLoading(btn, false);
+
+  } catch (err) {
+    showToast('Something went wrong. Please try again.', 'error');
+    setLoading(btn, false);
+  }
+}
+
+// ──────────────── SIGN IN ────────────────
+async function signIn() {
+  clearErrors();
+  const btn = document.getElementById('btn-login');
+  const email = document.getElementById('li-email');
+  const password = document.getElementById('li-password');
+
+  let valid = true;
+  if (!isValidEmail(email.value)) { setError(email); valid = false; }
+  if (!password.value) { setError(password); valid = false; }
+  if (!valid) return;
+
+  setLoading(btn, true);
+
+  if (!_supabase) {
+    showToast('Supabase is not configured. Set your project URL and anon key.', 'error');
+    setLoading(btn, false);
+    return;
+  }
+
+  try {
+    const { data, error } = await _supabase.auth.signInWithPassword({
+      email: email.value.trim(),
+      password: password.value,
+    });
+
+    if (error) {
+      showToast(error.message, 'error');
+      setLoading(btn, false);
+      return;
+    }
+
+    showToast('Signed in successfully!', 'success');
+    setLoading(btn, false);
+    // Redirect or update UI as needed
+
+  } catch (err) {
+    showToast('Something went wrong. Please try again.', 'error');
+    setLoading(btn, false);
+  }
+}
+
+// ──────────────── RESET PASSWORD ────────────────
+async function resetPassword() {
+  clearErrors();
+  const btn = document.getElementById('btn-reset');
+  const email = document.getElementById('fp-email');
+
+  if (!isValidEmail(email.value)) {
+    setError(email);
+    return;
+  }
+
+  setLoading(btn, true);
+
+  if (!_supabase) {
+    showToast('Supabase is not configured. Set your project URL and anon key.', 'error');
+    setLoading(btn, false);
+    return;
+  }
+
+  try {
+    const { error } = await _supabase.auth.resetPasswordForEmail(email.value.trim(), {
+      redirectTo: window.location.origin,
+    });
+
+    if (error) {
+      showToast(error.message, 'error');
+      setLoading(btn, false);
+      return;
+    }
+
+    showToast('Reset link sent! Check your inbox.', 'success');
+    setLoading(btn, false);
+
+  } catch (err) {
+    showToast('Something went wrong. Please try again.', 'error');
+    setLoading(btn, false);
+  }
+}
+
+// ──────────────── OAUTH ────────────────
+async function oauthSignIn(provider) {
+  if (!_supabase) {
+    showToast('Supabase is not configured. Set your project URL and anon key.', 'error');
+    return;
+  }
+  try {
+    const { error } = await _supabase.auth.signInWithOAuth({ provider: provider });
+    if (error) {
+      showToast(error.message, 'error');
+    }
+  } catch (err) {
+    showToast('OAuth sign-in failed. Please try again.', 'error');
+  }
+}
+
+// ──────────────── INIT ────────────────
+updateStepIndicator();
+</script>
+</body>
+</html>

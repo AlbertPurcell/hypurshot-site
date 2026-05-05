@@ -1,0 +1,2529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HyPurShot — Team Management</title>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0D0D0D;
+    --surface: #161616;
+    --border: rgba(255,255,255,0.08);
+    --gold: #D4A017;
+    --gold-hover: #E8C44A;
+    --gold-dim: rgba(212,160,23,0.15);
+    --ice: #A8D4E6;
+    --text: #F0EDE8;
+    --text-muted: #888680;
+    --error: #E05C6C;
+    --success: #5DB875;
+    --font-heading: 'Cabinet Grotesk', sans-serif;
+    --font-body: 'Satoshi', sans-serif;
+  }
+
+  html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ───── NAV BAR ───── */
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    z-index: 100;
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+  }
+  .nav-logo img {
+    height: 36px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .nav-title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-muted);
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .nav-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--gold-dim);
+    border: 1px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--gold);
+    cursor: pointer;
+  }
+
+  /* ───── TABS ───── */
+  .tab-bar {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    height: 48px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: stretch;
+    padding: 0 28px;
+    gap: 0;
+    z-index: 99;
+  }
+
+  .tab-btn {
+    position: relative;
+    background: none;
+    border: none;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    padding: 0 20px;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .tab-btn:hover { color: var(--text); }
+
+  .tab-btn.active { color: var(--gold); }
+
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 12px;
+    right: 12px;
+    height: 2px;
+    background: var(--gold);
+    border-radius: 1px 1px 0 0;
+  }
+
+  /* ───── MAIN CONTENT ───── */
+  .main {
+    padding-top: 132px;
+    max-width: 900px;
+    margin: 0 auto;
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-bottom: 60px;
+  }
+
+  .tab-content { display: none; animation: fadeIn 0.25s ease; }
+  .tab-content.active { display: block; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ───── SECTION HEADER ───── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .section-header h2 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.25rem;
+    letter-spacing: -0.01em;
+  }
+
+  /* ───── BUTTONS ───── */
+  .btn {
+    height: 40px;
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 18px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-gold { background: var(--gold); color: var(--bg); }
+  .btn-gold:hover { background: var(--gold-hover); }
+  .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .btn-ghost:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.03); }
+
+  .btn-ghost-danger {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--error);
+    font-weight: 500;
+  }
+
+  .btn-ghost-danger:hover { border-color: var(--error); background: rgba(224,92,108,0.06); }
+
+  .btn-sm { height: 32px; font-size: 0.78rem; padding: 0 12px; }
+
+  .btn .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(0,0,0,0.2);
+    border-top-color: var(--bg);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: none;
+  }
+
+  .btn.loading .spinner { display: block; }
+  .btn.loading .btn-text { opacity: 0; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ───── FORM ELEMENTS ───── */
+  .field-group {
+    margin-bottom: 16px;
+  }
+
+  .field-group label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  select {
+    width: 100%;
+    height: 42px;
+    padding: 0 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input:focus, select:focus { border-color: var(--gold); }
+  input::placeholder { color: rgba(255,255,255,0.2); }
+
+  select {
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%23888680' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+
+  select option { background: var(--surface); color: var(--text); }
+
+  /* ───── MEMBER LIST ───── */
+  .member-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .member-row:last-child { border-bottom: none; }
+
+  .member-info { flex: 1; min-width: 0; }
+
+  .member-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .member-email {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ───── BADGES ───── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .badge-owner { background: var(--gold); color: var(--bg); }
+  .badge-admin { background: var(--ice); color: var(--bg); }
+  .badge-member { background: transparent; border: 1px solid var(--border); color: var(--text); }
+
+  /* ───── PERMISSION PILLS ───── */
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .pill {
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  /* ───── STATUS DOT ───── */
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .status-dot.active { background: var(--success); }
+  .status-dot.suspended { background: var(--error); }
+
+  /* ───── THREE-DOT MENU ───── */
+  .menu-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .menu-trigger {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: all 0.15s;
+  }
+
+  .menu-trigger:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    min-width: 180px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 0;
+    z-index: 50;
+    display: none;
+    animation: fadeIn 0.15s ease;
+  }
+
+  .dropdown-menu.open { display: block; }
+
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 14px;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+  }
+
+  .dropdown-item:hover { background: rgba(255,255,255,0.04); }
+  .dropdown-item.danger { color: var(--error); }
+  .dropdown-item.danger:hover { background: rgba(224,92,108,0.08); }
+
+  .dropdown-item svg { flex-shrink: 0; color: var(--text-muted); }
+  .dropdown-item.danger svg { color: var(--error); }
+
+  /* ───── MODAL ───── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    width: 100%;
+    max-width: 460px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    animation: modalIn 0.25s ease;
+  }
+
+  @keyframes modalIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  .modal-title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.15rem;
+    margin-bottom: 20px;
+    letter-spacing: -0.01em;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .modal-actions .btn-ghost { flex: 0 0 auto; }
+  .modal-actions .btn-gold { flex: 1; }
+
+  /* ───── TOGGLE SWITCH ───── */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+  }
+
+  .toggle-row-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .toggle-switch {
+    width: 42px;
+    height: 24px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.1);
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+    transition: background 0.25s;
+    border: none;
+    padding: 0;
+  }
+
+  .toggle-switch.on { background: var(--gold); }
+
+  .toggle-switch::after {
+    content: '';
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.25s;
+  }
+
+  .toggle-switch.on::after { transform: translateX(18px); }
+
+  /* ───── INVITE TAB ───── */
+  .invite-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .invite-row:last-child { border-bottom: none; }
+
+  .invite-code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    flex-shrink: 0;
+  }
+
+  .invite-meta {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .invite-meta span { display: block; margin-bottom: 1px; }
+
+  .badge-invite {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 11px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .badge-pending { border: 1px solid var(--gold); color: var(--gold); background: transparent; }
+  .badge-redeemed { background: rgba(93,184,117,0.15); color: var(--success); }
+  .badge-expired { background: rgba(255,255,255,0.04); color: var(--text-muted); }
+  .badge-revoked { background: rgba(224,92,108,0.1); color: var(--error); }
+
+  /* ───── INVITE CODE DISPLAY ───── */
+  .generated-code-wrap {
+    display: none;
+    text-align: center;
+    margin-top: 20px;
+    padding: 20px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  .generated-code-wrap.visible { display: block; }
+
+  .generated-code {
+    font-family: 'Courier New', monospace;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    margin-bottom: 12px;
+  }
+
+  .code-expiry {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  /* ───── APPROVAL TAB ───── */
+  .approval-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+
+  .approval-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .approval-author {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+
+  .approval-date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-left: auto;
+  }
+
+  .approval-platforms {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .platform-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+    background: rgba(255,255,255,0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+  }
+
+  .approval-caption {
+    font-size: 0.85rem;
+    line-height: 1.55;
+    color: var(--text);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .approval-media {
+    width: 100%;
+    max-width: 160px;
+    height: 100px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+
+  .approval-media img { width: 100%; height: 100%; object-fit: cover; }
+
+  .approval-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .reject-reason {
+    display: none;
+    margin-top: 10px;
+  }
+
+  .reject-reason.open { display: flex; gap: 8px; align-items: center; }
+
+  .reject-reason input {
+    flex: 1;
+    height: 36px;
+    font-size: 0.82rem;
+  }
+
+  /* ───── EMPTY STATE ───── */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .empty-state svg {
+    margin-bottom: 16px;
+    color: rgba(255,255,255,0.1);
+  }
+
+  /* ───── TOAST ───── */
+  .toast-container {
+    position: fixed;
+    top: 72px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .toast {
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-family: var(--font-body);
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    animation: toastIn 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 360px;
+  }
+
+  .toast.error { border-color: var(--error); }
+  .toast.error .toast-dot { background: var(--error); }
+  .toast.success { border-color: var(--success); }
+  .toast.success .toast-dot { background: var(--success); }
+
+  .toast-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+  .toast.exiting { animation: toastOut 0.3s ease forwards; }
+
+  @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(20px); } }
+
+  /* ───── RESPONSIVE ───── */
+  @media (max-width: 700px) {
+    .navbar { padding: 0 16px; }
+    .tab-bar { padding: 0 16px; }
+    .main { padding-left: 16px; padding-right: 16px; }
+    .nav-title { display: none; }
+    .member-row { flex-wrap: wrap; gap: 10px; }
+    .pills { margin-left: 0; }
+    .modal { padding: 22px; }
+    .invite-row { flex-wrap: wrap; }
+  }
+
+  @media (max-width: 480px) {
+    .section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .approval-actions { flex-direction: column; align-items: stretch; }
+    .approval-actions .btn { width: 100%; }
+  }
+
+  /* ───── NEW POST TAB ───── */
+  .newpost-creator-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .newpost-creator-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--border);
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    color: var(--text-muted);
+    font-size: 18px;
+  }
+
+  .newpost-creator-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
+  .newpost-creator-info {
+    flex: 1;
+  }
+
+  .newpost-creator-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+
+  .newpost-creator-sub {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .newpost-creator-connect {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .newpost-creator-connect a {
+    color: var(--gold);
+    text-decoration: none;
+  }
+
+  .newpost-creator-connect a:hover {
+    text-decoration: underline;
+  }
+
+  .newpost-field {
+    margin-bottom: 20px;
+  }
+
+  .newpost-label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+  }
+
+  .newpost-upload-zone {
+    background: var(--surface);
+    border: 1.5px dashed var(--border);
+    border-radius: 10px;
+    padding: 36px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+  }
+
+  .newpost-upload-zone:hover {
+    border-color: rgba(212,160,23,0.4);
+    background: rgba(212,160,23,0.03);
+  }
+
+  .newpost-upload-zone.dragover {
+    border-color: var(--gold);
+    background: rgba(212,160,23,0.06);
+  }
+
+  .newpost-upload-icon {
+    color: var(--text-muted);
+  }
+
+  .newpost-upload-text {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  .newpost-upload-text strong {
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  .newpost-file-input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .newpost-video-preview {
+    width: 100%;
+    max-height: 280px;
+    border-radius: 8px;
+    background: #000;
+    display: none;
+    margin-top: 12px;
+  }
+
+  .newpost-file-name {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 8px;
+    display: none;
+  }
+
+  .newpost-textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    padding: 12px 14px;
+    resize: vertical;
+    min-height: 90px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  .newpost-textarea:focus {
+    border-color: var(--gold);
+  }
+
+  .newpost-textarea::placeholder {
+    color: var(--text-muted);
+    opacity: 0.6;
+  }
+
+  .newpost-select {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    padding: 11px 14px;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 7L11 1' stroke='%23888680' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .newpost-select:focus {
+    border-color: var(--gold);
+  }
+
+  .newpost-select option {
+    background: #1e1e1e;
+    color: var(--text);
+  }
+
+  .newpost-select option[value=""] {
+    color: var(--text-muted);
+  }
+
+  .newpost-interactions {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px 0;
+  }
+
+  .newpost-check-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .newpost-check-row:last-child {
+    border-bottom: none;
+  }
+
+  .newpost-check-input {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .newpost-check-input:checked {
+    background: var(--gold);
+    border-color: var(--gold);
+  }
+
+  .newpost-check-input:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    width: 6px;
+    height: 11px;
+    border: 2px solid #0D0D0D;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+  }
+
+  .newpost-check-input:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .newpost-check-label {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  .newpost-check-input:disabled + .newpost-check-label {
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
+
+  .newpost-commercial-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .newpost-commercial-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+  }
+
+  .newpost-commercial-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .newpost-commercial-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .newpost-commercial-body {
+    display: none;
+    border-top: 1px solid var(--border);
+    padding: 4px 0;
+  }
+
+  .newpost-commercial-body.visible {
+    display: block;
+  }
+
+  .newpost-commercial-option {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .newpost-commercial-option:last-child {
+    border-bottom: none;
+  }
+
+  .newpost-commercial-option-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .newpost-commercial-option-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+    margin-left: 28px;
+  }
+
+  .newpost-commercial-note {
+    font-size: 0.78rem;
+    color: var(--gold);
+    margin-top: 4px;
+    margin-left: 28px;
+  }
+
+  .newpost-commercial-warn {
+    font-size: 0.78rem;
+    color: var(--error);
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    display: none;
+  }
+
+  .newpost-commercial-warn.visible {
+    display: block;
+  }
+
+  .newpost-consent {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    padding: 14px 0 4px;
+  }
+
+  .newpost-consent a {
+    color: var(--gold);
+    text-decoration: none;
+  }
+
+  .newpost-consent a:hover {
+    text-decoration: underline;
+  }
+
+  .newpost-status {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    display: none;
+  }
+
+  .newpost-status.success {
+    background: rgba(93,184,117,0.1);
+    border: 1px solid rgba(93,184,117,0.3);
+    color: var(--success);
+    display: block;
+  }
+
+  .newpost-status.error {
+    background: rgba(224,92,108,0.1);
+    border: 1px solid rgba(224,92,108,0.3);
+    color: var(--error);
+    display: block;
+  }
+
+  .newpost-status.info {
+    background: rgba(212,160,23,0.08);
+    border: 1px solid rgba(212,160,23,0.2);
+    color: var(--gold);
+    display: block;
+  }
+
+  .newpost-disabled-overlay {
+    display: none;
+    padding: 16px;
+    background: rgba(224,92,108,0.06);
+    border: 1px solid rgba(224,92,108,0.2);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--error);
+    margin-bottom: 20px;
+  }
+
+  .newpost-disabled-overlay.visible {
+    display: block;
+  }
+
+  @media (max-width: 480px) {
+    .newpost-upload-zone { padding: 24px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV BAR -->
+<nav class="navbar">
+  <a href="auth.html" class="nav-logo"><img src="logo-nav.webp" alt="HyPurShot"></a>
+  <span class="nav-title">Team Management</span>
+  <div class="nav-avatar" id="nav-avatar">A</div>
+</nav>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="members" onclick="switchTab('members')">Members</button>
+  <button class="tab-btn" data-tab="invites" onclick="switchTab('invites')">Invites</button>
+  <button class="tab-btn" data-tab="approvals" onclick="switchTab('approvals')">Approvals</button>
+  <button class="tab-btn" data-tab="newpost" onclick="switchTab('newpost')">New Post</button>
+  <button class="tab-btn" data-tab="connections" onclick="switchTab('connections')">Connections</button>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- ═══════ MEMBERS TAB ═══════ -->
+  <div id="tab-members" class="tab-content active">
+    <div class="section-header">
+      <h2>Team Members</h2>
+      <button class="btn btn-gold" onclick="openInviteModal()">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2.5" stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+        <span>Invite Member</span>
+      </button>
+    </div>
+
+    <div id="members-list">
+      <!-- Populated by JS -->
+    </div>
+
+    <div id="members-empty" class="empty-state" style="display:none;">
+      <svg width="48" height="48" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.2"/><path stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      <p>No team members yet.<br>Invite your first team member to get started.</p>
+    </div>
+  </div>
+
+  <!-- ═══════ INVITES TAB ═══════ -->
+  <div id="tab-invites" class="tab-content">
+    <div class="section-header">
+      <h2>Invite Codes</h2>
+      <button class="btn btn-gold" onclick="openInviteModal()">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2.5" stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+        <span>New Invite</span>
+      </button>
+    </div>
+
+    <div id="invites-list">
+      <!-- Populated by JS -->
+    </div>
+
+    <div id="invites-empty" class="empty-state" style="display:none;">
+      <svg width="48" height="48" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" points="22,6 12,13 2,6"/></svg>
+      <p>No invites yet.</p>
+    </div>
+  </div>
+
+  <!-- ═══════ APPROVALS TAB ═══════ -->
+  <div id="tab-approvals" class="tab-content">
+    <div class="section-header">
+      <h2>Pending Approvals</h2>
+    </div>
+
+    <div id="approvals-list">
+      <!-- Populated by JS -->
+    </div>
+
+    <div id="approvals-empty" class="empty-state" style="display:none;">
+      <svg width="48" height="48" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" points="22 4 12 14.01 9 11.01"/></svg>
+      <p>No posts waiting for approval.</p>
+    </div>
+  </div>
+
+  <!-- ═══════ NEW POST TAB ═══════ -->
+  <div id="tab-newpost" class="tab-content">
+    <div class="section-header">
+      <h2>New Post</h2>
+    </div>
+
+    <!-- Creator info / disabled notice -->
+    <div id="newpost-disabled-notice" class="newpost-disabled-overlay"></div>
+
+    <!-- Creator info card -->
+    <div id="newpost-creator-card" class="newpost-creator-card" style="display:none;">
+      <div class="newpost-creator-avatar" id="newpost-avatar">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5"/><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </div>
+      <div class="newpost-creator-info">
+        <div class="newpost-creator-name" id="newpost-creator-name">Loading...</div>
+        <div class="newpost-creator-sub">Posting to TikTok</div>
+      </div>
+    </div>
+
+    <!-- No TikTok connected notice -->
+    <div id="newpost-no-tiktok" class="newpost-creator-card" style="display:none;">
+      <div class="newpost-creator-connect">
+        No TikTok account connected. <a href="#" onclick="switchTab('connections'); return false;">Connect TikTok in the Connections tab</a>.
+      </div>
+    </div>
+
+    <!-- Post form -->
+    <form id="newpost-form" onsubmit="return false;">
+
+      <!-- Media upload -->
+      <div class="newpost-field">
+        <label class="newpost-label" for="newpost-file-input">Video</label>
+        <div class="newpost-upload-zone" id="newpost-upload-zone"
+          ondragover="event.preventDefault(); this.classList.add('dragover');"
+          ondragleave="this.classList.remove('dragover');"
+          ondrop="event.preventDefault(); this.classList.remove('dragover'); handleMediaSelect(event.dataTransfer.files[0]);">
+          <input type="file" id="newpost-file-input" class="newpost-file-input" accept="video/*"
+            onchange="handleMediaSelect(this.files[0])">
+          <svg class="newpost-upload-icon" width="32" height="32" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"
+              d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+          </svg>
+          <div class="newpost-upload-text"><strong>Choose a video</strong> or drag it here</div>
+          <div class="newpost-upload-text" style="font-size:0.76rem;">MP4, MOV, WEBM &mdash; up to max duration</div>
+        </div>
+        <video id="newpost-video-preview" class="newpost-video-preview" controls></video>
+        <div id="newpost-file-name" class="newpost-file-name"></div>
+        <div id="newpost-media-error" style="font-size:0.78rem; color:var(--error); margin-top:6px; display:none;"></div>
+      </div>
+
+      <!-- Caption / Title -->
+      <div class="newpost-field">
+        <label class="newpost-label" for="newpost-caption">Caption</label>
+        <textarea id="newpost-caption" class="newpost-textarea"
+          placeholder="Write a caption for your TikTok post..."
+          oninput="updatePublishButton()"></textarea>
+      </div>
+
+      <!-- Privacy -->
+      <div class="newpost-field">
+        <label class="newpost-label" for="newpost-privacy">Privacy</label>
+        <select id="newpost-privacy" class="newpost-select" onchange="handlePrivacyChange(); updatePublishButton();">
+          <option value="" disabled selected>Select privacy level...</option>
+          <option value="PUBLIC_TO_EVERYONE">Public</option>
+          <option value="MUTUAL_FOLLOW_FRIENDS">Friends</option>
+          <option value="FOLLOWER_OF_CREATOR">Followers</option>
+          <option value="SELF_ONLY" id="newpost-privacy-selfonly">Only Me</option>
+        </select>
+        <div id="newpost-privacy-note" style="font-size:0.78rem; color:var(--error); margin-top:6px; display:none;">"Only Me" is not available when Branded Content is selected.</div>
+      </div>
+
+      <!-- Interaction settings -->
+      <div class="newpost-field">
+        <label class="newpost-label">Interactions</label>
+        <div class="newpost-interactions">
+          <div class="newpost-check-row">
+            <input type="checkbox" id="newpost-allow-comment" class="newpost-check-input" onchange="updatePublishButton()">
+            <label for="newpost-allow-comment" class="newpost-check-label">Allow Comments</label>
+          </div>
+          <div class="newpost-check-row">
+            <input type="checkbox" id="newpost-allow-duet" class="newpost-check-input" onchange="updatePublishButton()">
+            <label for="newpost-allow-duet" class="newpost-check-label">Allow Duet</label>
+          </div>
+          <div class="newpost-check-row">
+            <input type="checkbox" id="newpost-allow-stitch" class="newpost-check-input" onchange="updatePublishButton()">
+            <label for="newpost-allow-stitch" class="newpost-check-label">Allow Stitch</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Commercial content disclosure -->
+      <div class="newpost-field">
+        <label class="newpost-label">Commercial Content</label>
+        <div class="newpost-commercial-card">
+          <div class="newpost-commercial-header">
+            <div>
+              <div class="newpost-commercial-title">Disclose commercial content</div>
+              <div class="newpost-commercial-sub">Turn on if this content promotes a brand, product, or service</div>
+            </div>
+            <button type="button" class="toggle-switch" id="newpost-commercial-toggle"
+              onclick="handleCommercialToggle()" aria-label="Toggle commercial content disclosure"></button>
+          </div>
+          <div class="newpost-commercial-body" id="newpost-commercial-body">
+            <div class="newpost-commercial-option">
+              <div class="newpost-commercial-option-row">
+                <input type="checkbox" id="newpost-your-brand" class="newpost-check-input"
+                  onchange="handleCommercialBrandChange(); updatePublishButton();">
+                <label for="newpost-your-brand" class="newpost-check-label">Your Brand</label>
+              </div>
+              <div class="newpost-commercial-option-desc">You are promoting yourself or your own business</div>
+              <div class="newpost-commercial-note" id="newpost-your-brand-note" style="display:none;">Your video will be labeled as &ldquo;Promotional content&rdquo;</div>
+            </div>
+            <div class="newpost-commercial-option">
+              <div class="newpost-commercial-option-row">
+                <input type="checkbox" id="newpost-branded-content" class="newpost-check-input"
+                  onchange="handleCommercialBrandChange(); updatePublishButton();">
+                <label for="newpost-branded-content" class="newpost-check-label">Branded Content</label>
+              </div>
+              <div class="newpost-commercial-option-desc">You are promoting another brand or a third party</div>
+              <div class="newpost-commercial-note" id="newpost-branded-content-note" style="display:none;">Your video will be labeled as &ldquo;Paid partnership&rdquo;</div>
+            </div>
+            <div class="newpost-commercial-warn" id="newpost-commercial-warn">
+              You need to indicate if your content promotes yourself, a third party, or both.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Consent declaration -->
+      <div class="newpost-consent" id="newpost-consent">
+        By posting, you agree to TikTok's <a href="https://www.tiktok.com/legal/music-usage-confirmation" target="_blank" rel="noopener">Music Usage Confirmation</a>.
+      </div>
+
+      <!-- Post button -->
+      <button type="button" id="newpost-submit-btn" class="btn btn-gold" style="margin-top:18px; width:100%; justify-content:center;"
+        onclick="submitPost()" disabled>Post to TikTok</button>
+
+      <!-- Post status -->
+      <div id="newpost-status" class="newpost-status"></div>
+
+    </form>
+  </div>
+
+  <!-- ═══════ CONNECTIONS TAB ═══════ -->
+  <div id="tab-connections" class="tab-content">
+    <div class="section-header">
+      <h2>Social Accounts</h2>
+    </div>
+
+    <div id="connections-list">
+      <!-- TikTok connection card -->
+      <div class="card" id="tiktok-card">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <path d="M22.94 13.07A8.85 8.85 0 0027 14.14v-4.2a5.12 5.12 0 01-1.06-.11v3.31a8.86 8.86 0 01-4.06-1.07v7.33a7.06 7.06 0 01-10.97 5.87 7.06 7.06 0 0012.03-5.87v-7.33zm1.32-3.68A5.08 5.08 0 0122.94 7v-.52h-1.08a5.1 5.1 0 002.4 2.91zM13.36 23.5a3.15 3.15 0 011.78-5.72c.33 0 .66.05.97.15V14a7.17 7.17 0 00-1.06-.06v3.97a3.15 3.15 0 00-1.69 5.59z" fill="#F0EDE8"/>
+              <path d="M21.88 12.07a8.86 8.86 0 004.06 1.07V9.83a5.1 5.1 0 01-2.68-1.44 5.1 5.1 0 01-2.4-2.91H18v14.92a3.15 3.15 0 01-4.64 2.1 3.15 3.15 0 001.69-5.59V12.94a7.06 7.06 0 00-2 13.33 7.06 7.06 0 0010.97-5.87v-7.33h-2.14z" fill="var(--text-muted)"/>
+            </svg>
+            <div>
+              <div style="font-weight:600; font-size:15px;">TikTok</div>
+              <div id="tiktok-status" style="font-size:13px; color:var(--text-muted);">Not connected</div>
+            </div>
+          </div>
+          <div id="tiktok-actions">
+            <button class="btn btn-gold" id="tiktok-connect-btn" onclick="connectTikTok()">
+              Connect
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="connections-info" style="margin-top:20px; padding:16px; background:var(--surface); border:1px solid var(--border); border-radius:10px;">
+      <p style="font-size:13px; color:var(--text-muted); line-height:1.6;">Connect your social media accounts to post directly from HyPurShot. More platforms coming soon.</p>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ═══════ EDIT MEMBER MODAL ═══════ -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-title" id="edit-modal-title">Edit Permissions</div>
+
+    <div class="field-group">
+      <label>Role</label>
+      <select id="edit-role">
+        <option value="admin">Admin</option>
+        <option value="member">Member</option>
+      </select>
+    </div>
+
+    <div class="toggle-row">
+      <span class="toggle-row-label">Can create posts</span>
+      <button class="toggle-switch on" id="edit-can-post" onclick="this.classList.toggle('on')"></button>
+    </div>
+
+    <div class="toggle-row">
+      <span class="toggle-row-label">Can capture photos</span>
+      <button class="toggle-switch on" id="edit-can-capture" onclick="this.classList.toggle('on')"></button>
+    </div>
+
+    <div class="toggle-row">
+      <span class="toggle-row-label">Requires approval before posting</span>
+      <button class="toggle-switch" id="edit-needs-approval" onclick="this.classList.toggle('on')"></button>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('edit-modal')">Cancel</button>
+      <button class="btn btn-gold" id="btn-save-perms" onclick="savePermissions()">
+        <span class="btn-text">Save Changes</span>
+        <span class="spinner"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ INVITE MEMBER MODAL ═══════ -->
+<div class="modal-overlay" id="invite-modal">
+  <div class="modal">
+    <div class="modal-title">Invite a Team Member</div>
+
+    <div id="invite-form-area">
+      <div class="field-group">
+        <label>Email <span style="color:var(--text-muted);font-weight:400;font-size:0.72rem;">(optional)</span></label>
+        <input type="email" id="invite-email" placeholder="Leave blank for a universal invite code">
+      </div>
+
+      <div class="field-group">
+        <label>Role</label>
+        <select id="invite-role">
+          <option value="admin">Admin</option>
+          <option value="member" selected>Member</option>
+        </select>
+      </div>
+
+      <div class="toggle-row">
+        <span class="toggle-row-label">Can create posts</span>
+        <button class="toggle-switch on" id="invite-can-post" onclick="this.classList.toggle('on')"></button>
+      </div>
+
+      <div class="toggle-row">
+        <span class="toggle-row-label">Requires post approval</span>
+        <button class="toggle-switch" id="invite-needs-approval" onclick="this.classList.toggle('on')"></button>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('invite-modal')">Cancel</button>
+        <button class="btn btn-gold" id="btn-generate-invite" onclick="generateInvite()">
+          <span class="btn-text">Generate Invite</span>
+          <span class="spinner"></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="generated-code-wrap" id="generated-code-wrap">
+      <div class="generated-code" id="generated-code-display"></div>
+      <button class="btn btn-gold btn-sm" onclick="copyInviteCode()">Copy Code</button>
+      <div class="code-expiry">Expires in 7 days</div>
+      <div class="modal-actions" style="margin-top:16px;">
+        <button class="btn btn-ghost" onclick="closeInviteModal()">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ──────────────── CONFIG ────────────────
+const SUPABASE_URL = 'https://xjsicupdpzawxlwcvxzv.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhqc2ljdXBkcHphd3hsd2N2eHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MjgxNjEsImV4cCI6MjA5MDMwNDE2MX0.ZIuEFOCz1T7aVv6a39hXzvUucSZKgTJhDW5iPyXh1KM';
+
+let _supabase;
+try {
+  _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch (e) {
+  console.warn('Supabase not configured:', e.message);
+}
+
+// Session-driven IDs — populated on page load from Supabase Auth
+let currentBusinessId = null;
+let currentUserId = null;
+
+let editingMemberId = null;
+let openMenuId = null;
+
+// ──────────────── AUTH: Load session + business ────────────────
+async function initSession() {
+  if (!_supabase) return;
+
+  const { data: { session } } = await _supabase.auth.getSession();
+  if (!session) {
+    showToast('Please sign in first.', 'error');
+    // Redirect to auth page after short delay
+    setTimeout(() => { window.location.href = 'auth.html'; }, 1500);
+    return;
+  }
+
+  currentUserId = session.user.id;
+
+  // Look up the business this user owns
+  const { data: biz, error } = await _supabase
+    .from('businesses')
+    .select('id, name, plan, account_mode')
+    .eq('owner_id', currentUserId)
+    .maybeSingle();
+
+  if (error || !biz) {
+    // Maybe they're a team member, not an owner — check team_members
+    const { data: membership } = await _supabase
+      .from('team_members')
+      .select('business_id')
+      .eq('user_id', currentUserId)
+      .eq('status', 'active')
+      .limit(1)
+      .maybeSingle();
+
+    if (membership) {
+      currentBusinessId = membership.business_id;
+    } else {
+      showToast('No business found for your account.', 'error');
+      return;
+    }
+  } else {
+    currentBusinessId = biz.id;
+  }
+
+  // Load the default tab
+  loadMembers();
+}
+
+// Start session on page load
+document.addEventListener('DOMContentLoaded', initSession);
+
+// ──────────────── TAB SWITCHING ────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+
+  if (tab === 'members') loadMembers();
+  else if (tab === 'invites') loadInvites();
+  else if (tab === 'approvals') loadApprovals();
+  else if (tab === 'connections') loadConnections();
+}
+
+// ──────────────── EDGE FUNCTION CALLER ────────────────
+async function callManageTeam(action, extraBody = {}) {
+  if (!_supabase) {
+    showToast('Supabase is not configured.', 'error');
+    return { error: 'Not configured' };
+  }
+  if (!currentBusinessId || !currentUserId) {
+    showToast('Session not loaded. Please refresh the page.', 'error');
+    return { error: 'No session' };
+  }
+
+  // The invite action uses 'invited_by' instead of 'user_id'
+  const userField = (action === 'invite')
+    ? { invited_by: currentUserId }
+    : { user_id: currentUserId };
+
+  try {
+    const { data, error } = await _supabase.functions.invoke('manage-team', {
+      body: { action, business_id: currentBusinessId, ...userField, ...extraBody }
+    });
+    if (error) {
+      showToast(error.message || 'Request failed.', 'error');
+      return { error };
+    }
+    // The Edge Function returns JSON in the body; parse if needed
+    const parsed = (typeof data === 'string') ? JSON.parse(data) : data;
+    if (parsed?.error) {
+      showToast(parsed.error, 'error');
+      return { error: parsed.error };
+    }
+    return { data: parsed };
+  } catch (err) {
+    showToast('Something went wrong. Please try again.', 'error');
+    return { error: err };
+  }
+}
+
+// ──────────────── MEMBERS ────────────────
+let membersData = [];
+
+async function loadMembers() {
+  const { data, error } = await callManageTeam('list_members');
+  if (error) {
+    // Show demo data for preview
+    membersData = getDemoMembers();
+  } else {
+    membersData = data?.members || [];
+  }
+  renderMembers();
+}
+
+function getDemoMembers() {
+  return [
+    { id: '1', display_name: 'Alex Morgan', email: 'alex@elitedetailing.com', role: 'owner', can_post: true, can_capture: true, needs_approval: false, status: 'active' },
+    { id: '2', display_name: 'Jordan Lee', email: 'jordan@elitedetailing.com', role: 'admin', can_post: true, can_capture: true, needs_approval: false, status: 'active' },
+    { id: '3', display_name: 'Casey Rivera', email: 'casey@elitedetailing.com', role: 'member', can_post: true, can_capture: true, needs_approval: true, status: 'active' },
+    { id: '4', display_name: 'Sam Chen', email: 'sam@elitedetailing.com', role: 'member', can_post: false, can_capture: true, needs_approval: true, status: 'suspended' }
+  ];
+}
+
+function renderMembers() {
+  const list = document.getElementById('members-list');
+  const empty = document.getElementById('members-empty');
+
+  if (!membersData.length) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  list.innerHTML = membersData.map(m => `
+    <div class="member-row" data-id="${m.id}">
+      <div class="status-dot ${m.status}" title="${m.status}"></div>
+      <div class="member-info">
+        <div class="member-name">${esc(m.display_name)}</div>
+        <div class="member-email">${esc(m.email)}</div>
+      </div>
+      <span class="badge badge-${m.role}">${capitalize(m.role)}</span>
+      <div class="pills">
+        ${m.can_post ? '<span class="pill">Can Post</span>' : ''}
+        ${m.can_capture ? '<span class="pill">Can Capture</span>' : ''}
+        ${m.needs_approval ? '<span class="pill">Needs Approval</span>' : ''}
+      </div>
+      ${m.role !== 'owner' ? `
+      <div class="menu-wrap">
+        <button class="menu-trigger" onclick="toggleMenu('${m.id}', event)">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg>
+        </button>
+        <div class="dropdown-menu" id="menu-${m.id}">
+          <button class="dropdown-item" onclick="openEditModal('${m.id}')">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit Permissions
+          </button>
+          <button class="dropdown-item" onclick="toggleMemberStatus('${m.id}')">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M8 12h8"/></svg>
+            ${m.status === 'active' ? 'Suspend' : 'Activate'}
+          </button>
+          <button class="dropdown-item danger" onclick="removeMember('${m.id}')">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><polyline stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="3 6 5 6 21 6"/><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            Remove
+          </button>
+        </div>
+      </div>` : ''}
+    </div>
+  `).join('');
+}
+
+// ──────────────── THREE-DOT MENU ────────────────
+function toggleMenu(id, e) {
+  e.stopPropagation();
+  const menu = document.getElementById('menu-' + id);
+  const wasOpen = menu.classList.contains('open');
+  closeAllMenus();
+  if (!wasOpen) {
+    menu.classList.add('open');
+    openMenuId = id;
+  }
+}
+
+function closeAllMenus() {
+  document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
+  openMenuId = null;
+}
+
+document.addEventListener('click', () => closeAllMenus());
+
+// ──────────────── EDIT MODAL ────────────────
+function openEditModal(memberId) {
+  closeAllMenus();
+  editingMemberId = memberId;
+  const m = membersData.find(x => x.id === memberId);
+  if (!m) return;
+
+  document.getElementById('edit-modal-title').textContent = 'Edit — ' + m.display_name;
+  document.getElementById('edit-role').value = m.role;
+  toggleClass('edit-can-post', m.can_post);
+  toggleClass('edit-can-capture', m.can_capture);
+  toggleClass('edit-needs-approval', m.needs_approval);
+  openModal('edit-modal');
+}
+
+function toggleClass(id, on) {
+  const el = document.getElementById(id);
+  if (on) el.classList.add('on');
+  else el.classList.remove('on');
+}
+
+async function savePermissions() {
+  const btn = document.getElementById('btn-save-perms');
+  setLoading(btn, true);
+
+  const payload = {
+    member_id: editingMemberId,
+    updates: {
+      role: document.getElementById('edit-role').value,
+      can_post: document.getElementById('edit-can-post').classList.contains('on'),
+      can_capture: document.getElementById('edit-can-capture').classList.contains('on'),
+      requires_approval: document.getElementById('edit-needs-approval').classList.contains('on'),
+    },
+  };
+
+  const { error } = await callManageTeam('update_member', payload);
+  setLoading(btn, false);
+
+  if (!error) {
+    // Update local data
+    const m = membersData.find(x => x.id === editingMemberId);
+    if (m) {
+      m.role = payload.role;
+      m.can_post = payload.can_post;
+      m.can_capture = payload.can_capture;
+      m.needs_approval = payload.needs_approval;
+    }
+    renderMembers();
+    closeModal('edit-modal');
+    showToast('Permissions updated.', 'success');
+  }
+}
+
+// ──────────────── SUSPEND / ACTIVATE / REMOVE ────────────────
+async function toggleMemberStatus(memberId) {
+  closeAllMenus();
+  const m = membersData.find(x => x.id === memberId);
+  if (!m) return;
+  const newStatus = m.status === 'active' ? 'suspended' : 'active';
+  const { error } = await callManageTeam('update_member', { member_id: memberId, updates: { status: newStatus } });
+  if (!error) {
+    m.status = newStatus;
+    renderMembers();
+    showToast(`Member ${newStatus === 'active' ? 'activated' : 'suspended'}.`, 'success');
+  }
+}
+
+async function removeMember(memberId) {
+  closeAllMenus();
+  if (!confirm('Remove this member from the team?')) return;
+  const { error } = await callManageTeam('update_member', { member_id: memberId, updates: { status: 'removed' } });
+  if (!error) {
+    membersData = membersData.filter(x => x.id !== memberId);
+    renderMembers();
+    showToast('Member removed.', 'success');
+  }
+}
+
+// ──────────────── INVITE MODAL ────────────────
+function openInviteModal() {
+  document.getElementById('invite-email').value = '';
+  document.getElementById('invite-role').value = 'member';
+  toggleClass('invite-can-post', true);
+  toggleClass('invite-needs-approval', false);
+  document.getElementById('invite-form-area').style.display = 'block';
+  document.getElementById('generated-code-wrap').classList.remove('visible');
+  openModal('invite-modal');
+}
+
+function closeInviteModal() {
+  closeModal('invite-modal');
+}
+
+let lastGeneratedCode = '';
+
+async function generateInvite() {
+  const btn = document.getElementById('btn-generate-invite');
+  setLoading(btn, true);
+
+  const payload = {
+    email: document.getElementById('invite-email').value.trim() || null,
+    role: document.getElementById('invite-role').value,
+    can_post: document.getElementById('invite-can-post').classList.contains('on'),
+    requires_approval: document.getElementById('invite-needs-approval').classList.contains('on'),
+  };
+
+  const { data, error } = await callManageTeam('invite', payload);
+  setLoading(btn, false);
+
+  if (!error) {
+    const code = data?.invite_code || generateMockCode();
+    lastGeneratedCode = code;
+    document.getElementById('generated-code-display').textContent = code;
+    document.getElementById('invite-form-area').style.display = 'none';
+    document.getElementById('generated-code-wrap').classList.add('visible');
+  }
+}
+
+function generateMockCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+async function copyInviteCode() {
+  try {
+    await navigator.clipboard.writeText(lastGeneratedCode);
+    showToast('Invite code copied!', 'success');
+  } catch {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = lastGeneratedCode;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    showToast('Invite code copied!', 'success');
+  }
+}
+
+// ──────────────── INVITES TAB ────────────────
+let invitesData = [];
+
+async function loadInvites() {
+  // Edge Function doesn't have a list_invites action — query directly
+  let inviteRows = [];
+  if (_supabase && currentBusinessId) {
+    const { data: rows } = await _supabase.from('team_invites').select('*').eq('business_id', currentBusinessId).order('created_at', { ascending: false });
+    inviteRows = rows || [];
+  }
+  const data = { invites: inviteRows };
+  const error = null;
+  if (error) {
+    invitesData = getDemoInvites();
+  } else {
+    invitesData = data?.invites || [];
+  }
+  renderInvites();
+}
+
+function getDemoInvites() {
+  return [
+    { id: 'i1', code: 'X7KM2N', email: 'newguy@email.com', role: 'member', status: 'pending', created_at: '2025-01-10T14:30:00Z' },
+    { id: 'i2', code: 'R4TP8H', email: null, role: 'admin', status: 'redeemed', created_at: '2025-01-08T09:15:00Z' },
+    { id: 'i3', code: 'B3YQ6F', email: null, role: 'member', status: 'expired', created_at: '2024-12-20T11:00:00Z' },
+    { id: 'i4', code: 'W9DJ4L', email: 'left@email.com', role: 'member', status: 'revoked', created_at: '2025-01-05T16:45:00Z' }
+  ];
+}
+
+function renderInvites() {
+  const list = document.getElementById('invites-list');
+  const empty = document.getElementById('invites-empty');
+
+  if (!invitesData.length) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  list.innerHTML = invitesData.map(inv => `
+    <div class="invite-row" data-id="${inv.id}">
+      <span class="invite-code">${esc(inv.code)}</span>
+      <div class="invite-meta">
+        <span>${inv.email ? esc(inv.email) : 'Anyone'}</span>
+        <span>${capitalize(inv.role)} &middot; ${formatDate(inv.created_at)}</span>
+      </div>
+      <span class="badge-invite badge-${inv.status}">${capitalize(inv.status)}</span>
+      ${inv.status === 'pending' ? `<button class="btn btn-sm btn-ghost-danger" onclick="revokeInvite('${inv.id}')">Revoke</button>` : ''}
+    </div>
+  `).join('');
+}
+
+async function revokeInvite(inviteId) {
+  // Revoke invite directly via database update
+  const { error } = _supabase ? await _supabase.from('team_invites').update({ status: 'revoked' }).eq('id', inviteId).eq('business_id', currentBusinessId) : { error: 'Not configured' };
+  if (!error) {
+    const inv = invitesData.find(x => x.id === inviteId);
+    if (inv) inv.status = 'revoked';
+    renderInvites();
+    showToast('Invite revoked.', 'success');
+  }
+}
+
+// ──────────────── APPROVALS TAB ────────────────
+let approvalsData = [];
+
+async function loadApprovals() {
+  const { data, error } = await callManageTeam('list_pending');
+  if (error) {
+    approvalsData = getDemoApprovals();
+  } else {
+    approvalsData = data?.approvals || [];
+  }
+  renderApprovals();
+}
+
+function getDemoApprovals() {
+  return [
+    {
+      id: 'a1',
+      member_name: 'Casey Rivera',
+      platforms: ['instagram', 'facebook'],
+      caption: 'Just finished this full ceramic coating on a 2024 Porsche 911 Turbo S. The depth and clarity on Shark Blue is unreal. Swipe to see the before and after.',
+      thumbnail_url: null,
+      submitted_at: '2025-01-12T10:22:00Z'
+    },
+    {
+      id: 'a2',
+      member_name: 'Sam Chen',
+      platforms: ['instagram'],
+      caption: 'Interior deep clean and leather conditioning. This Range Rover came in rough but left showroom fresh.',
+      thumbnail_url: null,
+      submitted_at: '2025-01-12T08:45:00Z'
+    }
+  ];
+}
+
+function renderApprovals() {
+  const list = document.getElementById('approvals-list');
+  const empty = document.getElementById('approvals-empty');
+
+  if (!approvalsData.length) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  list.innerHTML = approvalsData.map(a => `
+    <div class="approval-card" data-id="${a.id}">
+      <div class="approval-header">
+        <span class="approval-author">${esc(a.member_name)}</span>
+        <span class="approval-date">${formatDateTime(a.submitted_at)}</span>
+      </div>
+      <div class="approval-platforms">
+        ${a.platforms.map(p => platformIcon(p)).join('')}
+      </div>
+      ${a.thumbnail_url ? `<div class="approval-media"><img src="${a.thumbnail_url}" alt="Media preview"></div>` : `
+      <div class="approval-media">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.2"/><circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" stroke-width="1.2"/><path stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" d="M21 15l-5-5L5 21"/></svg>
+      </div>`}
+      <div class="approval-caption">${esc(a.caption)}</div>
+      <div class="approval-actions">
+        <button class="btn btn-gold btn-sm" onclick="approvePost('${a.id}')">Approve</button>
+        <button class="btn btn-ghost-danger btn-sm" onclick="showRejectInput('${a.id}')">Reject</button>
+      </div>
+      <div class="reject-reason" id="reject-${a.id}">
+        <input type="text" placeholder="Reason for rejection..." id="reject-input-${a.id}">
+        <button class="btn btn-ghost-danger btn-sm" onclick="rejectPost('${a.id}')">Send</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function platformIcon(platform) {
+  const icons = {
+    instagram: '<svg width="14" height="14" fill="none" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="1.5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/></svg>',
+    facebook: '<svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>',
+    google: '<svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/></svg>',
+    nextdoor: '<svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>'
+  };
+  return `<div class="platform-icon">${icons[platform] || ''}</div>`;
+}
+
+function showRejectInput(id) {
+  document.getElementById('reject-' + id).classList.add('open');
+}
+
+async function approvePost(id) {
+  const { error } = await callManageTeam('review_post', { approval_id: id, decision: 'approved', reviewed_by: currentUserId });
+  if (!error) {
+    approvalsData = approvalsData.filter(x => x.id !== id);
+    renderApprovals();
+    showToast('Post approved.', 'success');
+  }
+}
+
+async function rejectPost(id) {
+  const reason = document.getElementById('reject-input-' + id).value.trim();
+  const { error } = await callManageTeam('review_post', { approval_id: id, decision: 'rejected', rejection_reason: reason, reviewed_by: currentUserId });
+  if (!error) {
+    approvalsData = approvalsData.filter(x => x.id !== id);
+    renderApprovals();
+    showToast('Post rejected.', 'success');
+  }
+}
+
+// ──────────────── MODAL HELPERS ────────────────
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeModal(overlay.id);
+  });
+});
+
+// ──────────────── LOADING / TOAST ────────────────
+function setLoading(btn, loading) {
+  if (loading) { btn.classList.add('loading'); btn.disabled = true; }
+  else { btn.classList.remove('loading'); btn.disabled = false; }
+}
+
+function showToast(message, type = 'error') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.innerHTML = '<span class="toast-dot"></span>' + esc(message);
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('exiting');
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
+// ──────────────── UTILITIES ────────────────
+function esc(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function capitalize(s) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+}
+
+function formatDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatDateTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' at ' +
+    d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+// ──────────────── CONNECTIONS TAB ────────────────
+async function loadConnections() {
+  if (!_supabase || !currentBusinessId) return;
+
+  // Check TikTok connection status via Edge Function
+  try {
+    const resp = await fetch(SUPABASE_URL + '/functions/v1/tiktok-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'status', business_id: currentBusinessId }),
+    });
+    const data = await resp.json();
+
+    const statusEl = document.getElementById('tiktok-status');
+    const actionsEl = document.getElementById('tiktok-actions');
+
+    if (data.connected) {
+      const expired = data.token_expired;
+      statusEl.innerHTML = '<span style="color:' + (expired ? 'var(--error)' : 'var(--success)') + ';">' +
+        (expired ? 'Token expired' : 'Connected') + '</span> &middot; ' + esc(data.account_name) +
+        '<br><span style="font-size:12px;">Since ' + formatDate(data.connected_at) + '</span>';
+
+      actionsEl.innerHTML = (expired
+        ? '<button class="btn btn-gold" onclick="refreshTikTok()" style="margin-right:8px;">Refresh</button>'
+        : '') +
+        '<button class="btn btn-outline" onclick="disconnectTikTok()" style="font-size:13px; padding:8px 16px; border:1px solid var(--border); border-radius:8px;">Disconnect</button>';
+    } else {
+      statusEl.textContent = 'Not connected';
+      actionsEl.innerHTML = '<button class="btn btn-gold" onclick="connectTikTok()">Connect</button>';
+    }
+  } catch (err) {
+    console.error('Failed to check TikTok status:', err);
+  }
+}
+
+function connectTikTok() {
+  if (!currentBusinessId) {
+    showToast('Business not loaded yet.', 'error');
+    return;
+  }
+
+  const authUrl = SUPABASE_URL + '/functions/v1/tiktok-auth?action=authorize&business_id=' + currentBusinessId;
+
+  // Open TikTok auth in a popup
+  const popup = window.open(authUrl, 'tiktok-auth', 'width=600,height=700,scrollbars=yes');
+
+  // Listen for the callback message from the popup
+  window.addEventListener('message', function handler(event) {
+    if (event.data?.type === 'tiktok-auth-complete') {
+      window.removeEventListener('message', handler);
+      if (event.data.success) {
+        showToast('TikTok connected successfully.', 'success');
+      }
+      loadConnections();
+    }
+  });
+}
+
+async function refreshTikTok() {
+  if (!currentBusinessId) return;
+
+  try {
+    const resp = await fetch(SUPABASE_URL + '/functions/v1/tiktok-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'refresh', business_id: currentBusinessId }),
+    });
+    const data = await resp.json();
+
+    if (data.success) {
+      showToast('TikTok token refreshed.', 'success');
+    } else {
+      showToast(data.error || 'Refresh failed. Please reconnect.', 'error');
+    }
+    loadConnections();
+  } catch (err) {
+    showToast('Failed to refresh token.', 'error');
+  }
+}
+
+async function disconnectTikTok() {
+  if (!currentBusinessId) return;
+  if (!confirm('Disconnect TikTok? You can reconnect anytime.')) return;
+
+  try {
+    const resp = await fetch(SUPABASE_URL + '/functions/v1/tiktok-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'disconnect', business_id: currentBusinessId }),
+    });
+    const data = await resp.json();
+
+    if (data.success) {
+      showToast('TikTok disconnected.', 'success');
+    } else {
+      showToast(data.error || 'Failed to disconnect.', 'error');
+    }
+    loadConnections();
+  } catch (err) {
+    showToast('Failed to disconnect TikTok.', 'error');
+  }
+}
+
+// ──────────────── NEW POST ────────────────
+
+const mockCreatorInfo = {
+  creator_nickname: '@detailking',
+  creator_avatar_url: '',
+  privacy_level_options: ['PUBLIC_TO_EVERYONE', 'MUTUAL_FOLLOW_FRIENDS', 'FOLLOWER_OF_CREATOR', 'SELF_ONLY'],
+  max_video_post_duration_sec: 600,
+  comment_disabled: false,
+  duet_disabled: false,
+  stitch_disabled: false
+};
+
+let newpostCreatorInfo = null;
+let newpostMediaFile = null;
+let newpostMediaValid = false;
+
+async function loadCreatorInfo() {
+  // Reset state
+  newpostCreatorInfo = null;
+  newpostMediaFile = null;
+  newpostMediaValid = false;
+  document.getElementById('newpost-creator-card').style.display = 'none';
+  document.getElementById('newpost-no-tiktok').style.display = 'none';
+  document.getElementById('newpost-disabled-notice').classList.remove('visible');
+  document.getElementById('newpost-form').style.opacity = '1';
+  document.getElementById('newpost-form').style.pointerEvents = '';
+
+  // Use mock data (sandbox not yet set up)
+  const info = mockCreatorInfo;
+
+  // Check if connected (mock: always connected for now)
+  const connected = true;
+  if (!connected) {
+    document.getElementById('newpost-no-tiktok').style.display = 'flex';
+    document.getElementById('newpost-form').style.display = 'none';
+    return;
+  }
+
+  newpostCreatorInfo = info;
+
+  // Show creator card
+  const card = document.getElementById('newpost-creator-card');
+  card.style.display = 'flex';
+  document.getElementById('newpost-creator-name').textContent = info.creator_nickname;
+
+  if (info.creator_avatar_url) {
+    const avatarEl = document.getElementById('newpost-avatar');
+    avatarEl.innerHTML = '<img src="' + info.creator_avatar_url + '" alt="avatar">';
+  }
+
+  // Build privacy dropdown from allowed options
+  const privacySelect = document.getElementById('newpost-privacy');
+  // Keep placeholder, rebuild options
+  privacySelect.innerHTML = '<option value="" disabled selected>Select privacy level...</option>';
+  const privacyLabels = {
+    PUBLIC_TO_EVERYONE: 'Public',
+    MUTUAL_FOLLOW_FRIENDS: 'Friends',
+    FOLLOWER_OF_CREATOR: 'Followers',
+    SELF_ONLY: 'Only Me'
+  };
+  (info.privacy_level_options || []).forEach(function(val) {
+    const opt = document.createElement('option');
+    opt.value = val;
+    opt.textContent = privacyLabels[val] || val;
+    if (val === 'SELF_ONLY') opt.id = 'newpost-privacy-selfonly';
+    privacySelect.appendChild(opt);
+  });
+
+  // Apply interaction disabled states
+  document.getElementById('newpost-allow-comment').disabled = !!info.comment_disabled;
+  document.getElementById('newpost-allow-duet').disabled = !!info.duet_disabled;
+  document.getElementById('newpost-allow-stitch').disabled = !!info.stitch_disabled;
+
+  // Reset form fields
+  document.getElementById('newpost-caption').value = '';
+  document.getElementById('newpost-allow-comment').checked = false;
+  document.getElementById('newpost-allow-duet').checked = false;
+  document.getElementById('newpost-allow-stitch').checked = false;
+  const commToggle = document.getElementById('newpost-commercial-toggle');
+  commToggle.classList.remove('on');
+  document.getElementById('newpost-commercial-body').classList.remove('visible');
+  document.getElementById('newpost-your-brand').checked = false;
+  document.getElementById('newpost-branded-content').checked = false;
+  document.getElementById('newpost-your-brand-note').style.display = 'none';
+  document.getElementById('newpost-branded-content-note').style.display = 'none';
+  document.getElementById('newpost-commercial-warn').classList.remove('visible');
+  document.getElementById('newpost-privacy-note').style.display = 'none';
+
+  // Reset video preview
+  const videoPreview = document.getElementById('newpost-video-preview');
+  videoPreview.style.display = 'none';
+  videoPreview.src = '';
+  document.getElementById('newpost-file-name').style.display = 'none';
+  document.getElementById('newpost-media-error').style.display = 'none';
+
+  // Reset status
+  const statusEl = document.getElementById('newpost-status');
+  statusEl.className = 'newpost-status';
+  statusEl.textContent = '';
+
+  // Update consent & button
+  updateConsentText();
+  updatePublishButton();
+}
+
+function handleMediaSelect(file) {
+  if (!file) return;
+  newpostMediaFile = null;
+  newpostMediaValid = false;
+
+  const mediaError = document.getElementById('newpost-media-error');
+  const videoPreview = document.getElementById('newpost-video-preview');
+  const fileNameEl = document.getElementById('newpost-file-name');
+
+  mediaError.style.display = 'none';
+  mediaError.textContent = '';
+
+  if (!file.type.startsWith('video/')) {
+    mediaError.textContent = 'Please select a valid video file.';
+    mediaError.style.display = 'block';
+    updatePublishButton();
+    return;
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+  videoPreview.src = objectUrl;
+  videoPreview.style.display = 'block';
+  fileNameEl.textContent = file.name;
+  fileNameEl.style.display = 'block';
+
+  // Validate duration after metadata loads
+  videoPreview.onloadedmetadata = function() {
+    const maxDur = newpostCreatorInfo ? newpostCreatorInfo.max_video_post_duration_sec : 600;
+    if (videoPreview.duration > maxDur) {
+      mediaError.textContent = 'Video exceeds maximum allowed duration of ' + maxDur + ' seconds (' + Math.floor(videoPreview.duration) + 's).';
+      mediaError.style.display = 'block';
+      newpostMediaValid = false;
+    } else {
+      newpostMediaFile = file;
+      newpostMediaValid = true;
+    }
+    updatePublishButton();
+  };
+}
+
+function handlePrivacyChange() {
+  const privacy = document.getElementById('newpost-privacy').value;
+  const brandedContent = document.getElementById('newpost-branded-content').checked;
+  const commToggleOn = document.getElementById('newpost-commercial-toggle').classList.contains('on');
+  const privacyNote = document.getElementById('newpost-privacy-note');
+
+  if (commToggleOn && brandedContent && privacy === 'SELF_ONLY') {
+    privacyNote.style.display = 'block';
+    // Switch to Public automatically
+    document.getElementById('newpost-privacy').value = '';
+  } else {
+    privacyNote.style.display = 'none';
+  }
+}
+
+function handleCommercialToggle() {
+  const toggle = document.getElementById('newpost-commercial-toggle');
+  toggle.classList.toggle('on');
+  const isOn = toggle.classList.contains('on');
+  const body = document.getElementById('newpost-commercial-body');
+
+  if (isOn) {
+    body.classList.add('visible');
+  } else {
+    body.classList.remove('visible');
+    document.getElementById('newpost-your-brand').checked = false;
+    document.getElementById('newpost-branded-content').checked = false;
+    document.getElementById('newpost-your-brand-note').style.display = 'none';
+    document.getElementById('newpost-branded-content-note').style.display = 'none';
+    document.getElementById('newpost-commercial-warn').classList.remove('visible');
+    document.getElementById('newpost-privacy-note').style.display = 'none';
+  }
+
+  updateConsentText();
+  updatePublishButton();
+}
+
+function handleCommercialBrandChange() {
+  const yourBrand = document.getElementById('newpost-your-brand').checked;
+  const brandedContent = document.getElementById('newpost-branded-content').checked;
+  const commToggleOn = document.getElementById('newpost-commercial-toggle').classList.contains('on');
+
+  // Show/hide notes
+  const yourBrandNote = document.getElementById('newpost-your-brand-note');
+  const brandedContentNote = document.getElementById('newpost-branded-content-note');
+
+  if (commToggleOn) {
+    if (brandedContent) {
+      // Both or just branded content -> Paid partnership
+      brandedContentNote.style.display = 'block';
+      yourBrandNote.style.display = 'none';
+    } else if (yourBrand) {
+      yourBrandNote.style.display = 'block';
+      brandedContentNote.style.display = 'none';
+    } else {
+      yourBrandNote.style.display = 'none';
+      brandedContentNote.style.display = 'none';
+    }
+
+    // Warn if neither checked
+    const warn = document.getElementById('newpost-commercial-warn');
+    if (!yourBrand && !brandedContent) {
+      warn.classList.add('visible');
+    } else {
+      warn.classList.remove('visible');
+    }
+
+    // Branded content: block SELF_ONLY
+    if (brandedContent) {
+      const privacy = document.getElementById('newpost-privacy').value;
+      if (privacy === 'SELF_ONLY') {
+        document.getElementById('newpost-privacy').value = '';
+        document.getElementById('newpost-privacy-note').style.display = 'block';
+      } else {
+        document.getElementById('newpost-privacy-note').style.display = 'none';
+      }
+      // Disable "Only Me" option
+      const selfOnly = document.getElementById('newpost-privacy-selfonly');
+      if (selfOnly) selfOnly.disabled = true;
+    } else {
+      document.getElementById('newpost-privacy-note').style.display = 'none';
+      const selfOnly = document.getElementById('newpost-privacy-selfonly');
+      if (selfOnly) selfOnly.disabled = false;
+    }
+  }
+
+  updateConsentText();
+}
+
+function updateConsentText() {
+  const commToggleOn = document.getElementById('newpost-commercial-toggle').classList.contains('on');
+  const brandedContent = document.getElementById('newpost-branded-content').checked;
+  const consentEl = document.getElementById('newpost-consent');
+
+  if (commToggleOn && brandedContent) {
+    consentEl.innerHTML = 'By posting, you agree to TikTok\'s <a href="https://www.tiktok.com/legal/branded-content-policy" target="_blank" rel="noopener">Branded Content Policy</a> and <a href="https://www.tiktok.com/legal/music-usage-confirmation" target="_blank" rel="noopener">Music Usage Confirmation</a>.';
+  } else {
+    consentEl.innerHTML = 'By posting, you agree to TikTok\'s <a href="https://www.tiktok.com/legal/music-usage-confirmation" target="_blank" rel="noopener">Music Usage Confirmation</a>.';
+  }
+}
+
+function updatePublishButton() {
+  const btn = document.getElementById('newpost-submit-btn');
+  if (!btn) return;
+
+  const privacy = document.getElementById('newpost-privacy').value;
+  const commToggleOn = document.getElementById('newpost-commercial-toggle').classList.contains('on');
+  const yourBrand = document.getElementById('newpost-your-brand').checked;
+  const brandedContent = document.getElementById('newpost-branded-content').checked;
+
+  // Must have media
+  if (!newpostMediaValid) { btn.disabled = true; return; }
+  // Must have privacy selected
+  if (!privacy) { btn.disabled = true; return; }
+  // Commercial toggle on: must have at least one brand option
+  if (commToggleOn && !yourBrand && !brandedContent) { btn.disabled = true; return; }
+  // Branded content: privacy can't be SELF_ONLY
+  if (commToggleOn && brandedContent && privacy === 'SELF_ONLY') { btn.disabled = true; return; }
+
+  btn.disabled = false;
+}
+
+async function submitPost() {
+  const btn = document.getElementById('newpost-submit-btn');
+  const statusEl = document.getElementById('newpost-status');
+
+  btn.disabled = true;
+  statusEl.className = 'newpost-status info';
+  statusEl.textContent = 'Submitting your post...';
+
+  const privacy = document.getElementById('newpost-privacy').value;
+  const caption = document.getElementById('newpost-caption').value.trim();
+  const allowComment = document.getElementById('newpost-allow-comment').checked;
+  const allowDuet = document.getElementById('newpost-allow-duet').checked;
+  const allowStitch = document.getElementById('newpost-allow-stitch').checked;
+  const commToggleOn = document.getElementById('newpost-commercial-toggle').classList.contains('on');
+  const yourBrand = document.getElementById('newpost-your-brand').checked;
+  const brandedContent = document.getElementById('newpost-branded-content').checked;
+
+  try {
+    if (!newpostMediaFile) throw new Error('Please choose a video first.');
+    if (!privacy) throw new Error('Please select a privacy level.');
+
+    // Step 1: Initialize the post with TikTok (returns an upload_url for FILE_UPLOAD)
+    statusEl.textContent = 'Preparing upload...';
+    const videoSize = newpostMediaFile.size;
+    // TikTok requires chunk_size between 5 MB and 64 MB; for small files, send a single chunk
+    const MIN_CHUNK = 5 * 1024 * 1024;
+    const MAX_CHUNK = 64 * 1024 * 1024;
+    let chunkSize, totalChunkCount;
+    if (videoSize < MIN_CHUNK) {
+      chunkSize = videoSize;
+      totalChunkCount = 1;
+    } else {
+      chunkSize = Math.min(MAX_CHUNK, Math.ceil(videoSize / Math.ceil(videoSize / MAX_CHUNK)));
+      totalChunkCount = Math.ceil(videoSize / chunkSize);
+    }
+
+    const initBody = {
+      action: 'post_video',
+      business_id: currentBusinessId,
+      title: caption,
+      privacy_level: privacy,
+      disable_comment: !allowComment,
+      disable_duet: !allowDuet,
+      disable_stitch: !allowStitch,
+      brand_content_toggle: commToggleOn && brandedContent,
+      brand_organic_toggle: commToggleOn && yourBrand,
+      video_size: videoSize,
+      chunk_size: chunkSize,
+      total_chunk_count: totalChunkCount
+    };
+
+    const initResp = await fetch(SUPABASE_URL + '/functions/v1/tiktok-post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(initBody)
+    });
+    const initData = await initResp.json();
+    if (!initResp.ok || !initData.success || !initData.upload_url) {
+      const detail = initData.details ? ' (' + (initData.details.message || initData.details.code || '') + ')' : '';
+      throw new Error((initData.error || 'Failed to initialize upload') + detail);
+    }
+
+    // Step 2: Upload the video bytes directly to TikTok via PUT
+    statusEl.textContent = 'Uploading video to TikTok...';
+    const putResp = await fetch(initData.upload_url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': newpostMediaFile.type || 'video/mp4',
+        'Content-Length': String(videoSize),
+        'Content-Range': 'bytes 0-' + (videoSize - 1) + '/' + videoSize
+      },
+      body: newpostMediaFile
+    });
+    if (!putResp.ok) {
+      const txt = await putResp.text().catch(function(){ return ''; });
+      throw new Error('Upload failed: ' + putResp.status + ' ' + (txt || putResp.statusText));
+    }
+
+    statusEl.className = 'newpost-status success';
+    statusEl.textContent = 'Your content has been submitted. It may take a few minutes to process and appear in your TikTok inbox.';
+  } catch (err) {
+    statusEl.className = 'newpost-status error';
+    statusEl.textContent = err.message || 'Failed to submit post. Please try again.';
+    btn.disabled = false;
+    updatePublishButton();
+  }
+}
+
+// Hook into switchTab to load creator info when newpost tab is opened
+const _origSwitchTab = switchTab;
+switchTab = function(tab) {
+  _origSwitchTab(tab);
+  if (tab === 'newpost') loadCreatorInfo();
+};
+
+// ──────────────── INIT ────────────────
+loadMembers();
+</script>
+</body>
+</html>

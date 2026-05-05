@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Share Your Experience | HyPurShot</title>
+  <meta name="description" content="We'd love to hear about your experience.">
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      -webkit-text-size-adjust: none;
+    }
+
+    /* ── Tokens ── */
+    :root {
+      --bg: #0D0D0D;
+      --surface: #161616;
+      --border: rgba(255,255,255,0.08);
+      --gold: #D4A017;
+      --gold-hover: #E0B030;
+      --gold-active: #B8880F;
+      --ice: #A8D4E6;
+      --text: #F0EDE8;
+      --text-muted: #888680;
+      --error: #E05C6C;
+      --success: #5DB875;
+      --font-display: 'Cabinet Grotesk', 'Inter', sans-serif;
+      --font-body: 'Satoshi', 'Inter', sans-serif;
+      --radius: 10px;
+      --transition: 300ms ease;
+    }
+
+    body {
+      min-height: 100dvh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    button { cursor: pointer; background: none; border: none; font: inherit; color: inherit; }
+    input, textarea, select { font: inherit; color: inherit; }
+
+    ::selection {
+      background: rgba(212, 160, 23, 0.25);
+      color: var(--text);
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ── Layout ── */
+    .page {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      padding: 0 24px;
+    }
+
+    /* ── Header ── */
+    .header {
+      padding: 24px 0 20px;
+      text-align: center;
+    }
+
+    .logo-img {
+      display: block;
+      height: 40px;
+      width: auto;
+      margin: 0 auto;
+      object-fit: contain;
+    }
+
+    .header-line {
+      margin-top: 16px;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── Main Content ── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 32px 0;
+    }
+
+    /* ── Screens ── */
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .screen.active {
+      display: flex;
+      animation: fadeIn var(--transition) forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Loading State ── */
+    .loader {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .loader-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--gold);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    .loader-dot:nth-child(2) { animation-delay: 0.15s; }
+    .loader-dot:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.25; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+
+    /* ── Error State ── */
+    .error-text {
+      font-size: 16px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ── Star Rating ── */
+    .greeting {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(1.5rem, 1.2rem + 1.25vw, 2rem);
+      color: var(--ice);
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+
+    .subtext {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 36px;
+      max-width: 320px;
+      line-height: 1.5;
+    }
+
+    .stars {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .star-btn {
+      padding: 4px;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 200ms ease;
+    }
+
+    .star-btn:hover {
+      transform: scale(1.15);
+    }
+
+    .star-btn svg {
+      width: 48px;
+      height: 48px;
+      transition: fill var(--transition), stroke var(--transition);
+    }
+
+    .star-btn .star-icon {
+      fill: none;
+      stroke: var(--text-muted);
+      stroke-width: 1.5;
+    }
+
+    .star-btn.hovered .star-icon,
+    .star-btn.selected .star-icon {
+      fill: var(--gold);
+      stroke: var(--gold);
+    }
+
+    /* ── Happy Path ── */
+    .checkmark-icon {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 24px;
+    }
+
+    .checkmark-icon.gold { color: var(--gold); }
+    .checkmark-icon.green { color: var(--success); }
+
+    .result-heading {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(1.25rem, 1rem + 1vw, 1.625rem);
+      color: var(--text);
+      margin-bottom: 10px;
+      line-height: 1.25;
+    }
+
+    .result-subtext {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      max-width: 320px;
+      line-height: 1.5;
+    }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--gold);
+      color: #0D0D0D;
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: 15px;
+      padding: 14px 32px;
+      border-radius: var(--radius);
+      text-decoration: none;
+      transition: background 200ms ease, transform 200ms ease;
+      min-height: 48px;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .btn-primary:hover {
+      background: var(--gold-hover);
+    }
+
+    .btn-primary:active {
+      background: var(--gold-active);
+      transform: scale(0.98);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .link-muted {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 16px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: color 200ms ease;
+    }
+
+    .link-muted:hover {
+      color: var(--text);
+    }
+
+    /* ── Feedback Form ── */
+    .feedback-form {
+      width: 100%;
+      max-width: 360px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .feedback-textarea {
+      width: 100%;
+      min-height: 120px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      font-size: 15px;
+      line-height: 1.5;
+      resize: vertical;
+      transition: border-color var(--transition);
+    }
+
+    .feedback-textarea::placeholder {
+      color: var(--text-muted);
+      opacity: 0.7;
+    }
+
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid transparent;
+      border-top-color: #0D0D0D;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 24px 0;
+      text-align: center;
+    }
+
+    .footer-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      opacity: 0.5;
+      letter-spacing: 0.3px;
+    }
+
+    /* ── Confirmation ── */
+    .confirmation {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 374px) {
+      .page { padding: 0 16px; }
+      .star-btn svg { width: 40px; height: 40px; }
+      .stars { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+  <!-- Header -->
+  <header class="header">
+    <img src="logo-nav.webp" alt="HyPurShot" class="logo-img">
+    <div class="header-line"></div>
+  </header>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Loading -->
+    <div id="screen-loading" class="screen active">
+      <div class="loader">
+        <div class="loader-dot"></div>
+        <div class="loader-dot"></div>
+        <div class="loader-dot"></div>
+      </div>
+    </div>
+
+    <!-- Error / Expired -->
+    <div id="screen-error" class="screen">
+      <p class="error-text">This review link is no longer active.</p>
+    </div>
+
+    <!-- Star Rating -->
+    <div id="screen-rating" class="screen">
+      <h1 class="greeting" id="greeting-text"></h1>
+      <p class="subtext" id="subtext"></p>
+      <div class="stars" id="stars-container" role="radiogroup" aria-label="Rate your experience from 1 to 5 stars">
+        <!-- Stars injected by JS -->
+      </div>
+    </div>
+
+    <!-- Happy Path (4-5 stars) -->
+    <div id="screen-happy" class="screen">
+      <svg class="checkmark-icon gold" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <circle cx="32" cy="32" r="30" stroke="currentColor" stroke-width="2"/>
+        <path d="M20 33l8 8 16-18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h2 class="result-heading">Thank you for the kind words!</h2>
+      <p class="result-subtext">Would you mind sharing your experience on Google? It helps more than you know.</p>
+      <a id="google-review-link" class="btn-primary" href="#" target="_blank" rel="noopener noreferrer">Leave a Google Review</a>
+      <button id="no-thanks-btn" class="link-muted" type="button">No thanks</button>
+    </div>
+
+    <!-- Unhappy Path (1-3 stars) -->
+    <div id="screen-unhappy" class="screen">
+      <h2 class="result-heading">We appreciate your honesty.</h2>
+      <p class="result-subtext">What could we have done better?</p>
+      <div class="feedback-form">
+        <textarea
+          id="feedback-textarea"
+          class="feedback-textarea"
+          placeholder="Your feedback is private and helps us improve..."
+          aria-label="Your feedback"
+          rows="4"
+        ></textarea>
+        <button id="submit-feedback-btn" class="btn-primary" type="button">
+          Submit Feedback
+        </button>
+      </div>
+    </div>
+
+    <!-- Thank You Confirmation -->
+    <div id="screen-thankyou" class="screen">
+      <div class="confirmation">
+        <svg class="checkmark-icon green" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <circle cx="32" cy="32" r="30" stroke="currentColor" stroke-width="2"/>
+          <path d="M20 33l8 8 16-18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h2 class="result-heading">Thank you for your feedback.</h2>
+      </div>
+    </div>
+
+    <!-- Simple Thank You (no thanks) -->
+    <div id="screen-simple-thanks" class="screen">
+      <div class="confirmation">
+        <svg class="checkmark-icon gold" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <circle cx="32" cy="32" r="30" stroke="currentColor" stroke-width="2"/>
+          <path d="M20 33l8 8 16-18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h2 class="result-heading">Thank you!</h2>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p class="footer-text">Powered by HyPurShot</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ── Supabase Config (replace with real values) ──
+  const SUPABASE_URL = 'https://xjsicupdpzawxlwcvxzv.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhqc2ljdXBkcHphd3hsd2N2eHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MjgxNjEsImV4cCI6MjA5MDMwNDE2MX0.ZIuEFOCz1T7aVv6a39hXzvUucSZKgTJhDW5iPyXh1KM';
+
+  let db;
+  try {
+    db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } catch (e) {
+    // SDK not loaded or config invalid — will show error state
+  }
+
+  // ── State ──
+  let reviewData = null;
+  let selectedRating = 0;
+
+  // ── DOM Refs ──
+  const screens = {
+    loading: document.getElementById('screen-loading'),
+    error: document.getElementById('screen-error'),
+    rating: document.getElementById('screen-rating'),
+    happy: document.getElementById('screen-happy'),
+    unhappy: document.getElementById('screen-unhappy'),
+    thankyou: document.getElementById('screen-thankyou'),
+    simpleThanks: document.getElementById('screen-simple-thanks'),
+  };
+
+  const greetingText = document.getElementById('greeting-text');
+  const subtextEl = document.getElementById('subtext');
+  const starsContainer = document.getElementById('stars-container');
+  const googleReviewLink = document.getElementById('google-review-link');
+  const noThanksBtn = document.getElementById('no-thanks-btn');
+  const feedbackTextarea = document.getElementById('feedback-textarea');
+  const submitFeedbackBtn = document.getElementById('submit-feedback-btn');
+
+  // ── Helpers ──
+  function showScreen(name) {
+    Object.values(screens).forEach(function (s) { s.classList.remove('active'); });
+    screens[name].classList.add('active');
+  }
+
+  function getToken() {
+    // Check query param first (?token=XYZ), then fall back to path
+    var params = new URLSearchParams(window.location.search);
+    var token = params.get('token');
+    if (token) return token;
+    var parts = window.location.pathname.split('/');
+    return parts[parts.length - 1] || parts[parts.length - 2] || null;
+  }
+
+  // ── Star SVG path (inline, no emoji) ──
+  var starPath = 'M32 4l8.66 17.56L60 24.56l-14 13.64L49.32 58 32 48.88 14.68 58 18 38.2 4 24.56l19.34-3z';
+
+  // ── Build Stars ──
+  function buildStars() {
+    for (var i = 1; i <= 5; i++) {
+      var btn = document.createElement('button');
+      btn.className = 'star-btn';
+      btn.setAttribute('type', 'button');
+      btn.setAttribute('role', 'radio');
+      btn.setAttribute('aria-checked', 'false');
+      btn.setAttribute('aria-label', i + ' star' + (i > 1 ? 's' : ''));
+      btn.dataset.value = i;
+      btn.innerHTML = '<svg viewBox="0 0 64 64" aria-hidden="true"><path class="star-icon" d="' + starPath + '"/></svg>';
+      starsContainer.appendChild(btn);
+    }
+  }
+
+  buildStars();
+
+  var starBtns = starsContainer.querySelectorAll('.star-btn');
+
+  // ── Star Hover ──
+  function highlightStars(upTo) {
+    starBtns.forEach(function (btn) {
+      var val = parseInt(btn.dataset.value);
+      if (val <= upTo) {
+        btn.classList.add('hovered');
+      } else {
+        btn.classList.remove('hovered');
+      }
+    });
+  }
+
+  function clearHover() {
+    starBtns.forEach(function (btn) {
+      if (!btn.classList.contains('selected')) {
+        btn.classList.remove('hovered');
+      }
+    });
+    // Restore selected state
+    if (selectedRating > 0) {
+      highlightSelected(selectedRating);
+    }
+  }
+
+  function highlightSelected(upTo) {
+    starBtns.forEach(function (btn) {
+      var val = parseInt(btn.dataset.value);
+      if (val <= upTo) {
+        btn.classList.add('selected');
+        btn.setAttribute('aria-checked', 'true');
+      } else {
+        btn.classList.remove('selected');
+        btn.setAttribute('aria-checked', 'false');
+      }
+    });
+  }
+
+  starsContainer.addEventListener('mouseover', function (e) {
+    var btn = e.target.closest('.star-btn');
+    if (btn) {
+      highlightStars(parseInt(btn.dataset.value));
+    }
+  });
+
+  starsContainer.addEventListener('mouseout', function () {
+    clearHover();
+  });
+
+  // ── Star Click ──
+  starsContainer.addEventListener('click', function (e) {
+    var btn = e.target.closest('.star-btn');
+    if (!btn || selectedRating > 0) return;
+
+    selectedRating = parseInt(btn.dataset.value);
+    highlightSelected(selectedRating);
+
+    // Record rating
+    recordRating(selectedRating);
+
+    // Auto-advance after 600ms
+    setTimeout(function () {
+      if (selectedRating >= 4) {
+        showHappyPath();
+      } else {
+        showUnhappyPath();
+      }
+    }, 600);
+  });
+
+  // ── Happy Path ──
+  function showHappyPath() {
+    if (reviewData && reviewData.businesses) {
+      var placeId = reviewData.businesses.google_place_id;
+      if (placeId) {
+        googleReviewLink.href = 'https://search.google.com/local/writereview?placeid=' + encodeURIComponent(placeId);
+      }
+    }
+    showScreen('happy');
+  }
+
+  // ── Unhappy Path ──
+  function showUnhappyPath() {
+    showScreen('unhappy');
+    // Auto-focus textarea for convenience
+    setTimeout(function () { feedbackTextarea.focus(); }, 350);
+  }
+
+  // ── No Thanks ──
+  noThanksBtn.addEventListener('click', function () {
+    showScreen('simpleThanks');
+  });
+
+  // ── Submit Feedback ──
+  submitFeedbackBtn.addEventListener('click', function () {
+    var text = feedbackTextarea.value.trim();
+    if (!text) {
+      feedbackTextarea.focus();
+      return;
+    }
+
+    submitFeedback(text);
+  });
+
+  // ── Supabase Operations ──
+  async function loadReview() {
+    var token = getToken();
+    if (!token || !db) {
+      showScreen('error');
+      return;
+    }
+
+    try {
+      var { data, error } = await db
+        .from('review_requests')
+        .select('*, businesses(name, google_place_id, logo_url)')
+        .eq('review_token', token)
+        .single();
+
+      if (error || !data) {
+        showScreen('error');
+        return;
+      }
+
+      reviewData = data;
+
+      // Populate UI
+      var customerName = data.customer_name || 'there';
+      var businessName = (data.businesses && data.businesses.name) || 'us';
+
+      greetingText.textContent = 'Hi ' + customerName + '!';
+      subtextEl.textContent = 'How was your experience with ' + businessName + '?';
+
+      // Track SMS opened
+      if (!data.opened_at) {
+        db.from('review_requests')
+          .update({ opened_at: new Date().toISOString() })
+          .eq('id', data.id)
+          .then(function () {});
+      }
+
+      showScreen('rating');
+
+    } catch (err) {
+      showScreen('error');
+    }
+  }
+
+  async function recordRating(rating) {
+    if (!reviewData || !db) return;
+    try {
+      await db
+        .from('review_requests')
+        .update({
+          rating: rating,
+          status: 'reviewed'
+        })
+        .eq('id', reviewData.id);
+    } catch (err) {
+      // Silent — rating is captured in UI regardless
+    }
+  }
+
+  async function submitFeedback(text) {
+    if (!reviewData || !db) {
+      showScreen('thankyou');
+      return;
+    }
+
+    // Show spinner
+    submitFeedbackBtn.disabled = true;
+    submitFeedbackBtn.innerHTML = '<div class="spinner"></div>';
+
+    try {
+      await db
+        .from('review_requests')
+        .update({ feedback: text })
+        .eq('id', reviewData.id);
+    } catch (err) {
+      // Proceed to thank you regardless
+    }
+
+    showScreen('thankyou');
+  }
+
+  // ── Init ──
+  loadReview();
+
+})();
+</script>
+
+</body>
+</html>
