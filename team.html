@@ -1074,6 +1074,112 @@
     padding: 14px 0 4px;
   }
 
+  /* ============ Tooltip (Branded + Only Me block) ============ */
+  .newpost-tooltip {
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: var(--gold-dim);
+    border-left: 3px solid var(--gold);
+    border-radius: 6px;
+    font-size: 0.78rem;
+    color: var(--text);
+    line-height: 1.55;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .newpost-tooltip-icon {
+    flex-shrink: 0;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--bg);
+    font-family: serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .newpost-tooltip strong { color: var(--gold); font-weight: 700; }
+
+  /* ============ Post preview frame ============ */
+  .newpost-preview {
+    margin-top: 24px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .newpost-preview-header {
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .newpost-preview-body {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+  @media (max-width: 540px) {
+    .newpost-preview-body { grid-template-columns: 1fr; }
+  }
+  .newpost-preview-thumb {
+    width: 96px;
+    height: 128px;
+    background: #000;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    text-align: center;
+  }
+  .newpost-preview-thumb video,
+  .newpost-preview-thumb img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .newpost-preview-meta { min-width: 0; }
+  .newpost-preview-creator {
+    display: flex; align-items: center; gap: 8px;
+    font-weight: 600; color: var(--text);
+    font-size: 0.88rem;
+    margin-bottom: 8px;
+  }
+  .newpost-preview-creator .at { color: var(--text-muted); font-weight: 500; }
+  .newpost-preview-caption {
+    font-size: 0.85rem;
+    color: var(--text);
+    line-height: 1.5;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    margin-bottom: 12px;
+    min-height: 1.5em;
+  }
+  .newpost-preview-caption.empty { color: var(--text-muted); font-style: italic; }
+  .newpost-preview-tags {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .newpost-preview-tag {
+    font-size: 0.72rem;
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+  .newpost-preview-tag.gold { color: var(--gold); border-color: var(--gold); }
+  .newpost-preview-tag.ice  { color: var(--ice);  border-color: var(--ice); }
+
   .newpost-consent a {
     color: var(--gold);
     text-decoration: none;
@@ -1266,20 +1372,24 @@
         <label class="newpost-label" for="newpost-caption">Caption</label>
         <textarea id="newpost-caption" class="newpost-textarea"
           placeholder="Write a caption for your TikTok post..."
-          oninput="updatePublishButton()"></textarea>
+          oninput="updatePostPreview(); updatePublishButton();"></textarea>
       </div>
 
       <!-- Privacy -->
       <div class="newpost-field">
         <label class="newpost-label" for="newpost-privacy">Privacy</label>
-        <select id="newpost-privacy" class="newpost-select" onchange="handlePrivacyChange(); updatePublishButton();">
+        <select id="newpost-privacy" class="newpost-select" onchange="handlePrivacyChange(); updatePostPreview(); updatePublishButton();">
           <option value="" disabled selected>Select privacy level...</option>
           <option value="PUBLIC_TO_EVERYONE">Public</option>
           <option value="MUTUAL_FOLLOW_FRIENDS">Friends</option>
           <option value="FOLLOWER_OF_CREATOR">Followers</option>
-          <option value="SELF_ONLY" id="newpost-privacy-selfonly">Only Me</option>
+          <option value="SELF_ONLY" id="newpost-privacy-selfonly" title="Only Me is not available when Branded Content is selected.">Only Me</option>
         </select>
-        <div id="newpost-privacy-note" style="font-size:0.78rem; color:var(--error); margin-top:6px; display:none;">"Only Me" is not available when Branded Content is selected.</div>
+        <div id="newpost-privacy-tip" class="newpost-tooltip" style="display:none;" role="status">
+          <span class="newpost-tooltip-icon" aria-hidden="true">i</span>
+          <span><strong>“Only Me” is disabled while Branded Content is on.</strong> TikTok requires branded content to reach an audience beyond yourself. Pick Public, Friends, or Followers.</span>
+        </div>
+        <div id="newpost-privacy-note" style="font-size:0.78rem; color:var(--error); margin-top:6px; display:none;">“Only Me” is not available when Branded Content is selected.</div>
       </div>
 
       <!-- Interaction settings -->
@@ -1287,15 +1397,15 @@
         <label class="newpost-label">Interactions</label>
         <div class="newpost-interactions">
           <div class="newpost-check-row">
-            <input type="checkbox" id="newpost-allow-comment" class="newpost-check-input" onchange="updatePublishButton()">
+            <input type="checkbox" id="newpost-allow-comment" class="newpost-check-input" onchange="updatePostPreview(); updatePublishButton();">
             <label for="newpost-allow-comment" class="newpost-check-label">Allow Comments</label>
           </div>
           <div class="newpost-check-row">
-            <input type="checkbox" id="newpost-allow-duet" class="newpost-check-input" onchange="updatePublishButton()">
+            <input type="checkbox" id="newpost-allow-duet" class="newpost-check-input" onchange="updatePostPreview(); updatePublishButton();">
             <label for="newpost-allow-duet" class="newpost-check-label">Allow Duet</label>
           </div>
           <div class="newpost-check-row">
-            <input type="checkbox" id="newpost-allow-stitch" class="newpost-check-input" onchange="updatePublishButton()">
+            <input type="checkbox" id="newpost-allow-stitch" class="newpost-check-input" onchange="updatePostPreview(); updatePublishButton();">
             <label for="newpost-allow-stitch" class="newpost-check-label">Allow Stitch</label>
           </div>
         </div>
@@ -1342,6 +1452,28 @@
       <!-- Consent declaration -->
       <div class="newpost-consent" id="newpost-consent">
         By posting, you agree to TikTok's <a href="https://www.tiktok.com/legal/music-usage-confirmation" target="_blank" rel="noopener">Music Usage Confirmation</a>.
+      </div>
+
+      <!-- Post preview (TikTok Direct Post UX rule 7) -->
+      <div class="newpost-preview" id="newpost-preview" aria-live="polite">
+        <div class="newpost-preview-header">Preview</div>
+        <div class="newpost-preview-body">
+          <div class="newpost-preview-thumb" id="newpost-preview-thumb">
+            <span>Add a video to see the preview</span>
+          </div>
+          <div class="newpost-preview-meta">
+            <div class="newpost-preview-creator" id="newpost-preview-creator">
+              <span>TikTok Creator</span>
+            </div>
+            <div class="newpost-preview-caption empty" id="newpost-preview-caption">No caption yet.</div>
+            <div class="newpost-preview-tags" id="newpost-preview-tags">
+              <span class="newpost-preview-tag">Privacy: Not selected</span>
+              <span class="newpost-preview-tag">Comments: off</span>
+              <span class="newpost-preview-tag">Duet: off</span>
+              <span class="newpost-preview-tag">Stitch: off</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Post button -->
@@ -2224,7 +2356,10 @@ async function loadCreatorInfo() {
     const opt = document.createElement('option');
     opt.value = val;
     opt.textContent = privacyLabels[val] || val;
-    if (val === 'SELF_ONLY') opt.id = 'newpost-privacy-selfonly';
+    if (val === 'SELF_ONLY') {
+      opt.id = 'newpost-privacy-selfonly';
+      opt.title = 'Only Me is not available when Branded Content is selected.';
+    }
     privacySelect.appendChild(opt);
   });
 
@@ -2260,8 +2395,9 @@ async function loadCreatorInfo() {
   statusEl.className = 'newpost-status';
   statusEl.textContent = '';
 
-  // Update consent & button
+  // Update consent, preview & button
   updateConsentText();
+  updatePostPreview();
   updatePublishButton();
 }
 
@@ -2289,6 +2425,7 @@ function handleMediaSelect(file) {
   videoPreview.style.display = 'block';
   fileNameEl.textContent = file.name;
   fileNameEl.style.display = 'block';
+  updatePostPreview();
 
   // Validate duration after metadata loads
   videoPreview.onloadedmetadata = function() {
@@ -2301,6 +2438,7 @@ function handleMediaSelect(file) {
       newpostMediaFile = file;
       newpostMediaValid = true;
     }
+    updatePostPreview();
     updatePublishButton();
   };
 }
@@ -2318,6 +2456,7 @@ function handlePrivacyChange() {
   } else {
     privacyNote.style.display = 'none';
   }
+  updatePostPreview();
 }
 
 function handleCommercialToggle() {
@@ -2339,6 +2478,7 @@ function handleCommercialToggle() {
   }
 
   updateConsentText();
+  updatePostPreview();
   updatePublishButton();
 }
 
@@ -2391,7 +2531,94 @@ function handleCommercialBrandChange() {
     }
   }
 
+  // Show/hide the always-visible tooltip explaining why Only Me is disabled
+  const tip = document.getElementById('newpost-privacy-tip');
+  if (tip) {
+    tip.style.display = (commToggleOn && brandedContent) ? 'flex' : 'none';
+  }
+
   updateConsentText();
+  updatePostPreview();
+}
+
+// ──────────────── POST PREVIEW (TikTok Direct Post UX rule 7) ────────────────
+function updatePostPreview() {
+  const previewEl = document.getElementById('newpost-preview');
+  if (!previewEl) return;
+
+  // Caption
+  const captionInput = document.getElementById('newpost-caption');
+  const captionEl = document.getElementById('newpost-preview-caption');
+  const captionVal = (captionInput && captionInput.value || '').trim();
+  if (captionVal) {
+    captionEl.textContent = captionVal;
+    captionEl.classList.remove('empty');
+  } else {
+    captionEl.textContent = 'No caption yet.';
+    captionEl.classList.add('empty');
+  }
+
+  // Creator (mirror the connected creator block above)
+  const creatorEl = document.getElementById('newpost-preview-creator');
+  const creatorName = document.getElementById('newpost-creator-name');
+  const avatarImg = document.querySelector('#newpost-avatar img');
+  if (creatorEl) {
+    let avatarHtml = '';
+    if (avatarImg && avatarImg.src) {
+      avatarHtml = '<img src="' + avatarImg.src + '" alt="" style="width:24px;height:24px;border-radius:50%;">';
+    }
+    const nick = (creatorName && creatorName.textContent && creatorName.textContent !== 'Loading...')
+      ? creatorName.textContent
+      : 'TikTok Creator';
+    creatorEl.innerHTML = avatarHtml + '<span>' + nick + '</span><span class="at">posting to TikTok</span>';
+  }
+
+  // Thumbnail
+  const thumbEl = document.getElementById('newpost-preview-thumb');
+  const sourceVideo = document.getElementById('newpost-video-preview');
+  if (thumbEl && sourceVideo && sourceVideo.src && sourceVideo.style.display !== 'none') {
+    thumbEl.innerHTML = '<video src="' + sourceVideo.src + '" muted playsinline preload="metadata"></video>';
+  } else if (thumbEl && (!sourceVideo || !sourceVideo.src)) {
+    thumbEl.innerHTML = '<span>Add a video to see the preview</span>';
+  }
+
+  // Tags
+  const tagsEl = document.getElementById('newpost-preview-tags');
+  if (!tagsEl) return;
+  const privacyVal = document.getElementById('newpost-privacy').value;
+  const privacyLabels = {
+    PUBLIC_TO_EVERYONE: 'Public',
+    MUTUAL_FOLLOW_FRIENDS: 'Friends',
+    FOLLOWER_OF_CREATOR: 'Followers',
+    SELF_ONLY: 'Only Me'
+  };
+  const allowComment = document.getElementById('newpost-allow-comment').checked;
+  const allowDuet    = document.getElementById('newpost-allow-duet').checked;
+  const allowStitch  = document.getElementById('newpost-allow-stitch').checked;
+  const commToggleOn = document.getElementById('newpost-commercial-toggle').classList.contains('on');
+  const yourBrand    = document.getElementById('newpost-your-brand').checked;
+  const brandedContent = document.getElementById('newpost-branded-content').checked;
+
+  let tags = [];
+  tags.push({ label: 'Privacy: ' + (privacyLabels[privacyVal] || 'Not selected'),
+              cls: privacyVal ? 'gold' : '' });
+  tags.push({ label: 'Comments: ' + (allowComment ? 'on' : 'off') });
+  tags.push({ label: 'Duet: ' + (allowDuet ? 'on' : 'off') });
+  tags.push({ label: 'Stitch: ' + (allowStitch ? 'on' : 'off') });
+  if (commToggleOn) {
+    if (brandedContent) tags.push({ label: 'Paid partnership', cls: 'ice' });
+    else if (yourBrand) tags.push({ label: 'Promotional content', cls: 'ice' });
+  }
+
+  tagsEl.innerHTML = tags.map(function(t) {
+    return '<span class="newpost-preview-tag ' + (t.cls || '') + '">' + escapeHtmlPreview(t.label) + '</span>';
+  }).join('');
+}
+
+function escapeHtmlPreview(s) {
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function updateConsentText() {
