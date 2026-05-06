@@ -1480,6 +1480,15 @@
       <button type="button" id="newpost-submit-btn" class="btn btn-gold" style="margin-top:18px; width:100%; justify-content:center;"
         onclick="submitPost()" disabled>Post to TikTok</button>
 
+      <!-- Save to TikTok Drafts (uses video.upload scope; user finishes inside TikTok) -->
+      <div style="margin-top:12px; display:flex; flex-direction:column; gap:6px;">
+        <button type="button" id="newpost-draft-btn" class="btn btn-ghost" style="width:100%; justify-content:center;"
+          onclick="saveDraftToTikTok()" disabled>Save to TikTok Drafts</button>
+        <p style="font-size:12px; color:var(--text-muted); margin:0; text-align:center;">
+          Sends the video to your TikTok inbox. Open TikTok to set caption, privacy, and publish.
+        </p>
+      </div>
+
       <!-- Post status -->
       <div id="newpost-status" class="newpost-status"></div>
 
@@ -2635,6 +2644,7 @@ function updateConsentText() {
 
 function updatePublishButton() {
   const btn = document.getElementById('newpost-submit-btn');
+  const draftBtn = document.getElementById('newpost-draft-btn');
   if (!btn) return;
 
   const privacy = document.getElementById('newpost-privacy').value;
@@ -2642,6 +2652,10 @@ function updatePublishButton() {
   const yourBrand = document.getElementById('newpost-your-brand').checked;
   const brandedContent = document.getElementById('newpost-branded-content').checked;
 
+  // Draft button only needs a valid video — caption/privacy/etc. are set inside TikTok
+  if (draftBtn) draftBtn.disabled = !newpostMediaValid;
+
+  // Direct-post button has stricter gates
   // Must have media
   if (!newpostMediaValid) { btn.disabled = true; return; }
   // Must have privacy selected
@@ -2738,6 +2752,82 @@ async function submitPost() {
     statusEl.className = 'newpost-status error';
     statusEl.textContent = err.message || 'Failed to submit post. Please try again.';
     btn.disabled = false;
+    updatePublishButton();
+  }
+}
+
+/**
+ * Save to TikTok Drafts — uploads the video to the creator's TikTok inbox
+ * via the Content Posting API "inbox" endpoint. The user finishes editing
+ * (caption, privacy, audience) and publishes inside the TikTok app.
+ *
+ * This is the canonical, independent flow for the `video.upload` scope.
+ */
+async function saveDraftToTikTok() {
+  const draftBtn = document.getElementById('newpost-draft-btn');
+  const submitBtn = document.getElementById('newpost-submit-btn');
+  const statusEl = document.getElementById('newpost-status');
+
+  if (draftBtn) draftBtn.disabled = true;
+  if (submitBtn) submitBtn.disabled = true;
+  statusEl.className = 'newpost-status info';
+  statusEl.textContent = 'Preparing draft upload to TikTok...';
+
+  try {
+    if (!newpostMediaFile) throw new Error('Please choose a video first.');
+
+    const videoSize = newpostMediaFile.size;
+    const MIN_CHUNK = 5 * 1024 * 1024;
+    const MAX_CHUNK = 64 * 1024 * 1024;
+    let chunkSize, totalChunkCount;
+    if (videoSize < MIN_CHUNK) {
+      chunkSize = videoSize;
+      totalChunkCount = 1;
+    } else {
+      chunkSize = Math.min(MAX_CHUNK, Math.ceil(videoSize / Math.ceil(videoSize / MAX_CHUNK)));
+      totalChunkCount = Math.ceil(videoSize / chunkSize);
+    }
+
+    const initBody = {
+      action: 'upload_draft',
+      business_id: currentBusinessId,
+      video_size: videoSize,
+      chunk_size: chunkSize,
+      total_chunk_count: totalChunkCount
+    };
+
+    const initResp = await fetch(SUPABASE_URL + '/functions/v1/tiktok-post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(initBody)
+    });
+    const initData = await initResp.json();
+    if (!initResp.ok || !initData.success || !initData.upload_url) {
+      const detail = initData.details ? ' (' + (initData.details.message || initData.details.code || '') + ')' : '';
+      throw new Error((initData.error || 'Failed to initialize draft upload') + detail);
+    }
+
+    statusEl.textContent = 'Uploading video to your TikTok inbox...';
+    const putResp = await fetch(initData.upload_url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': newpostMediaFile.type || 'video/mp4',
+        'Content-Length': String(videoSize),
+        'Content-Range': 'bytes 0-' + (videoSize - 1) + '/' + videoSize
+      },
+      body: newpostMediaFile
+    });
+    if (!putResp.ok) {
+      const txt = await putResp.text().catch(function(){ return ''; });
+      throw new Error('Upload failed: ' + putResp.status + ' ' + (txt || putResp.statusText));
+    }
+
+    statusEl.className = 'newpost-status success';
+    statusEl.textContent = 'Draft uploaded. Open TikTok to set caption, choose privacy, and publish from your inbox.';
+  } catch (err) {
+    statusEl.className = 'newpost-status error';
+    statusEl.textContent = err.message || 'Failed to upload draft. Please try again.';
+  } finally {
     updatePublishButton();
   }
 }
