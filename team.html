@@ -1237,6 +1237,190 @@
   @media (max-width: 480px) {
     .newpost-upload-zone { padding: 24px 16px; }
   }
+  /* ──────────────── PLATFORM SUB-TABS ──────────────── */
+  .platform-tabs {
+    display: flex;
+    gap: 6px;
+    margin: 0 0 22px 0;
+    padding: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    flex-wrap: wrap;
+  }
+  .platform-tab {
+    flex: 1 1 0;
+    min-width: 92px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .platform-tab:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.02);
+  }
+  .platform-tab.active {
+    background: var(--bg);
+    color: var(--gold);
+    border-color: var(--border);
+  }
+  .platform-tab-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-faint, #5A5957);
+    flex: 0 0 8px;
+    transition: background 0.2s ease;
+  }
+  .platform-tab-dot.connected { background: var(--success, #6DAA45); }
+  .platform-tab-dot.expired   { background: var(--error, #D163A7); }
+
+  .composer-panel { display: none; }
+  .composer-panel.active { display: block; }
+  .composer-panel[hidden] { display: none !important; }
+  .composer-panel.active[hidden] { display: none !important; }
+
+  .composer-empty {
+    text-align: center;
+    padding: 48px 24px;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+  .composer-empty h3 {
+    margin: 0 0 8px 0;
+    font-family: var(--font-heading, inherit);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .composer-empty p {
+    margin: 0 0 18px 0;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .composer-empty .btn {
+    display: inline-flex;
+  }
+  .composer-empty-note {
+    margin-top: 16px !important;
+    font-size: 12px !important;
+    color: var(--text-faint, #6A6965) !important;
+    line-height: 1.5;
+  }
+
+  .newpost-radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .newpost-radio {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .newpost-radio:hover { border-color: var(--gold); }
+  .newpost-radio input[type="radio"] {
+    accent-color: var(--gold);
+    cursor: pointer;
+  }
+
+  .newpost-input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    transition: border-color 0.15s ease;
+  }
+  .newpost-input:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+  .newpost-input::placeholder { color: var(--text-muted); }
+
+  .newpost-counter {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .newpost-counter.warn { color: var(--gold); }
+  .newpost-counter.over { color: var(--error, #D163A7); font-weight: 600; }
+
+  .newpost-media-preview {
+    margin-top: 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    background: var(--surface);
+  }
+  .newpost-media-preview img,
+  .newpost-media-preview video {
+    max-width: 100%;
+    max-height: 320px;
+    border-radius: 6px;
+    display: block;
+    margin: 0 auto;
+  }
+  .newpost-media-preview .meta-row {
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .newpost-media-preview .clear-btn {
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 12px;
+    padding: 0;
+  }
+  .newpost-media-preview .clear-btn:hover { color: var(--text); }
+
+  .newpost-upload-hint {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .newpost-upload-label {
+    cursor: pointer;
+    display: block;
+  }
+
+  @media (max-width: 600px) {
+    .platform-tab { font-size: 13px; padding: 9px 10px; min-width: 0; }
+    .platform-tab-label { white-space: nowrap; }
+  }
 </style>
 </head>
 <body>
@@ -1321,6 +1505,25 @@
     <div class="section-header">
       <h2>New Post</h2>
     </div>
+
+    <!-- Platform sub-tabs: TikTok / Instagram / Facebook -->
+    <div class="platform-tabs" role="tablist" aria-label="Choose a platform to post to">
+      <button type="button" class="platform-tab active" data-platform="tiktok" role="tab" aria-selected="true" onclick="switchPlatform('tiktok')">
+        <span class="platform-tab-label">TikTok</span>
+        <span class="platform-tab-dot" id="platform-dot-tiktok" aria-hidden="true"></span>
+      </button>
+      <button type="button" class="platform-tab" data-platform="instagram" role="tab" aria-selected="false" onclick="switchPlatform('instagram')">
+        <span class="platform-tab-label">Instagram</span>
+        <span class="platform-tab-dot" id="platform-dot-instagram" aria-hidden="true"></span>
+      </button>
+      <button type="button" class="platform-tab" data-platform="facebook" role="tab" aria-selected="false" onclick="switchPlatform('facebook')">
+        <span class="platform-tab-label">Facebook</span>
+        <span class="platform-tab-dot" id="platform-dot-facebook" aria-hidden="true"></span>
+      </button>
+    </div>
+
+    <!-- ============ TIKTOK PANEL ============ -->
+    <div id="composer-tiktok" class="composer-panel active" role="tabpanel">
 
     <!-- Creator info / disabled notice -->
     <div id="newpost-disabled-notice" class="newpost-disabled-overlay"></div>
@@ -1493,8 +1696,183 @@
       <div id="newpost-status" class="newpost-status"></div>
 
     </form>
-  </div>
+    </div><!-- /composer-tiktok -->
 
+    <!-- ============ INSTAGRAM PANEL ============ -->
+    <div id="composer-instagram" class="composer-panel" role="tabpanel" hidden>
+
+      <!-- Disconnected state -->
+      <div id="ig-disconnected" class="composer-empty" style="display:none;">
+        <h3>Instagram is not connected.</h3>
+        <p>Connect your Instagram Business or Creator account to post photos and Reels directly from HyPurShot.</p>
+        <button type="button" class="btn btn-gold" onclick="connectMeta()">Connect Instagram</button>
+        <p class="composer-empty-note">Note: Instagram personal accounts can't be used — you'll need a Business or Creator account linked to a Facebook Page.</p>
+      </div>
+
+      <!-- Connected composer -->
+      <div id="ig-composer" style="display:none;">
+        <!-- Account display -->
+        <div class="newpost-creator-card">
+          <div class="newpost-creator-avatar">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.5"/><circle cx="17" cy="7" r="1" fill="currentColor"/></svg>
+          </div>
+          <div class="newpost-creator-info">
+            <div class="newpost-creator-name" id="ig-account-name">Loading...</div>
+            <div class="newpost-creator-sub">Posting to Instagram</div>
+          </div>
+        </div>
+
+        <form id="ig-form" onsubmit="return false;">
+          <!-- Account picker if multiple -->
+          <div class="newpost-field" id="ig-account-picker-wrap" style="display:none;">
+            <label class="newpost-label" for="ig-account-picker">Instagram account</label>
+            <select id="ig-account-picker" class="newpost-select"></select>
+          </div>
+
+          <!-- Media upload -->
+          <div class="newpost-field">
+            <label class="newpost-label" for="ig-file-input">Media</label>
+            <div class="newpost-upload-zone" id="ig-upload-zone"
+              ondragover="event.preventDefault(); this.classList.add('dragover');"
+              ondragleave="this.classList.remove('dragover');"
+              ondrop="event.preventDefault(); this.classList.remove('dragover'); igHandleMedia(event.dataTransfer.files[0]);">
+              <input type="file" id="ig-file-input" class="newpost-file-input" accept="image/*,video/*"
+                onchange="igHandleMedia(this.files[0])">
+              <label for="ig-file-input" class="newpost-upload-label">
+                <div id="ig-upload-text">Click or drag a photo or video to upload</div>
+                <div class="newpost-upload-hint">JPG, PNG, WebP up to 8 MB &nbsp;•&nbsp; MP4 or MOV up to 100 MB</div>
+              </label>
+            </div>
+            <div id="ig-media-preview" class="newpost-media-preview" style="display:none;"></div>
+          </div>
+
+          <!-- Media type -->
+          <div class="newpost-field">
+            <label class="newpost-label">Post type</label>
+            <div class="newpost-radio-group">
+              <label class="newpost-radio">
+                <input type="radio" name="ig-media-type" value="IMAGE" checked> Feed photo
+              </label>
+              <label class="newpost-radio">
+                <input type="radio" name="ig-media-type" value="REELS"> Reel
+              </label>
+            </div>
+          </div>
+
+          <!-- Caption -->
+          <div class="newpost-field">
+            <label class="newpost-label" for="ig-caption">Caption</label>
+            <textarea id="ig-caption" class="newpost-textarea" maxlength="2200" rows="4"
+              placeholder="Write a caption... use #hashtags and @mentions to reach people."
+              oninput="igUpdateCounter()"></textarea>
+            <div class="newpost-counter">
+              <span id="ig-counter">0</span> / 2200
+            </div>
+          </div>
+
+          <!-- Post button -->
+          <button type="button" id="ig-submit-btn" class="btn btn-gold" style="margin-top:18px; width:100%; justify-content:center;"
+            onclick="igSubmit()" disabled>Post to Instagram</button>
+
+          <div id="ig-status" class="newpost-status"></div>
+        </form>
+      </div>
+    </div><!-- /composer-instagram -->
+
+    <!-- ============ FACEBOOK PANEL ============ -->
+    <div id="composer-facebook" class="composer-panel" role="tabpanel" hidden>
+
+      <!-- Disconnected state -->
+      <div id="fb-disconnected" class="composer-empty" style="display:none;">
+        <h3>Facebook is not connected.</h3>
+        <p>Connect your Facebook Page to post updates, photos, and videos directly from HyPurShot.</p>
+        <button type="button" class="btn btn-gold" onclick="connectMeta()">Connect Facebook</button>
+        <p class="composer-empty-note">Connecting Instagram also connects the linked Facebook Page automatically.</p>
+      </div>
+
+      <!-- Connected composer -->
+      <div id="fb-composer" style="display:none;">
+        <div class="newpost-creator-card">
+          <div class="newpost-creator-avatar">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M13 22V12h3l1-4h-4V6c0-1.1.4-2 2-2h2V0h-3.3C10.9 0 9 1.9 9 4.5V8H6v4h3v10h4z" fill="currentColor"/></svg>
+          </div>
+          <div class="newpost-creator-info">
+            <div class="newpost-creator-name" id="fb-page-name">Loading...</div>
+            <div class="newpost-creator-sub">Posting to Facebook Page</div>
+          </div>
+        </div>
+
+        <form id="fb-form" onsubmit="return false;">
+          <!-- Page picker if multiple -->
+          <div class="newpost-field" id="fb-page-picker-wrap" style="display:none;">
+            <label class="newpost-label" for="fb-page-picker">Facebook Page</label>
+            <select id="fb-page-picker" class="newpost-select"></select>
+          </div>
+
+          <!-- Media type -->
+          <div class="newpost-field">
+            <label class="newpost-label">What are you posting?</label>
+            <div class="newpost-radio-group">
+              <label class="newpost-radio">
+                <input type="radio" name="fb-media-type" value="text" checked onchange="fbToggleMedia()"> Text only
+              </label>
+              <label class="newpost-radio">
+                <input type="radio" name="fb-media-type" value="photo" onchange="fbToggleMedia()"> Photo
+              </label>
+              <label class="newpost-radio">
+                <input type="radio" name="fb-media-type" value="video" onchange="fbToggleMedia()"> Video
+              </label>
+              <label class="newpost-radio">
+                <input type="radio" name="fb-media-type" value="link" onchange="fbToggleMedia()"> Link
+              </label>
+            </div>
+          </div>
+
+          <!-- Media upload (hidden until photo/video selected) -->
+          <div class="newpost-field" id="fb-media-wrap" style="display:none;">
+            <label class="newpost-label" for="fb-file-input" id="fb-media-label">Media</label>
+            <div class="newpost-upload-zone"
+              ondragover="event.preventDefault(); this.classList.add('dragover');"
+              ondragleave="this.classList.remove('dragover');"
+              ondrop="event.preventDefault(); this.classList.remove('dragover'); fbHandleMedia(event.dataTransfer.files[0]);">
+              <input type="file" id="fb-file-input" class="newpost-file-input" accept="image/*,video/*"
+                onchange="fbHandleMedia(this.files[0])">
+              <label for="fb-file-input" class="newpost-upload-label">
+                <div id="fb-upload-text">Click or drag a file to upload</div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Link URL (hidden unless link mode) -->
+          <div class="newpost-field" id="fb-link-wrap" style="display:none;">
+            <label class="newpost-label" for="fb-link-input">Link URL</label>
+            <input type="url" id="fb-link-input" class="newpost-input" placeholder="https://example.com/page" oninput="fbUpdateButton()">
+          </div>
+
+          <!-- Message -->
+          <div class="newpost-field">
+            <label class="newpost-label" for="fb-message">Message</label>
+            <textarea id="fb-message" class="newpost-textarea" maxlength="63206" rows="5"
+              placeholder="What's on your mind?"
+              oninput="fbUpdateCounter(); fbUpdateButton();"></textarea>
+            <div class="newpost-counter">
+              <span id="fb-counter">0</span> / 63,206
+            </div>
+          </div>
+
+          <!-- Post button -->
+          <button type="button" id="fb-submit-btn" class="btn btn-gold" style="margin-top:18px; width:100%; justify-content:center;"
+            onclick="fbSubmit()" disabled>Post to Facebook</button>
+
+          <div id="fb-status" class="newpost-status"></div>
+        </form>
+      </div>
+    </div><!-- /composer-facebook -->
+
+  </div><!-- /tab-newpost -->
+
+  <!-- ═══════ OLD CONNECTIONS TAB ═══════ -->
+  <!-- (the original closing div for tab-newpost was removed above; the content tabs continue here) -->
   <!-- ═══════ CONNECTIONS TAB ═══════ -->
   <div id="tab-connections" class="tab-content">
     <div class="section-header">
@@ -1519,6 +1897,44 @@
             <button class="btn btn-gold" id="tiktok-connect-btn" onclick="connectTikTok()">
               Connect
             </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Instagram connection card -->
+      <div class="card" id="instagram-card" style="margin-top:14px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="3" width="18" height="18" rx="5" stroke="#F0EDE8" stroke-width="1.5"/>
+              <circle cx="12" cy="12" r="4" stroke="#F0EDE8" stroke-width="1.5"/>
+              <circle cx="17" cy="7" r="1" fill="#F0EDE8"/>
+            </svg>
+            <div>
+              <div style="font-weight:600; font-size:15px;">Instagram</div>
+              <div id="instagram-status" style="font-size:13px; color:var(--text-muted);">Not connected</div>
+            </div>
+          </div>
+          <div id="instagram-actions">
+            <button class="btn btn-gold" onclick="connectMeta()">Connect</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Facebook connection card -->
+      <div class="card" id="facebook-card" style="margin-top:14px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+              <path d="M13 22V12h3l1-4h-4V6c0-1.1.4-2 2-2h2V0h-3.3C10.9 0 9 1.9 9 4.5V8H6v4h3v10h4z" fill="#F0EDE8"/>
+            </svg>
+            <div>
+              <div style="font-weight:600; font-size:15px;">Facebook</div>
+              <div id="facebook-status" style="font-size:13px; color:var(--text-muted);">Not connected</div>
+            </div>
+          </div>
+          <div id="facebook-actions">
+            <button class="btn btn-gold" onclick="connectMeta()">Connect</button>
           </div>
         </div>
       </div>
@@ -2231,6 +2647,63 @@ async function loadConnections() {
   } catch (err) {
     console.error('Failed to check TikTok status:', err);
   }
+
+  // Check Meta (IG + FB) status
+  try {
+    const resp = await fetch(SUPABASE_URL + '/functions/v1/meta-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'status', business_id: currentBusinessId }),
+    });
+    const data = await resp.json();
+    _metaStatus.ig = Array.isArray(data.instagram_accounts) ? data.instagram_accounts : [];
+    _metaStatus.fb = Array.isArray(data.facebook_pages) ? data.facebook_pages : [];
+
+    const igStatusEl = document.getElementById('instagram-status');
+    const igActionsEl = document.getElementById('instagram-actions');
+    if (igStatusEl && igActionsEl) {
+      if (_metaStatus.ig.length > 0) {
+        const names = _metaStatus.ig.map(function(a){ return '@' + esc(a.account_name || a.account_id); }).join(', ');
+        igStatusEl.innerHTML = '<span style="color:var(--success);">Connected</span> &middot; ' + names;
+        igActionsEl.innerHTML = '<button class="btn btn-outline" onclick="disconnectMeta()" style="font-size:13px; padding:8px 16px; border:1px solid var(--border); border-radius:8px;">Disconnect</button>';
+      } else {
+        igStatusEl.textContent = 'Not connected';
+        igActionsEl.innerHTML = '<button class="btn btn-gold" onclick="connectMeta()">Connect</button>';
+      }
+    }
+    const fbStatusEl = document.getElementById('facebook-status');
+    const fbActionsEl = document.getElementById('facebook-actions');
+    if (fbStatusEl && fbActionsEl) {
+      if (_metaStatus.fb.length > 0) {
+        const names = _metaStatus.fb.map(function(p){ return esc(p.account_name || p.account_id); }).join(', ');
+        fbStatusEl.innerHTML = '<span style="color:var(--success);">Connected</span> &middot; ' + names;
+        fbActionsEl.innerHTML = '<button class="btn btn-outline" onclick="disconnectMeta()" style="font-size:13px; padding:8px 16px; border:1px solid var(--border); border-radius:8px;">Disconnect</button>';
+      } else {
+        fbStatusEl.textContent = 'Not connected';
+        fbActionsEl.innerHTML = '<button class="btn btn-gold" onclick="connectMeta()">Connect</button>';
+      }
+    }
+  } catch (err) {
+    console.error('Failed to check Meta status:', err);
+  }
+}
+
+async function disconnectMeta() {
+  if (!currentBusinessId) return;
+  if (!confirm('Disconnect Instagram and Facebook? You will need to reconnect to post.')) return;
+  try {
+    const resp = await fetch(SUPABASE_URL + '/functions/v1/meta-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'disconnect', business_id: currentBusinessId }),
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    showToast('Disconnected.', 'success');
+    loadConnections();
+  } catch (err) {
+    console.error('Disconnect failed:', err);
+    showToast('Disconnect failed.', 'error');
+  }
 }
 
 function connectTikTok() {
@@ -2836,8 +3309,473 @@ async function saveDraftToTikTok() {
 const _origSwitchTab = switchTab;
 switchTab = function(tab) {
   _origSwitchTab(tab);
-  if (tab === 'newpost') loadCreatorInfo();
+  if (tab === 'newpost') {
+    loadCreatorInfo();
+    restorePlatform();
+    loadConnectionStatuses();
+  }
 };
+
+// ══════════════════════════════════════════════════════════════════
+// PLATFORM TABS (TikTok / Instagram / Facebook)
+// ══════════════════════════════════════════════════════════════════
+
+const PLATFORM_STORAGE_KEY = 'hypurshot.composer.platform';
+const VALID_PLATFORMS = ['tiktok', 'instagram', 'facebook'];
+
+function switchPlatform(name) {
+  if (!VALID_PLATFORMS.includes(name)) return;
+  document.querySelectorAll('.platform-tab').forEach(function(btn) {
+    const isActive = btn.getAttribute('data-platform') === name;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
+  document.querySelectorAll('.composer-panel').forEach(function(panel) {
+    const id = panel.id;
+    const isActive = id === ('composer-' + name);
+    panel.classList.toggle('active', isActive);
+    if (isActive) { panel.removeAttribute('hidden'); }
+    else { panel.setAttribute('hidden', ''); }
+  });
+  try { localStorage.setItem(PLATFORM_STORAGE_KEY, name); } catch(e) {}
+}
+
+function restorePlatform() {
+  let saved = 'tiktok';
+  try { saved = localStorage.getItem(PLATFORM_STORAGE_KEY) || 'tiktok'; } catch(e) {}
+  if (!VALID_PLATFORMS.includes(saved)) saved = 'tiktok';
+  switchPlatform(saved);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// META (IG / FB) CONNECTION STATUS + AUTH
+// ══════════════════════════════════════════════════════════════════
+
+let _metaStatus = { ig: [], fb: [] };
+
+async function connectMeta() {
+  if (!currentBusinessId) {
+    alert('Please select a business first.');
+    return;
+  }
+  const url = SUPABASE_URL + '/functions/v1/meta-auth?action=authorize&business_id=' + encodeURIComponent(currentBusinessId);
+  window.location.href = url;
+}
+
+async function loadConnectionStatuses() {
+  if (!_supabase || !currentBusinessId) return;
+  try {
+    const resp = await fetch(SUPABASE_URL + '/functions/v1/meta-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'status', business_id: currentBusinessId }),
+    });
+    const data = await resp.json();
+    _metaStatus.ig = Array.isArray(data.instagram_accounts) ? data.instagram_accounts : [];
+    _metaStatus.fb = Array.isArray(data.facebook_pages) ? data.facebook_pages : [];
+    renderIgConnectionUI();
+    renderFbConnectionUI();
+  } catch (err) {
+    console.error('Failed to load Meta connection status:', err);
+  }
+  // TikTok dot — derive from existing loadConnections() data if available
+  refreshPlatformDots();
+}
+
+function refreshPlatformDots() {
+  const igDot = document.getElementById('platform-dot-instagram');
+  const fbDot = document.getElementById('platform-dot-facebook');
+  if (igDot) igDot.classList.toggle('connected', _metaStatus.ig.length > 0);
+  if (fbDot) fbDot.classList.toggle('connected', _metaStatus.fb.length > 0);
+  // TikTok dot updated by loadConnections() — best-effort read from existing status text
+  const ttDot = document.getElementById('platform-dot-tiktok');
+  if (ttDot) {
+    const statusEl = document.getElementById('tiktok-status');
+    const txt = (statusEl ? (statusEl.textContent || '') : '').toLowerCase();
+    ttDot.classList.toggle('connected', txt.includes('connected') && !txt.includes('not'));
+    ttDot.classList.toggle('expired', txt.includes('expired'));
+  }
+}
+
+function renderIgConnectionUI() {
+  const disc = document.getElementById('ig-disconnected');
+  const comp = document.getElementById('ig-composer');
+  if (!disc || !comp) return;
+  if (_metaStatus.ig.length === 0) {
+    disc.style.display = 'block';
+    comp.style.display = 'none';
+    return;
+  }
+  disc.style.display = 'none';
+  comp.style.display = 'block';
+  // Populate account picker (only show if multiple)
+  const wrap = document.getElementById('ig-account-picker-wrap');
+  const picker = document.getElementById('ig-account-picker');
+  const nameEl = document.getElementById('ig-account-name');
+  if (_metaStatus.ig.length > 1 && wrap && picker) {
+    wrap.style.display = 'block';
+    picker.innerHTML = _metaStatus.ig.map(function(a) {
+      return '<option value="' + esc(a.account_id) + '">' + esc(a.account_name || a.account_id) + '</option>';
+    }).join('');
+    picker.onchange = function() {
+      const sel = _metaStatus.ig.find(function(a) { return a.account_id === picker.value; });
+      if (sel && nameEl) nameEl.textContent = '@' + (sel.account_name || sel.account_id);
+    };
+  } else if (wrap) {
+    wrap.style.display = 'none';
+  }
+  if (nameEl) nameEl.textContent = '@' + (_metaStatus.ig[0].account_name || _metaStatus.ig[0].account_id);
+  igUpdateButton();
+}
+
+function renderFbConnectionUI() {
+  const disc = document.getElementById('fb-disconnected');
+  const comp = document.getElementById('fb-composer');
+  if (!disc || !comp) return;
+  if (_metaStatus.fb.length === 0) {
+    disc.style.display = 'block';
+    comp.style.display = 'none';
+    return;
+  }
+  disc.style.display = 'none';
+  comp.style.display = 'block';
+  const wrap = document.getElementById('fb-page-picker-wrap');
+  const picker = document.getElementById('fb-page-picker');
+  const nameEl = document.getElementById('fb-page-name');
+  if (_metaStatus.fb.length > 1 && wrap && picker) {
+    wrap.style.display = 'block';
+    picker.innerHTML = _metaStatus.fb.map(function(p) {
+      return '<option value="' + esc(p.account_id) + '">' + esc(p.account_name || p.account_id) + '</option>';
+    }).join('');
+    picker.onchange = function() {
+      const sel = _metaStatus.fb.find(function(p) { return p.account_id === picker.value; });
+      if (sel && nameEl) nameEl.textContent = sel.account_name || sel.account_id;
+    };
+  } else if (wrap) {
+    wrap.style.display = 'none';
+  }
+  if (nameEl) nameEl.textContent = _metaStatus.fb[0].account_name || _metaStatus.fb[0].account_id;
+  fbToggleMedia();
+  fbUpdateButton();
+}
+
+function selectedIgAccount() {
+  if (_metaStatus.ig.length === 0) return null;
+  const picker = document.getElementById('ig-account-picker');
+  if (_metaStatus.ig.length > 1 && picker && picker.value) {
+    return _metaStatus.ig.find(function(a) { return a.account_id === picker.value; }) || _metaStatus.ig[0];
+  }
+  return _metaStatus.ig[0];
+}
+function selectedFbPage() {
+  if (_metaStatus.fb.length === 0) return null;
+  const picker = document.getElementById('fb-page-picker');
+  if (_metaStatus.fb.length > 1 && picker && picker.value) {
+    return _metaStatus.fb.find(function(p) { return p.account_id === picker.value; }) || _metaStatus.fb[0];
+  }
+  return _metaStatus.fb[0];
+}
+
+// ══════════════════════════════════════════════════════════════════
+// MEDIA UPLOAD HELPER (Supabase Storage → public URL)
+// ══════════════════════════════════════════════════════════════════
+
+async function uploadMediaToStorage(file, platformPrefix) {
+  if (!_supabase) throw new Error('Supabase not initialized');
+  if (!currentBusinessId) throw new Error('No business selected');
+  const ext = (file.name && file.name.includes('.')) ? file.name.split('.').pop().toLowerCase() : 'bin';
+  const safeExt = ext.replace(/[^a-z0-9]/g, '').slice(0, 5) || 'bin';
+  const ts = Date.now();
+  const rand = Math.random().toString(36).slice(2, 8);
+  const path = currentBusinessId + '/' + (platformPrefix || 'post') + '/' + ts + '-' + rand + '.' + safeExt;
+  const { data: upData, error: upErr } = await _supabase.storage
+    .from('post-media')
+    .upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type || undefined });
+  if (upErr) throw upErr;
+  const { data: pubData } = _supabase.storage.from('post-media').getPublicUrl(path);
+  return { path: path, public_url: pubData.publicUrl, content_type: file.type || '' };
+}
+
+// ══════════════════════════════════════════════════════════════════
+// INSTAGRAM COMPOSER
+// ══════════════════════════════════════════════════════════════════
+
+let _igMedia = null; // { public_url, content_type, kind: 'image'|'video' }
+const IG_CAPTION_LIMIT = 2200;
+const IG_CAPTION_WARN = 2000;
+
+function igUpdateCounter() {
+  const ta = document.getElementById('ig-caption');
+  const el = document.getElementById('ig-counter');
+  const wrap = el ? el.parentElement : null;
+  if (!ta || !el || !wrap) return;
+  const n = ta.value.length;
+  el.textContent = String(n);
+  wrap.classList.toggle('warn', n >= IG_CAPTION_WARN && n <= IG_CAPTION_LIMIT);
+  wrap.classList.toggle('over', n > IG_CAPTION_LIMIT);
+  igUpdateButton();
+}
+
+function igUpdateButton() {
+  const btn = document.getElementById('ig-submit-btn');
+  if (!btn) return;
+  const ta = document.getElementById('ig-caption');
+  const captionOk = ta ? ta.value.length <= IG_CAPTION_LIMIT : true;
+  const hasMedia = !!_igMedia;
+  const hasAccount = _metaStatus.ig.length > 0;
+  btn.disabled = !(captionOk && hasMedia && hasAccount);
+}
+
+async function igHandleMedia(file) {
+  if (!file) return;
+  const preview = document.getElementById('ig-media-preview');
+  const status = document.getElementById('ig-status');
+  const isVideo = (file.type || '').startsWith('video/');
+  const isImage = (file.type || '').startsWith('image/');
+  if (!isVideo && !isImage) {
+    if (status) { status.textContent = 'Unsupported file type. Use JPG, PNG, WebP, or MP4/MOV.'; status.className = 'newpost-status error'; }
+    return;
+  }
+  // Auto-set media type based on file
+  const radios = document.getElementsByName('ig-media-type');
+  for (let i = 0; i < radios.length; i++) {
+    if (isVideo && radios[i].value === 'REELS') radios[i].checked = true;
+    if (isImage && radios[i].value === 'IMAGE') radios[i].checked = true;
+  }
+  if (status) { status.textContent = 'Uploading media...'; status.className = 'newpost-status info'; }
+  try {
+    const result = await uploadMediaToStorage(file, 'instagram');
+    _igMedia = { public_url: result.public_url, content_type: result.content_type, kind: isVideo ? 'video' : 'image' };
+    if (preview) {
+      preview.style.display = 'block';
+      const tag = isVideo ? '<video src="' + esc(result.public_url) + '" controls></video>'
+                          : '<img src="' + esc(result.public_url) + '" alt="Preview">';
+      preview.innerHTML = tag + '<div class="meta-row"><span>' + esc(file.name || 'file') + '</span>'
+        + '<button type="button" class="clear-btn" onclick="igClearMedia()">Remove</button></div>';
+    }
+    if (status) { status.textContent = ''; status.className = 'newpost-status'; }
+  } catch (err) {
+    console.error('IG upload failed:', err);
+    if (status) { status.textContent = 'Upload failed: ' + (err.message || err); status.className = 'newpost-status error'; }
+  }
+  igUpdateButton();
+}
+
+function igClearMedia() {
+  _igMedia = null;
+  const preview = document.getElementById('ig-media-preview');
+  if (preview) { preview.style.display = 'none'; preview.innerHTML = ''; }
+  const input = document.getElementById('ig-file-input');
+  if (input) input.value = '';
+  igUpdateButton();
+}
+
+async function igSubmit() {
+  const btn = document.getElementById('ig-submit-btn');
+  const status = document.getElementById('ig-status');
+  const ta = document.getElementById('ig-caption');
+  const radios = document.getElementsByName('ig-media-type');
+  let mediaType = 'IMAGE';
+  for (let i = 0; i < radios.length; i++) if (radios[i].checked) mediaType = radios[i].value;
+  const acct = selectedIgAccount();
+  if (!acct) { if (status) { status.textContent = 'No Instagram account connected.'; status.className = 'newpost-status error'; } return; }
+  if (!_igMedia) { if (status) { status.textContent = 'Please upload media first.'; status.className = 'newpost-status error'; } return; }
+  if (btn) btn.disabled = true;
+  if (status) { status.textContent = 'Posting to Instagram...'; status.className = 'newpost-status info'; }
+  const payload = {
+    action: 'post_instagram',
+    business_id: currentBusinessId,
+    ig_account_id: acct.account_id,
+    caption: ta ? ta.value : '',
+    media_type: mediaType,
+  };
+  if (_igMedia.kind === 'video') payload.video_url = _igMedia.public_url;
+  else payload.image_url = _igMedia.public_url;
+  try {
+    const resp = await fetch(SUPABASE_URL + '/functions/v1/meta-post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await resp.json();
+    if (!resp.ok || data.error) throw new Error(data.error || ('HTTP ' + resp.status));
+    if (status) {
+      const link = data.permalink ? ' <a href="' + esc(data.permalink) + '" target="_blank" rel="noopener" style="color:var(--gold); text-decoration:underline;">View post</a>' : '';
+      status.innerHTML = 'Posted to Instagram.' + link;
+      status.className = 'newpost-status success';
+    }
+    if (ta) ta.value = '';
+    igClearMedia();
+    igUpdateCounter();
+  } catch (err) {
+    console.error('IG post failed:', err);
+    if (status) { status.textContent = 'Post failed: ' + (err.message || err); status.className = 'newpost-status error'; }
+  }
+  igUpdateButton();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FACEBOOK COMPOSER
+// ══════════════════════════════════════════════════════════════════
+
+let _fbMedia = null;
+const FB_MESSAGE_LIMIT = 63206;
+const FB_MESSAGE_WARN = 60000;
+
+function fbCurrentMode() {
+  const radios = document.getElementsByName('fb-media-type');
+  for (let i = 0; i < radios.length; i++) if (radios[i].checked) return radios[i].value;
+  return 'text';
+}
+
+function fbToggleMedia() {
+  const mode = fbCurrentMode();
+  const mediaWrap = document.getElementById('fb-media-wrap');
+  const linkWrap = document.getElementById('fb-link-wrap');
+  const fileInput = document.getElementById('fb-file-input');
+  const uploadText = document.getElementById('fb-upload-text');
+  const mediaLabel = document.getElementById('fb-media-label');
+  if (mode === 'photo' || mode === 'video') {
+    if (mediaWrap) mediaWrap.style.display = 'block';
+    if (linkWrap) linkWrap.style.display = 'none';
+    if (fileInput) fileInput.accept = mode === 'photo' ? 'image/*' : 'video/*';
+    if (uploadText) uploadText.textContent = 'Click or drag a ' + (mode === 'photo' ? 'photo' : 'video') + ' to upload';
+    if (mediaLabel) mediaLabel.textContent = mode === 'photo' ? 'Photo' : 'Video';
+  } else if (mode === 'link') {
+    if (mediaWrap) mediaWrap.style.display = 'none';
+    if (linkWrap) linkWrap.style.display = 'block';
+  } else {
+    if (mediaWrap) mediaWrap.style.display = 'none';
+    if (linkWrap) linkWrap.style.display = 'none';
+  }
+  fbUpdateButton();
+}
+
+function fbUpdateCounter() {
+  const ta = document.getElementById('fb-message');
+  const el = document.getElementById('fb-counter');
+  const wrap = el ? el.parentElement : null;
+  if (!ta || !el || !wrap) return;
+  const n = ta.value.length;
+  el.textContent = n.toLocaleString();
+  wrap.classList.toggle('warn', n >= FB_MESSAGE_WARN && n <= FB_MESSAGE_LIMIT);
+  wrap.classList.toggle('over', n > FB_MESSAGE_LIMIT);
+}
+
+function fbUpdateButton() {
+  const btn = document.getElementById('fb-submit-btn');
+  if (!btn) return;
+  const mode = fbCurrentMode();
+  const ta = document.getElementById('fb-message');
+  const linkInput = document.getElementById('fb-link-input');
+  const hasMsg = !!(ta && ta.value.trim().length > 0);
+  const msgOk = ta ? ta.value.length <= FB_MESSAGE_LIMIT : true;
+  const hasMedia = !!_fbMedia;
+  const hasLink = !!(linkInput && /^https?:\/\//i.test(linkInput.value.trim()));
+  const hasPage = _metaStatus.fb.length > 0;
+  let ok = false;
+  if (mode === 'text') ok = hasMsg && msgOk;
+  else if (mode === 'photo' || mode === 'video') ok = hasMedia && msgOk;
+  else if (mode === 'link') ok = hasLink && msgOk;
+  btn.disabled = !(ok && hasPage);
+}
+
+async function fbHandleMedia(file) {
+  if (!file) return;
+  const mode = fbCurrentMode();
+  const status = document.getElementById('fb-status');
+  const expectVideo = mode === 'video';
+  const isVideo = (file.type || '').startsWith('video/');
+  const isImage = (file.type || '').startsWith('image/');
+  if (expectVideo && !isVideo) {
+    if (status) { status.textContent = 'Selected file is not a video.'; status.className = 'newpost-status error'; }
+    return;
+  }
+  if (!expectVideo && !isImage) {
+    if (status) { status.textContent = 'Selected file is not an image.'; status.className = 'newpost-status error'; }
+    return;
+  }
+  if (status) { status.textContent = 'Uploading...'; status.className = 'newpost-status info'; }
+  try {
+    const result = await uploadMediaToStorage(file, 'facebook');
+    _fbMedia = { public_url: result.public_url, content_type: result.content_type, kind: isVideo ? 'video' : 'image', filename: file.name };
+    // Show preview inside the upload wrap (append, since wrap doesn't have a fixed preview el)
+    const mediaWrap = document.getElementById('fb-media-wrap');
+    if (mediaWrap) {
+      let preview = mediaWrap.querySelector('.newpost-media-preview');
+      if (!preview) {
+        preview = document.createElement('div');
+        preview.className = 'newpost-media-preview';
+        mediaWrap.appendChild(preview);
+      }
+      preview.style.display = 'block';
+      const tag = isVideo ? '<video src="' + esc(result.public_url) + '" controls></video>'
+                          : '<img src="' + esc(result.public_url) + '" alt="Preview">';
+      preview.innerHTML = tag + '<div class="meta-row"><span>' + esc(file.name || 'file') + '</span>'
+        + '<button type="button" class="clear-btn" onclick="fbClearMedia()">Remove</button></div>';
+    }
+    if (status) { status.textContent = ''; status.className = 'newpost-status'; }
+  } catch (err) {
+    console.error('FB upload failed:', err);
+    if (status) { status.textContent = 'Upload failed: ' + (err.message || err); status.className = 'newpost-status error'; }
+  }
+  fbUpdateButton();
+}
+
+function fbClearMedia() {
+  _fbMedia = null;
+  const mediaWrap = document.getElementById('fb-media-wrap');
+  if (mediaWrap) {
+    const preview = mediaWrap.querySelector('.newpost-media-preview');
+    if (preview) { preview.style.display = 'none'; preview.innerHTML = ''; }
+  }
+  const input = document.getElementById('fb-file-input');
+  if (input) input.value = '';
+  fbUpdateButton();
+}
+
+async function fbSubmit() {
+  const btn = document.getElementById('fb-submit-btn');
+  const status = document.getElementById('fb-status');
+  const ta = document.getElementById('fb-message');
+  const linkInput = document.getElementById('fb-link-input');
+  const mode = fbCurrentMode();
+  const page = selectedFbPage();
+  if (!page) { if (status) { status.textContent = 'No Facebook Page connected.'; status.className = 'newpost-status error'; } return; }
+  if (btn) btn.disabled = true;
+  if (status) { status.textContent = 'Posting to Facebook...'; status.className = 'newpost-status info'; }
+  const payload = {
+    action: 'post_facebook',
+    business_id: currentBusinessId,
+    page_id: page.account_id,
+    message: ta ? ta.value : '',
+  };
+  if (mode === 'photo' && _fbMedia) payload.image_url = _fbMedia.public_url;
+  else if (mode === 'video' && _fbMedia) payload.video_url = _fbMedia.public_url;
+  else if (mode === 'link' && linkInput) payload.link = linkInput.value.trim();
+  try {
+    const resp = await fetch(SUPABASE_URL + '/functions/v1/meta-post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await resp.json();
+    if (!resp.ok || data.error) throw new Error(data.error || ('HTTP ' + resp.status));
+    if (status) {
+      const link = data.permalink ? ' <a href="' + esc(data.permalink) + '" target="_blank" rel="noopener" style="color:var(--gold); text-decoration:underline;">View post</a>' : '';
+      status.innerHTML = 'Posted to Facebook.' + link;
+      status.className = 'newpost-status success';
+    }
+    if (ta) ta.value = '';
+    if (linkInput) linkInput.value = '';
+    fbClearMedia();
+    fbUpdateCounter();
+  } catch (err) {
+    console.error('FB post failed:', err);
+    if (status) { status.textContent = 'Post failed: ' + (err.message || err); status.className = 'newpost-status error'; }
+  }
+  fbUpdateButton();
+}
 
 // ──────────────── INIT ────────────────
 loadMembers();
