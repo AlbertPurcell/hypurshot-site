@@ -1,5 +1,5 @@
 // HyPurShot service worker — minimal shell cache + network-first for app pages.
-const VERSION = 'hps-v1';
+const VERSION = 'hps-v2';
 const CACHE = 'hps-cache-' + VERSION;
 const SHELL = [
   '/projects.html',
@@ -10,6 +10,7 @@ const SHELL = [
   '/showcase.html',
   '/team.html',
   '/auth.html',
+  '/reset-password.html',
   '/index.html',
   '/app.css',
   '/app.js',
