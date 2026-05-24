@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Not linked from public nav. Reachable by direct URL for the TikTok app review team. -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="tiktok-developers-site-verification" content="oR5jYkKuDIQWDBOci7aPpyZ97oVs5eWa">
+  <title>TikTok Integration — HyPurShot</title>
+  <meta name="description" content="Technical overview of how HyPurShot uses the TikTok Login Kit and Content Posting APIs.">
+  <link rel="icon" type="image/webp" href="/logo-nav.webp">
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0D0D0D;
+      --surface: #161616;
+      --gold: #D4A017;
+      --ice: #A8D4E6;
+      --text: #F0EDE8;
+      --muted: #888680;
+      --dim: #5a5854;
+      --border: #2a2a28;
+      --font-heading: 'Cabinet Grotesk', sans-serif;
+      --font-body: 'Satoshi', sans-serif;
+    }
+
+    html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    .container { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+
+    /* NAV */
+    .nav {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(13,13,13,0.92);
+      backdrop-filter: saturate(140%) blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 24px; max-width: 1100px; margin: 0 auto;
+    }
+    .nav-brand { display: flex; align-items: center; text-decoration: none; }
+    .nav-brand img { height: 44px; width: auto; display: block; }
+    .nav-cta {
+      font-family: var(--font-body); font-weight: 600; font-size: 0.88rem;
+      color: var(--text); text-decoration: none;
+      padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px;
+      transition: border-color 0.15s ease, color 0.15s ease;
+    }
+    .nav-cta:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* HERO */
+    .hero { padding: 64px 0 32px; }
+    .eyebrow {
+      font-family: var(--font-heading); font-weight: 700;
+      font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 14px;
+    }
+    h1 {
+      font-family: var(--font-heading); font-weight: 800;
+      font-size: clamp(1.9rem, 4vw, 2.6rem);
+      letter-spacing: -0.02em; line-height: 1.15;
+      margin-bottom: 18px;
+    }
+    .lede { color: var(--muted); font-size: 1.02rem; max-width: 680px; }
+
+    /* SECTIONS */
+    section { padding: 28px 0; }
+    h2 {
+      font-family: var(--font-heading); font-weight: 800;
+      font-size: 1.45rem; letter-spacing: -0.01em;
+      margin-top: 28px; margin-bottom: 14px;
+    }
+    h3 {
+      font-family: var(--font-heading); font-weight: 700;
+      font-size: 1.05rem; letter-spacing: -0.005em;
+      margin-top: 22px; margin-bottom: 10px;
+      color: var(--text);
+    }
+    p { margin-bottom: 14px; color: var(--text); }
+    p.muted { color: var(--muted); font-size: 0.94rem; }
+
+    ul.bullets { padding-left: 20px; margin-bottom: 16px; }
+    ul.bullets li { margin-bottom: 8px; color: var(--text); }
+
+    /* SCOPES TABLE */
+    .scopes {
+      list-style: none; padding: 0;
+      border: 1px solid var(--border); border-radius: 10px;
+      background: var(--surface); overflow: hidden;
+      margin: 18px 0 24px;
+    }
+    .scopes li {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 24px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      align-items: start;
+    }
+    .scopes li:last-child { border-bottom: none; }
+    .scope-name {
+      font-family: 'SFMono-Regular', Menlo, Consolas, monospace;
+      font-size: 0.86rem; font-weight: 600;
+      color: var(--ice);
+    }
+    .scope-desc { color: var(--text); font-size: 0.92rem; line-height: 1.55; }
+    @media (max-width: 640px) {
+      .scopes li { grid-template-columns: 1fr; gap: 6px; }
+    }
+
+    /* FLOW STEPS */
+    .flow {
+      counter-reset: step;
+      list-style: none; padding: 0; margin: 18px 0 24px;
+    }
+    .flow li {
+      counter-increment: step;
+      padding: 14px 0 14px 44px;
+      position: relative;
+      border-bottom: 1px solid var(--border);
+    }
+    .flow li:last-child { border-bottom: none; }
+    .flow li::before {
+      content: counter(step);
+      position: absolute; left: 0; top: 14px;
+      width: 28px; height: 28px;
+      background: var(--gold); color: #000;
+      border-radius: 50%;
+      font-family: var(--font-heading); font-weight: 800; font-size: 0.78rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .flow li strong { color: var(--text); font-weight: 700; }
+    .flow li p { color: var(--muted); font-size: 0.92rem; margin: 4px 0 0; }
+
+    /* CALLOUT */
+    .callout {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 22px;
+      margin: 20px 0;
+    }
+    .callout h3 { margin-top: 0; color: var(--gold); }
+    .callout p:last-child { margin-bottom: 0; }
+
+    code {
+      font-family: 'SFMono-Regular', Menlo, Consolas, monospace;
+      font-size: 0.88em;
+      background: rgba(168, 212, 230, 0.08);
+      color: var(--ice);
+      padding: 2px 6px; border-radius: 4px;
+    }
+
+    a { color: var(--gold); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* FOOTER */
+    .footer {
+      margin-top: 60px; padding: 32px 0;
+      border-top: 1px solid var(--border);
+      color: var(--dim); font-size: 0.82rem;
+      text-align: center;
+    }
+    .footer a { color: var(--muted); margin: 0 10px; }
+
+    /* META */
+    .meta-list {
+      list-style: none; padding: 0; margin: 16px 0 24px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    .meta-list li {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 16px;
+    }
+    .meta-list b {
+      display: block; font-family: var(--font-heading);
+      font-size: 0.72rem; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 4px; font-weight: 600;
+    }
+    .meta-list span { font-size: 0.92rem; color: var(--text); }
+    @media (max-width: 640px) {
+      .meta-list { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-brand" aria-label="HyPurShot home">
+        <img src="/logo-full.webp" alt="HyPurShot">
+      </a>
+      <a href="/auth.html" class="nav-cta">Sign in</a>
+    </div>
+  </nav>
+
+  <main class="container">
+
+    <header class="hero">
+      <div class="eyebrow">TikTok integration</div>
+      <h1>How HyPurShot uses the TikTok Content Posting and Login Kit APIs.</h1>
+      <p class="lede">This page is the technical reference for the TikTok app review team. It documents the OAuth scopes HyPurShot requests, how operators connect their TikTok account, how content is published, and how data is stored, revoked, and deleted.</p>
+    </header>
+
+    <section>
+      <h2>App overview</h2>
+      <p>HyPurShot is a mobile workflow app for detailers, auto service shops, and field service professionals. Operators capture photos and short vertical video of completed jobs, organize them into projects, and optionally publish the resulting content to their connected TikTok account. We use TikTok's official APIs to authenticate creators, display profile metadata, and publish video with full creator control on every post.</p>
+
+      <ul class="meta-list">
+        <li><b>Product domain</b><span>hypurshot.com</span></li>
+        <li><b>Primary use case</b><span>Auto detailing and service professionals</span></li>
+        <li><b>Auth flow</b><span>TikTok Login Kit (OAuth 2.0)</span></li>
+        <li><b>Publish flow</b><span>Content Posting API — Direct Post and Upload</span></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Scopes requested and why</h2>
+      <p>HyPurShot requests the minimum scopes needed to deliver the documented user-facing features. Every scope below maps to a concrete operator-visible feature in the product.</p>
+
+      <ul class="scopes">
+        <li>
+          <span class="scope-name">Login Kit</span>
+          <span class="scope-desc">Lets operators sign in to HyPurShot using their TikTok account, or connect TikTok to an existing HyPurShot account. We do not collect TikTok passwords. OAuth 2.0 with PKCE is used; tokens are stored server-side.</span>
+        </li>
+        <li>
+          <span class="scope-name">user.info.basic</span>
+          <span class="scope-desc">Used to display the connected creator's nickname and avatar in the HyPurShot Settings → Connections tab so operators can confirm which TikTok account is linked.</span>
+        </li>
+        <li>
+          <span class="scope-name">user.info.profile</span>
+          <span class="scope-desc">Used to show the verified TikTok handle and a profile link in Connections, and to attribute published video to the correct creator in the operator's own activity log.</span>
+        </li>
+        <li>
+          <span class="scope-name">video.publish</span>
+          <span class="scope-desc">Used by the Direct Post action in the HyPurShot composer. Operators explicitly tap "Post" after reviewing the privacy level, caption, music-usage acknowledgement, branded-content disclosure, and platform target. We never publish without an explicit user action in the same session.</span>
+        </li>
+        <li>
+          <span class="scope-name">video.upload</span>
+          <span class="scope-desc">Used by the "Save to TikTok drafts" action, which uploads the prepared video to the operator's TikTok account as a draft for the creator to finalize inside the TikTok app. No public publish occurs without the creator's final action inside TikTok.</span>
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>End-to-end publish flow</h2>
+      <ol class="flow">
+        <li>
+          <strong>Connect TikTok account</strong>
+          <p>Operator goes to Settings → Connections in HyPurShot, taps "Connect TikTok," and is redirected to TikTok's OAuth screen. They review the requested scopes and approve. TikTok returns an authorization code to our redirect URI.</p>
+        </li>
+        <li>
+          <strong>Exchange code, store tokens server-side</strong>
+          <p>Our backend exchanges the code for access and refresh tokens. Tokens are stored encrypted at rest and never exposed to the browser. Refresh tokens are used to keep the connection alive; access tokens are short-lived.</p>
+        </li>
+        <li>
+          <strong>Compose video in HyPurShot</strong>
+          <p>Operator opens a project, taps a captured video, and opens the New Post composer. The composer surfaces every required TikTok disclosure: privacy level (Public, Friends, Private), comment / duet / stitch toggles, branded-content disclosure, and music-usage acknowledgement. Defaults follow TikTok's guidance and are clearly labeled.</p>
+        </li>
+        <li>
+          <strong>Explicit user action to publish</strong>
+          <p>The operator reviews the preview and taps "Post to TikTok." Only then does our backend call the Content Posting API with the operator's stored token. There is no scheduled, automated, or background publishing.</p>
+        </li>
+        <li>
+          <strong>Confirmation and audit</strong>
+          <p>On success, the operator sees a confirmation with a link back to the TikTok video. The event is logged in our internal activity log for the operator's own review under their account.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Data handling and retention</h2>
+      <h3>What we store</h3>
+      <ul class="bullets">
+        <li>The operator's TikTok user ID, display name, and avatar URL (for the Connections display).</li>
+        <li>Access and refresh tokens, encrypted at rest, scoped to the connected operator only.</li>
+        <li>Metadata about videos the operator published from HyPurShot (timestamp, post ID, status) for the operator's own activity log.</li>
+      </ul>
+
+      <h3>What we do not store</h3>
+      <ul class="bullets">
+        <li>TikTok passwords. We never see them.</li>
+        <li>Other users' TikTok content, followers, or analytics.</li>
+        <li>Long-term copies of video files on TikTok. We hold the source video the operator captured in their HyPurShot library only.</li>
+      </ul>
+
+      <h3>Revocation and deletion</h3>
+      <p>Operators can disconnect TikTok at any time from Settings → Connections. On disconnect, we revoke the stored tokens via TikTok's revocation endpoint and delete the cached profile metadata. If an operator deletes their HyPurShot account, all stored tokens are revoked and all TikTok-related metadata is removed within 30 days as part of account deletion.</p>
+    </section>
+
+    <section>
+      <h2>Compliance with TikTok policy</h2>
+      <ul class="bullets">
+        <li><strong>No background or automated publishing.</strong> Every post is the result of an explicit operator action in the HyPurShot composer.</li>
+        <li><strong>All required disclosures present in the composer.</strong> Branded-content toggle, music-usage acknowledgement, comment / duet / stitch privacy controls, and privacy level dropdown are all surfaced before publish.</li>
+        <li><strong>Minimum scopes.</strong> We request only the scopes needed for the documented user-facing features.</li>
+        <li><strong>Server-side token storage.</strong> Tokens never touch the browser and are encrypted at rest.</li>
+        <li><strong>Respect for content policies.</strong> The composer guides operators toward complying with TikTok's Community Guidelines; it does not bypass any platform-level restrictions or rate limits.</li>
+      </ul>
+
+      <div class="callout">
+        <h3>Contact for the review team</h3>
+        <p>Questions about HyPurShot's TikTok integration can be sent to <a href="mailto:hello@hypurshot.com">hello@hypurshot.com</a>. A test account and walkthrough video can be provided on request.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Related documents</h2>
+      <ul class="bullets">
+        <li><a href="/privacy.html">Privacy Policy</a></li>
+        <li><a href="/terms.html">Terms of Service</a></li>
+        <li><a href="/">Product home</a></li>
+      </ul>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      &copy; 2026 HyPurShot.
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="mailto:hello@hypurshot.com">Contact</a>
+    </div>
+  </footer>
+
+</body>
+</html>
