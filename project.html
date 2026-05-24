@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0D0D0D">
+<title>HyPurShot — Project</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="logo-nav.webp">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  .summary-card { padding: 18px; }
+  .summary-card .title {
+    font-family: var(--font-heading); font-weight: 700;
+    font-size: 1.2rem; letter-spacing: -0.015em; line-height: 1.25;
+    margin-bottom: 10px;
+  }
+  .summary-row {
+    display: flex; gap: 8px; align-items: center;
+    font-size: 0.82rem; color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .summary-row svg { width: 14px; height: 14px; flex: 0 0 14px; stroke: currentColor; fill: none; stroke-width: 1.8; opacity: 0.7; }
+  .summary-row b { color: var(--text); font-weight: 500; }
+
+  .action-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin: 16px 0 24px;
+  }
+
+  /* Media item viewer (lightbox) */
+  .lightbox {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.94); z-index: 200;
+    display: none; flex-direction: column;
+    padding-top: env(safe-area-inset-top);
+  }
+  .lightbox.active { display: flex; }
+  .lightbox-top {
+    height: 56px; padding: 0 16px; display: flex;
+    align-items: center; justify-content: space-between;
+    background: rgba(0,0,0,0.6);
+  }
+  .lightbox-top button {
+    background: rgba(255,255,255,0.08); border: 1px solid var(--border);
+    color: var(--text); height: 40px; padding: 0 14px;
+    border-radius: 999px; cursor: pointer; font-size: 0.82rem;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .lightbox-top button.danger { color: var(--error); border-color: rgba(224,92,108,0.3); }
+  .lightbox-stage {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .lightbox-stage img, .lightbox-stage video {
+    max-width: 100%; max-height: 100%; object-fit: contain;
+  }
+  .lightbox-bottom {
+    padding: 16px 20px calc(20px + env(safe-area-inset-bottom));
+    background: rgba(0,0,0,0.6); border-top: 1px solid var(--border);
+  }
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 14px;
+  }
+  .toggle-row .label { font-size: 0.9rem; }
+  .toggle-row .hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+  .switch {
+    position: relative; width: 50px; height: 28px;
+    background: var(--surface-2); border: 1px solid var(--border-strong);
+    border-radius: 999px; cursor: pointer; transition: all 0.2s;
+    flex: 0 0 50px;
+  }
+  .switch::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--text); transition: all 0.2s;
+  }
+  .switch.on { background: var(--gold); border-color: var(--gold); }
+  .switch.on::after { left: 26px; background: var(--bg); }
+
+  /* Review request modal */
+  .modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 150;
+    display: none; align-items: flex-end; justify-content: center;
+  }
+  .modal.active { display: flex; }
+  .modal-panel {
+    background: var(--surface); border-top: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    padding: 22px 20px calc(28px + env(safe-area-inset-bottom));
+    width: 100%; max-width: 540px;
+    animation: slideUp 0.2s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-panel h2 { font-size: 1.15rem; margin-bottom: 6px; }
+  .modal-panel .desc { color: var(--text-muted); font-size: 0.86rem; margin-bottom: 18px; }
+  .channel-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .channel-card {
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px; cursor: pointer; text-align: center;
+    background: var(--surface-2);
+    transition: all 0.15s;
+  }
+  .channel-card.selected { border-color: var(--gold); background: var(--gold-dim); }
+  .channel-card.disabled { opacity: 0.4; pointer-events: none; }
+  .channel-card .ch-label { font-weight: 600; font-size: 0.88rem; }
+  .channel-card .ch-target { font-size: 0.74rem; color: var(--text-muted); margin-top: 4px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<header class="navbar">
+  <button class="nav-back" onclick="window.location.href='projects.html'">
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M15 18l-6-6 6-6"/></svg>
+    Projects
+  </button>
+  <div class="nav-title">Project</div>
+  <div style="width:60px"></div>
+</header>
+
+<main class="page">
+
+  <!-- Summary -->
+  <div class="card summary-card" id="summary">
+    <div class="title" id="p-title">Loading…</div>
+    <div class="summary-row"><span class="pill gold" id="p-status"><span class="pill-dot"></span>Active</span></div>
+    <div class="summary-row" id="p-vehicle-row" style="display:none">
+      <svg viewBox="0 0 24 24"><path d="M5 17h14M5 17l1-5h12l1 5M5 17v2M19 17v2M7 12V8a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v4"/></svg>
+      <span id="p-vehicle"></span>
+    </div>
+    <div class="summary-row" id="p-customer-row">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+      <span><b id="p-customer"></b><span id="p-contact" class="text-dim" style="margin-left:6px"></span></span>
+    </div>
+    <div class="summary-row" id="p-loc-row" style="display:none">
+      <svg viewBox="0 0 24 24"><path d="M12 22s7-7 7-13a7 7 0 1 0-14 0c0 6 7 13 7 13z"/><circle cx="12" cy="9" r="2.5"/></svg>
+      <span id="p-loc"></span>
+    </div>
+    <div class="summary-row">
+      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+      <span id="p-date"></span>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="action-grid">
+    <button class="btn btn-gold" onclick="window.location.href='camera.html?project=' + projectId">
+      <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>
+      Capture
+    </button>
+    <button class="btn btn-ice" id="review-btn" onclick="openReviewModal()">
+      <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M12 3l2.7 5.7 6.3.9-4.5 4.4 1 6.3-5.5-2.9-5.5 2.9 1-6.3L3 9.6l6.3-.9z"/></svg>
+      Get reviewed
+    </button>
+  </div>
+
+  <!-- Status actions row -->
+  <div class="row between mb-16">
+    <h2>Media</h2>
+    <button class="btn btn-ghost btn-sm" id="complete-btn" onclick="toggleComplete()">Mark complete</button>
+  </div>
+
+  <!-- Media grid -->
+  <div id="media-grid" class="media-grid"></div>
+  <div id="media-empty" class="empty hidden">
+    <h3>No captures yet</h3>
+    <p>Tap Capture to add your first photo or video.</p>
+  </div>
+
+</main>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-top">
+    <button onclick="closeLightbox()">Close</button>
+    <button class="danger" onclick="deleteCurrent()">Delete</button>
+  </div>
+  <div class="lightbox-stage" id="lightbox-stage"></div>
+  <div class="lightbox-bottom">
+    <div class="toggle-row">
+      <div>
+        <div class="label">Public on showcase</div>
+        <div class="hint">Only public items appear on your portfolio page.</div>
+      </div>
+      <div class="switch" id="public-switch" onclick="togglePublic()"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Review request modal -->
+<div class="modal" id="review-modal">
+  <div class="modal-panel">
+    <h2>Request a Google review</h2>
+    <p class="desc">Send your customer a one-tap link to your Google Business profile.</p>
+
+    <div id="rev-no-link" class="card hidden" style="margin-bottom:14px;background:var(--surface-2)">
+      <div class="text-error" style="font-size:.88rem;font-weight:600;margin-bottom:6px">No review link set</div>
+      <div class="text-muted" style="font-size:.82rem;margin-bottom:12px">Add your Google review link in Settings before sending.</div>
+      <a href="team.html#gbp" class="btn btn-ghost btn-sm">Go to Settings</a>
+    </div>
+
+    <div id="rev-form">
+      <div class="channel-grid">
+        <div class="channel-card selected" data-channel="sms" id="ch-sms">
+          <div class="ch-label">Text message</div>
+          <div class="ch-target" id="ch-sms-target">—</div>
+        </div>
+        <div class="channel-card selected" data-channel="email" id="ch-email">
+          <div class="ch-label">Email</div>
+          <div class="ch-target" id="ch-email-target">—</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="rev-message">Message</label>
+        <textarea id="rev-message" class="textarea" rows="3"></textarea>
+        <div class="hint">SMS will open in your phone's Messages app — you tap Send.</div>
+      </div>
+
+      <div class="stack mt-8">
+        <button class="btn btn-ice btn-lg btn-block" id="rev-send-btn" onclick="sendReviewRequest()">Send request</button>
+        <button class="btn btn-ghost btn-block" onclick="closeReviewModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+const projectId = HPS.qs('id');
+let project = null;
+let mediaList = [];
+let currentMedia = null;
+let selectedChannels = { sms: true, email: true };
+
+async function loadProject() {
+  if (!projectId) { window.location.href = 'projects.html'; return; }
+  const { data, error } = await HPS.sb
+    .from('jobs')
+    .select('*')
+    .eq('id', projectId)
+    .maybeSingle();
+  if (error || !data) { HPS.toast('Project not found.', 'error'); setTimeout(()=>location.href='projects.html', 1000); return; }
+  project = data;
+  renderSummary();
+  await loadMedia();
+}
+
+function renderSummary() {
+  document.getElementById('p-title').textContent = project.description || project.vehicle_info || project.service_type || 'Untitled';
+  const pill = document.getElementById('p-status');
+  if (project.status === 'completed') {
+    pill.className = 'pill success';
+    pill.innerHTML = '<span class="pill-dot"></span>Completed';
+    document.getElementById('complete-btn').textContent = 'Reopen';
+  } else {
+    pill.className = 'pill gold';
+    pill.innerHTML = '<span class="pill-dot"></span>Active';
+    document.getElementById('complete-btn').textContent = 'Mark complete';
+  }
+  if (project.vehicle_info) {
+    document.getElementById('p-vehicle').textContent = project.vehicle_info;
+    document.getElementById('p-vehicle-row').style.display = 'flex';
+  }
+  document.getElementById('p-customer').textContent = project.customer_name || '—';
+  const contact = [project.customer_phone, project.customer_email].filter(Boolean).join(' · ');
+  document.getElementById('p-contact').textContent = contact ? '· ' + contact : '';
+  if (project.location_label) {
+    document.getElementById('p-loc').textContent = project.location_label;
+    document.getElementById('p-loc-row').style.display = 'flex';
+  } else if (project.location_lat) {
+    document.getElementById('p-loc').textContent = project.location_lat.toFixed(4) + ', ' + project.location_lng.toFixed(4);
+    document.getElementById('p-loc-row').style.display = 'flex';
+  }
+  document.getElementById('p-date').textContent = 'Started ' + HPS.fmtDate(project.started_at || project.created_at);
+}
+
+async function loadMedia() {
+  const { data, error } = await HPS.sb
+    .from('media')
+    .select('*')
+    .eq('job_id', projectId)
+    .order('captured_at', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false });
+  if (error) { HPS.toast('Could not load media.', 'error'); return; }
+  mediaList = data || [];
+  renderMedia();
+}
+
+function renderMedia() {
+  const grid = document.getElementById('media-grid');
+  const empty = document.getElementById('media-empty');
+  if (!mediaList.length) {
+    grid.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+  grid.innerHTML = mediaList.map((m, i) => {
+    const url = m.watermarked_url || m.original_url;
+    const isVideo = m.media_type === 'video';
+    return '<div class="media-tile fade-in" onclick="openLightbox(' + i + ')">' +
+      (isVideo
+        ? '<video src="' + escapeAttr(url) + '" preload="metadata" muted playsinline></video>'
+        : '<img src="' + escapeAttr(url) + '" alt="" loading="lazy">') +
+      (isVideo ? '<span class="video-badge">Video</span>' : '') +
+      (m.is_public ? '<span class="public-badge">Public</span>' : '') +
+    '</div>';
+  }).join('');
+}
+
+function openLightbox(idx) {
+  currentMedia = mediaList[idx];
+  const stage = document.getElementById('lightbox-stage');
+  stage.innerHTML = '';
+  const url = currentMedia.watermarked_url || currentMedia.original_url;
+  if (currentMedia.media_type === 'video') {
+    const v = document.createElement('video');
+    v.src = url; v.controls = true; v.playsInline = true; v.autoplay = true;
+    stage.appendChild(v);
+  } else {
+    const img = document.createElement('img');
+    img.src = url; stage.appendChild(img);
+  }
+  const sw = document.getElementById('public-switch');
+  sw.classList.toggle('on', !!currentMedia.is_public);
+  document.getElementById('lightbox').classList.add('active');
+}
+
+function closeLightbox() {
+  const stage = document.getElementById('lightbox-stage');
+  stage.innerHTML = '';
+  document.getElementById('lightbox').classList.remove('active');
+  currentMedia = null;
+}
+
+async function togglePublic() {
+  if (!currentMedia) return;
+  const newVal = !currentMedia.is_public;
+  const { error } = await HPS.sb
+    .from('media')
+    .update({ is_public: newVal })
+    .eq('id', currentMedia.id);
+  if (error) { HPS.toast('Could not update.', 'error'); return; }
+  currentMedia.is_public = newVal;
+  document.getElementById('public-switch').classList.toggle('on', newVal);
+  // Update in list
+  const idx = mediaList.findIndex(m => m.id === currentMedia.id);
+  if (idx >= 0) mediaList[idx].is_public = newVal;
+  renderMedia();
+  HPS.toast(newVal ? 'Now public on showcase' : 'Hidden from showcase', 'success');
+}
+
+async function deleteCurrent() {
+  if (!currentMedia) return;
+  if (!confirm('Delete this item? This cannot be undone.')) return;
+  // Best-effort storage delete
+  if (currentMedia.storage_path) {
+    try { await HPS.sb.storage.from('post-media').remove([currentMedia.storage_path]); } catch (e) {}
+  }
+  const { error } = await HPS.sb.from('media').delete().eq('id', currentMedia.id);
+  if (error) { HPS.toast('Could not delete.', 'error'); return; }
+  mediaList = mediaList.filter(m => m.id !== currentMedia.id);
+  closeLightbox();
+  renderMedia();
+  HPS.toast('Deleted.', 'success');
+}
+
+async function toggleComplete() {
+  const next = project.status === 'completed' ? 'in_progress' : 'completed';
+  const payload = next === 'completed'
+    ? { status: 'completed', completed_at: new Date().toISOString() }
+    : { status: 'in_progress', completed_at: null };
+  const { error } = await HPS.sb.from('jobs').update(payload).eq('id', projectId);
+  if (error) { HPS.toast('Could not update.', 'error'); return; }
+  project.status = next;
+  project.completed_at = payload.completed_at;
+  renderSummary();
+  HPS.toast(next === 'completed' ? 'Marked complete' : 'Reopened', 'success');
+  if (next === 'completed') {
+    setTimeout(() => openReviewModal(), 400);
+  }
+}
+
+// ─── Review request ───
+function openReviewModal() {
+  const reviewLink = HPS.business && HPS.business.gbp_review_link;
+  if (!reviewLink) {
+    document.getElementById('rev-no-link').classList.remove('hidden');
+    document.getElementById('rev-form').classList.add('hidden');
+  } else {
+    document.getElementById('rev-no-link').classList.add('hidden');
+    document.getElementById('rev-form').classList.remove('hidden');
+  }
+  // Wire targets
+  const sms = document.getElementById('ch-sms');
+  const em = document.getElementById('ch-email');
+  document.getElementById('ch-sms-target').textContent = project.customer_phone || 'No phone on file';
+  document.getElementById('ch-email-target').textContent = project.customer_email || 'No email on file';
+  if (!project.customer_phone) { sms.classList.add('disabled'); sms.classList.remove('selected'); selectedChannels.sms = false; } else { selectedChannels.sms = true; sms.classList.remove('disabled'); sms.classList.add('selected'); }
+  if (!project.customer_email) { em.classList.add('disabled'); em.classList.remove('selected'); selectedChannels.email = false; } else { selectedChannels.email = true; em.classList.remove('disabled'); em.classList.add('selected'); }
+
+  // Default message
+  const bizName = (HPS.business && HPS.business.name) ? HPS.business.name : 'us';
+  const firstName = (project.customer_name || '').split(' ')[0] || 'there';
+  const link = reviewLink || '';
+  const msg = 'Hi ' + firstName + ', thanks for trusting ' + bizName + ' with your vehicle. If you were happy with the work, a quick Google review would mean a lot: ' + link;
+  document.getElementById('rev-message').value = msg;
+
+  document.getElementById('review-modal').classList.add('active');
+}
+
+function closeReviewModal() {
+  document.getElementById('review-modal').classList.remove('active');
+}
+
+document.querySelectorAll('.channel-card').forEach(card => {
+  card.addEventListener('click', () => {
+    if (card.classList.contains('disabled')) return;
+    const ch = card.dataset.channel;
+    card.classList.toggle('selected');
+    selectedChannels[ch] = card.classList.contains('selected');
+  });
+});
+
+async function sendReviewRequest() {
+  const msg = document.getElementById('rev-message').value.trim();
+  if (!msg) { HPS.toast('Message is empty.', 'error'); return; }
+  const channels = [];
+  if (selectedChannels.sms && project.customer_phone) channels.push('sms');
+  if (selectedChannels.email && project.customer_email) channels.push('email');
+  if (!channels.length) { HPS.toast('Pick at least one channel.', 'error'); return; }
+
+  const btn = document.getElementById('rev-send-btn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+
+  // Log the request first
+  await HPS.sb.from('review_requests').insert({
+    job_id: projectId,
+    business_id: HPS.businessId,
+    customer_name: project.customer_name,
+    customer_phone: project.customer_phone,
+    customer_email: project.customer_email,
+    channel: channels.length === 2 ? 'both' : channels[0],
+    sms_message: msg,
+    sent_at: new Date().toISOString(),
+    status: 'sent',
+  });
+
+  // SMS handoff: open native Messages app
+  if (channels.includes('sms') && project.customer_phone) {
+    const phone = project.customer_phone.replace(/[^0-9+]/g, '');
+    // iOS uses & or no separator; many platforms accept both — & works on iOS 14+ and Android
+    const smsHref = 'sms:' + phone + (/iPhone|iPad|iPod/i.test(navigator.userAgent) ? '&' : '?') + 'body=' + encodeURIComponent(msg);
+    // Have to navigate or open
+    window.location.href = smsHref;
+  }
+
+  // Email via Edge Function (fallback to mailto: if function unavailable)
+  if (channels.includes('email') && project.customer_email) {
+    try {
+      const resp = await fetch(HPS.SUPABASE_URL + '/functions/v1/review-request-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + HPS.SUPABASE_ANON_KEY },
+        body: JSON.stringify({
+          business_id: HPS.businessId,
+          to_email: project.customer_email,
+          to_name: project.customer_name,
+          business_name: (HPS.business && HPS.business.name) || 'HyPurShot',
+          message: msg,
+          review_link: (HPS.business && HPS.business.gbp_review_link) || '',
+        }),
+      });
+      if (!resp.ok) throw new Error('Email function not deployed');
+    } catch (e) {
+      // Fallback to mailto:
+      const mailto = 'mailto:' + project.customer_email +
+        '?subject=' + encodeURIComponent('A quick favor — share your experience') +
+        '&body=' + encodeURIComponent(msg);
+      window.open(mailto, '_blank');
+    }
+  }
+
+  HPS.toast('Review request sent.', 'success');
+  btn.disabled = false; btn.textContent = 'Send request';
+  setTimeout(closeReviewModal, 600);
+}
+
+function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { return escapeHtml(s); }
+
+(async () => {
+  const ok = await HPS.init();
+  if (!ok) return;
+  await loadProject();
+})();
+</script>
+</body>
+</html>

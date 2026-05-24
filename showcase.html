@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0D0D0D">
+<title>HyPurShot Showcase</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="logo-nav.webp">
+<meta property="og:type" content="website">
+<meta property="og:title" id="og-title" content="HyPurShot Showcase">
+<meta property="og:description" content="Proof of work — built with HyPurShot.">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  body { padding-bottom: 0; }
+  .page { padding-bottom: 40px; }
+  .hero {
+    padding: 40px 0 28px;
+    text-align: center;
+  }
+  .hero h1 {
+    font-size: 2rem; letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .hero .tagline { color: var(--text-muted); font-size: 0.95rem; }
+  .hero .meta {
+    display: inline-flex; gap: 12px; align-items: center;
+    margin-top: 14px; padding: 8px 14px;
+    border: 1px solid var(--border); border-radius: 999px;
+    font-size: 0.78rem; color: var(--text-muted);
+  }
+  .hero .meta b { color: var(--text); font-weight: 600; }
+  .hero .meta span { color: var(--text-dim); }
+
+  .showcase-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px;
+  }
+  .showcase-tile {
+    aspect-ratio: 1 / 1; background: var(--surface-2);
+    border-radius: 4px; overflow: hidden; position: relative;
+    cursor: pointer;
+  }
+  .showcase-tile img, .showcase-tile video { width: 100%; height: 100%; object-fit: cover; }
+  .showcase-tile .vbadge {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(0,0,0,0.6); color: var(--text);
+    padding: 2px 7px; font-size: 0.62rem; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase; border-radius: 4px;
+  }
+  @media (min-width: 640px) { .showcase-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 900px) { .showcase-grid { grid-template-columns: repeat(4, 1fr); } }
+
+  .footer {
+    margin-top: 40px; text-align: center;
+    padding: 24px 0; border-top: 1px solid var(--border);
+    color: var(--text-dim); font-size: 0.78rem;
+  }
+  .footer a { color: var(--gold); }
+
+  /* Lightbox */
+  .lightbox {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 200;
+    display: none; flex-direction: column;
+    padding-top: env(safe-area-inset-top);
+  }
+  .lightbox.active { display: flex; }
+  .lightbox-top {
+    height: 56px; padding: 0 16px; display: flex;
+    align-items: center; justify-content: flex-end;
+  }
+  .lightbox-top button {
+    background: rgba(255,255,255,0.08); border: 1px solid var(--border);
+    color: var(--text); height: 40px; padding: 0 14px;
+    border-radius: 999px; cursor: pointer; font-size: 0.82rem;
+  }
+  .lightbox-stage {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .lightbox-stage img, .lightbox-stage video { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+  .cta-bar {
+    position: sticky; bottom: 0;
+    background: linear-gradient(to top, rgba(13,13,13,0.95) 70%, transparent);
+    padding: 16px 20px calc(20px + env(safe-area-inset-bottom));
+    display: flex; gap: 10px; justify-content: center;
+  }
+</style>
+</head>
+<body>
+
+<header class="navbar">
+  <a href="https://hypurshot.com" class="nav-logo">
+    <img src="logo-nav.webp" alt="HyPurShot">
+  </a>
+  <div class="nav-title" id="biz-title">Showcase</div>
+  <div style="width:34px"></div>
+</header>
+
+<main class="page" style="padding-bottom:40px">
+
+  <section class="hero">
+    <h1 id="biz-name">…</h1>
+    <div class="tagline" id="biz-tagline">Proof of work</div>
+    <div class="meta" id="biz-meta" style="display:none">
+      <b id="biz-name-meta"></b>
+      <span id="biz-city"></span>
+    </div>
+  </section>
+
+  <div id="showcase-grid" class="showcase-grid"></div>
+  <div id="empty" class="empty hidden">
+    <h3>Coming soon</h3>
+    <p>This portfolio is still being built.</p>
+  </div>
+
+  <div class="footer">
+    Powered by <a href="https://hypurshot.com">HyPurShot</a>
+  </div>
+
+</main>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-top">
+    <button onclick="closeLightbox()">Close</button>
+  </div>
+  <div class="lightbox-stage" id="lightbox-stage"></div>
+</div>
+
+<script src="app.js"></script>
+<script>
+let business = null;
+let mediaList = [];
+
+async function loadShowcase() {
+  const slug = HPS.qs('slug');
+  const bizQ = HPS.qs('business');
+  let bizQuery = HPS.sb.from('businesses').select('id, name, city, showcase_slug');
+  if (slug) bizQuery = bizQuery.ilike('showcase_slug', slug);
+  else if (bizQ) bizQuery = bizQuery.eq('id', bizQ);
+  else {
+    showEmpty('No business specified.');
+    return;
+  }
+  const { data: biz, error } = await bizQuery.maybeSingle();
+  if (error || !biz) { showEmpty('Portfolio not found.'); return; }
+  business = biz;
+  document.getElementById('biz-name').textContent = biz.name || 'Portfolio';
+  document.getElementById('biz-title').textContent = biz.name || 'Showcase';
+  document.getElementById('og-title').setAttribute('content', (biz.name || 'Showcase') + ' — HyPurShot');
+  document.title = (biz.name || 'Showcase') + ' — HyPurShot';
+  if (biz.city) {
+    document.getElementById('biz-meta').style.display = 'inline-flex';
+    document.getElementById('biz-name-meta').textContent = biz.name || '';
+    document.getElementById('biz-city').textContent = biz.city || '';
+  }
+
+  // Fetch public media. RLS may restrict this — we rely on a permissive read policy or treat the call as anonymous and rely on it being public.
+  const { data: media, error: mediaErr } = await HPS.sb
+    .from('media')
+    .select('id, original_url, watermarked_url, media_type, mime_type, captured_at, created_at, is_public')
+    .eq('business_id', biz.id)
+    .eq('is_public', true)
+    .order('captured_at', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false })
+    .limit(120);
+
+  if (mediaErr) { showEmpty('Could not load this portfolio.'); return; }
+  mediaList = media || [];
+  renderGrid();
+}
+
+function renderGrid() {
+  const grid = document.getElementById('showcase-grid');
+  if (!mediaList.length) {
+    document.getElementById('empty').classList.remove('hidden');
+    return;
+  }
+  document.getElementById('empty').classList.add('hidden');
+  grid.innerHTML = mediaList.map((m, i) => {
+    const url = m.watermarked_url || m.original_url;
+    const isVideo = m.media_type === 'video';
+    return '<div class="showcase-tile fade-in" data-idx="' + i + '">' +
+      (isVideo
+        ? '<video src="' + escapeAttr(url) + '" preload="metadata" muted playsinline></video>'
+        : '<img src="' + escapeAttr(url) + '" alt="" loading="lazy">') +
+      (isVideo ? '<span class="vbadge">Video</span>' : '') +
+    '</div>';
+  }).join('');
+  grid.querySelectorAll('.showcase-tile').forEach(t => t.addEventListener('click', () => openLightbox(parseInt(t.dataset.idx, 10))));
+}
+
+function openLightbox(idx) {
+  const m = mediaList[idx]; if (!m) return;
+  const stage = document.getElementById('lightbox-stage');
+  stage.innerHTML = '';
+  const url = m.watermarked_url || m.original_url;
+  if (m.media_type === 'video') {
+    const v = document.createElement('video');
+    v.src = url; v.controls = true; v.playsInline = true; v.autoplay = true;
+    stage.appendChild(v);
+  } else {
+    const img = document.createElement('img'); img.src = url; stage.appendChild(img);
+  }
+  document.getElementById('lightbox').classList.add('active');
+}
+function closeLightbox() {
+  document.getElementById('lightbox-stage').innerHTML = '';
+  document.getElementById('lightbox').classList.remove('active');
+}
+
+function showEmpty(msg) {
+  document.getElementById('biz-name').textContent = 'Portfolio';
+  document.getElementById('biz-tagline').textContent = msg;
+  document.getElementById('empty').classList.remove('hidden');
+}
+
+function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { return escapeHtml(s); }
+
+// No auth needed — public page
+loadShowcase();
+</script>
+</body>
+</html>

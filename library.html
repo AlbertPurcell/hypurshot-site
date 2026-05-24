@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0D0D0D">
+<title>HyPurShot — Library</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="logo-nav.webp">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  /* Lightbox shared with project.html */
+  .lightbox {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.94); z-index: 200;
+    display: none; flex-direction: column;
+    padding-top: env(safe-area-inset-top);
+  }
+  .lightbox.active { display: flex; }
+  .lightbox-top {
+    height: 56px; padding: 0 16px; display: flex;
+    align-items: center; justify-content: space-between;
+    background: rgba(0,0,0,0.6);
+  }
+  .lightbox-top button {
+    background: rgba(255,255,255,0.08); border: 1px solid var(--border);
+    color: var(--text); height: 40px; padding: 0 14px;
+    border-radius: 999px; cursor: pointer; font-size: 0.82rem;
+  }
+  .lightbox-stage {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .lightbox-stage img, .lightbox-stage video {
+    max-width: 100%; max-height: 100%; object-fit: contain;
+  }
+  .lightbox-bottom {
+    padding: 14px 20px calc(20px + env(safe-area-inset-bottom));
+    background: rgba(0,0,0,0.7); border-top: 1px solid var(--border);
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .lightbox-bottom .btn { flex: 1; min-width: 0; }
+  .lightbox-meta {
+    font-size: 0.76rem; color: var(--text-muted);
+    margin-bottom: 10px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<header class="navbar">
+  <a href="projects.html" class="nav-logo">
+    <img src="logo-nav.webp" alt="HyPurShot">
+  </a>
+  <div class="nav-title">Library</div>
+  <a href="team.html" class="nav-avatar" id="nav-avatar">··</a>
+</header>
+
+<main class="page">
+
+  <div class="filter-row" id="filter-row">
+    <button class="chip active" data-filter="all">All</button>
+    <button class="chip" data-filter="photos">Photos</button>
+    <button class="chip" data-filter="videos">Videos</button>
+    <button class="chip" data-filter="public">Public</button>
+  </div>
+
+  <div id="media-grid" class="media-grid"></div>
+  <div id="media-empty" class="empty hidden">
+    <h3>Library is empty</h3>
+    <p>Start a project and capture content to fill your library.</p>
+    <button class="btn btn-gold" onclick="window.location.href='project-new.html'">New project</button>
+  </div>
+
+</main>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-top">
+    <button onclick="closeLightbox()">Close</button>
+    <button onclick="goToProject()">Open project</button>
+  </div>
+  <div class="lightbox-stage" id="lightbox-stage"></div>
+  <div class="lightbox-bottom">
+    <div style="width:100%">
+      <div class="lightbox-meta" id="lb-meta"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-gold" id="share-btn" onclick="shareNative()">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v14"/></svg>
+          Share
+        </button>
+        <button class="btn btn-ghost" onclick="openComposer()">Post to social</button>
+        <button class="btn btn-ghost" onclick="copyLink()">Copy link</button>
+        <button class="btn btn-ghost" onclick="downloadMedia()">Download</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+let allMedia = [];
+let jobsById = {};
+let currentFilter = 'all';
+let currentMedia = null;
+
+async function loadLibrary() {
+  // Pull all media for this business
+  const { data: media, error } = await HPS.sb
+    .from('media')
+    .select('*')
+    .eq('business_id', HPS.businessId)
+    .order('captured_at', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false })
+    .limit(500);
+  if (error) { HPS.toast('Could not load library.', 'error'); return; }
+  allMedia = media || [];
+
+  // Pull associated jobs for titles
+  const jobIds = [...new Set(allMedia.map(m => m.job_id).filter(Boolean))];
+  if (jobIds.length) {
+    const { data: jobs } = await HPS.sb
+      .from('jobs')
+      .select('id, description, vehicle_info, service_type, customer_name')
+      .in('id', jobIds);
+    for (const j of (jobs || [])) jobsById[j.id] = j;
+  }
+
+  renderGrid();
+}
+
+function renderGrid() {
+  let list = allMedia;
+  if (currentFilter === 'photos') list = list.filter(m => m.media_type !== 'video');
+  else if (currentFilter === 'videos') list = list.filter(m => m.media_type === 'video');
+  else if (currentFilter === 'public') list = list.filter(m => m.is_public);
+
+  const grid = document.getElementById('media-grid');
+  const empty = document.getElementById('media-empty');
+  if (!list.length) {
+    grid.innerHTML = '';
+    if (currentFilter === 'all') empty.classList.remove('hidden');
+    else {
+      empty.classList.add('hidden');
+      grid.innerHTML = '<div class="empty"><h3>Nothing here yet</h3><p>Try a different filter.</p></div>';
+    }
+    return;
+  }
+  empty.classList.add('hidden');
+  grid.innerHTML = list.map((m) => {
+    const url = m.watermarked_url || m.original_url;
+    const isVideo = m.media_type === 'video';
+    return '<div class="media-tile fade-in" data-id="' + m.id + '">' +
+      (isVideo
+        ? '<video src="' + escapeAttr(url) + '" preload="metadata" muted playsinline></video>'
+        : '<img src="' + escapeAttr(url) + '" alt="" loading="lazy">') +
+      (isVideo ? '<span class="video-badge">Video</span>' : '') +
+      (m.is_public ? '<span class="public-badge">Public</span>' : '') +
+    '</div>';
+  }).join('');
+  grid.querySelectorAll('.media-tile').forEach(tile => {
+    tile.addEventListener('click', () => {
+      const id = tile.dataset.id;
+      currentMedia = allMedia.find(m => m.id === id);
+      openLightbox();
+    });
+  });
+}
+
+function openLightbox() {
+  if (!currentMedia) return;
+  const stage = document.getElementById('lightbox-stage');
+  stage.innerHTML = '';
+  const url = currentMedia.watermarked_url || currentMedia.original_url;
+  if (currentMedia.media_type === 'video') {
+    const v = document.createElement('video');
+    v.src = url; v.controls = true; v.playsInline = true; v.autoplay = true;
+    stage.appendChild(v);
+  } else {
+    const img = document.createElement('img'); img.src = url; stage.appendChild(img);
+  }
+  const job = jobsById[currentMedia.job_id];
+  const title = job ? (job.description || job.vehicle_info || job.service_type || 'Project') : 'Project';
+  document.getElementById('lb-meta').textContent = title + ' · ' + HPS.fmtRelative(currentMedia.captured_at || currentMedia.created_at);
+  document.getElementById('lightbox').classList.add('active');
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox-stage').innerHTML = '';
+  document.getElementById('lightbox').classList.remove('active');
+  currentMedia = null;
+}
+
+function goToProject() {
+  if (!currentMedia) return;
+  window.location.href = 'project.html?id=' + currentMedia.job_id;
+}
+
+async function shareNative() {
+  if (!currentMedia) return;
+  const url = currentMedia.watermarked_url || currentMedia.original_url;
+  const job = jobsById[currentMedia.job_id];
+  const title = job ? (job.description || 'Project') : 'HyPurShot';
+
+  if (navigator.share) {
+    try {
+      // Try sharing as a file (works on iOS Safari + Android Chrome for many MIME types)
+      const resp = await fetch(url);
+      const blob = await resp.blob();
+      const ext = (currentMedia.mime_type || '').includes('mp4') ? 'mp4'
+                : (currentMedia.mime_type || '').includes('webm') ? 'webm'
+                : 'jpg';
+      const file = new File([blob], 'hypurshot-' + Date.now() + '.' + ext, { type: blob.type || currentMedia.mime_type });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ title, files: [file] });
+        return;
+      }
+      await navigator.share({ title, text: title, url });
+      return;
+    } catch (e) {
+      // user cancelled or share failed; fall through to copy
+    }
+  }
+  copyLink();
+}
+
+function copyLink() {
+  if (!currentMedia) return;
+  const url = currentMedia.watermarked_url || currentMedia.original_url;
+  navigator.clipboard.writeText(url).then(
+    () => HPS.toast('Link copied.', 'success'),
+    () => HPS.toast('Could not copy.', 'error')
+  );
+}
+
+function downloadMedia() {
+  if (!currentMedia) return;
+  const url = currentMedia.watermarked_url || currentMedia.original_url;
+  const a = document.createElement('a');
+  a.href = url; a.download = '';
+  a.target = '_blank';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+function openComposer() {
+  if (!currentMedia) return;
+  // Hand off to existing composer in team.html via query string
+  const url = currentMedia.watermarked_url || currentMedia.original_url;
+  const params = new URLSearchParams({
+    composer: '1',
+    media: url,
+    type: currentMedia.media_type || 'photo',
+    job: currentMedia.job_id || '',
+  });
+  window.location.href = 'team.html?' + params.toString();
+}
+
+document.getElementById('filter-row').addEventListener('click', (e) => {
+  const btn = e.target.closest('.chip');
+  if (!btn) return;
+  document.querySelectorAll('.filter-row .chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = btn.dataset.filter;
+  renderGrid();
+});
+
+function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { return escapeHtml(s); }
+
+(async () => {
+  const ok = await HPS.init();
+  if (!ok) return;
+  const nm = (HPS.business && HPS.business.name) ? HPS.business.name : '';
+  const initials = nm.split(/\s+/).map(w => w[0]).filter(Boolean).slice(0,2).join('').toUpperCase() || 'HS';
+  document.getElementById('nav-avatar').textContent = initials;
+  HPS.renderBottomNav('library');
+  await loadLibrary();
+})();
+</script>
+</body>
+</html>

@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HyPurShot — Team Management</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#0D0D0D">
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -1427,25 +1430,60 @@
 
 <!-- NAV BAR -->
 <nav class="navbar">
-  <a href="auth.html" class="nav-logo"><img src="logo-nav.webp" alt="HyPurShot"></a>
-  <span class="nav-title">Team Management</span>
+  <a href="projects.html" class="nav-logo"><img src="logo-nav.webp" alt="HyPurShot"></a>
+  <span class="nav-title">Settings</span>
   <div class="nav-avatar" id="nav-avatar">A</div>
 </nav>
 
 <!-- TAB BAR -->
 <div class="tab-bar">
-  <button class="tab-btn active" data-tab="members" onclick="switchTab('members')">Members</button>
+  <button class="tab-btn active" data-tab="settings" onclick="switchTab('settings')">Business</button>
+  <button class="tab-btn" data-tab="members" onclick="switchTab('members')">Members</button>
   <button class="tab-btn" data-tab="invites" onclick="switchTab('invites')">Invites</button>
   <button class="tab-btn" data-tab="approvals" onclick="switchTab('approvals')">Approvals</button>
-  <button class="tab-btn" data-tab="newpost" onclick="switchTab('newpost')">New Post</button>
   <button class="tab-btn" data-tab="connections" onclick="switchTab('connections')">Connections</button>
 </div>
 
 <!-- MAIN CONTENT -->
 <div class="main">
 
+  <!-- ═══════ BUSINESS / SETTINGS TAB ═══════ -->
+  <div id="tab-settings" class="tab-content active">
+    <div class="section-header"><h2>Business Profile</h2></div>
+
+    <div class="card" style="padding:18px">
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Business name</label>
+        <input id="set-name" type="text" placeholder="FlyMyRide Ashburn" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:var(--font-body);font-size:.92rem">
+      </div>
+
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">City</label>
+        <input id="set-city" type="text" placeholder="Ashburn, VA" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:var(--font-body);font-size:.92rem">
+      </div>
+
+      <div style="margin-bottom:14px" id="gbp">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Google review link</label>
+        <input id="set-gbp" type="url" placeholder="https://g.page/r/..." style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:var(--font-body);font-size:.92rem">
+        <div style="font-size:.74rem;color:var(--text-muted);margin-top:6px">From Google Business Profile → Customers → Reviews → Get more reviews → Share. This is the link customers tap when you request a review.</div>
+      </div>
+
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Showcase URL</label>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="color:var(--text-muted);font-size:.85rem">hypurshot.com/showcase.html?slug=</span>
+          <input id="set-slug" type="text" placeholder="flymyride-ashburn" style="flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:var(--font-body);font-size:.88rem">
+        </div>
+        <div style="font-size:.74rem;color:var(--text-muted);margin-top:6px">Lowercase letters, numbers, and dashes. This is your public portfolio link.</div>
+        <div style="margin-top:10px"><a id="showcase-preview-link" href="#" target="_blank" style="font-size:.78rem;color:var(--gold)">View showcase</a></div>
+      </div>
+
+      <button class="btn btn-gold" id="settings-save-btn" onclick="saveBusinessSettings()" style="margin-top:6px">Save settings</button>
+    </div>
+  </div>
+
   <!-- ═══════ MEMBERS TAB ═══════ -->
-  <div id="tab-members" class="tab-content active">
+  <div id="tab-members" class="tab-content">
     <div class="section-header">
       <h2>Team Members</h2>
       <button class="btn btn-gold" onclick="openInviteModal()">
@@ -2095,10 +2133,96 @@ async function initSession() {
     }
   } else {
     currentBusinessId = biz.id;
+    currentBusiness = biz;
+  }
+  if (!currentBusiness && currentBusinessId) {
+    const { data: bRow } = await _supabase.from('businesses').select('*').eq('id', currentBusinessId).maybeSingle();
+    currentBusiness = bRow || null;
   }
 
-  // Load the default tab
-  loadMembers();
+  // Load defaults
+  loadBusinessSettings();
+
+  // Handle composer hand-off from library: ?composer=1&media=URL&type=photo|video&job=JOBID
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('composer') === '1') {
+    switchTab('newpost');
+    handoffFromLibrary(params);
+  }
+}
+
+let currentBusiness = null;
+
+function handoffFromLibrary(params) {
+  const mediaUrl = params.get('media');
+  const mediaType = params.get('type') || 'photo';
+  if (!mediaUrl) return;
+  // Surface a banner in the New Post tab
+  const banner = document.createElement('div');
+  banner.className = 'card';
+  banner.style.cssText = 'margin-bottom:14px;border-color:var(--gold);background:rgba(212,160,23,0.07);padding:14px';
+  banner.innerHTML =
+    '<div style="font-weight:600;margin-bottom:6px">From your library</div>' +
+    '<div style="font-size:.84rem;color:var(--text-muted);margin-bottom:10px">' +
+      'This ' + (mediaType === 'video' ? 'video' : 'image') + ' is ready to post. Pick a platform tab below and upload it (asset URLs need a fresh device upload).' +
+    '</div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+      '<a class="btn btn-ghost" style="height:32px;font-size:.78rem;padding:0 12px" href="' + mediaUrl + '" target="_blank">Open media</a>' +
+      '<button class="btn btn-ghost" style="height:32px;font-size:.78rem;padding:0 12px" onclick="navigator.clipboard.writeText(\'' + mediaUrl + '\'); showToast(\'Link copied.\', \'success\');">Copy link</button>' +
+    '</div>';
+  const newpost = document.getElementById('tab-newpost');
+  if (newpost) newpost.insertBefore(banner, newpost.firstChild);
+}
+
+// ──────────────── BUSINESS SETTINGS ────────────────
+async function loadBusinessSettings() {
+  if (!_supabase || !currentBusinessId) return;
+  const { data: b } = await _supabase.from('businesses').select('*').eq('id', currentBusinessId).maybeSingle();
+  if (!b) return;
+  currentBusiness = b;
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+  setVal('set-name', b.name);
+  setVal('set-city', b.city);
+  setVal('set-gbp', b.gbp_review_link);
+  setVal('set-slug', b.showcase_slug);
+  const link = document.getElementById('showcase-preview-link');
+  if (link) {
+    link.href = b.showcase_slug ? ('showcase.html?slug=' + encodeURIComponent(b.showcase_slug)) : '#';
+    link.style.opacity = b.showcase_slug ? '1' : '0.4';
+  }
+}
+
+async function saveBusinessSettings() {
+  if (!_supabase || !currentBusinessId) { showToast('Not signed in.', 'error'); return; }
+  const btn = document.getElementById('settings-save-btn');
+  btn.disabled = true; const orig = btn.textContent; btn.textContent = 'Saving…';
+
+  const name = document.getElementById('set-name').value.trim();
+  const city = document.getElementById('set-city').value.trim();
+  const gbp = document.getElementById('set-gbp').value.trim();
+  let slug = document.getElementById('set-slug').value.trim().toLowerCase();
+  slug = slug.replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+
+  const payload = {
+    name: name || null,
+    city: city || null,
+    gbp_review_link: gbp || null,
+    showcase_slug: slug || null,
+  };
+
+  const { error } = await _supabase.from('businesses').update(payload).eq('id', currentBusinessId);
+  if (error) {
+    showToast(error.message || 'Could not save.', 'error');
+  } else {
+    showToast('Saved.', 'success');
+    document.getElementById('set-slug').value = slug || '';
+    const link = document.getElementById('showcase-preview-link');
+    if (link) {
+      link.href = slug ? ('showcase.html?slug=' + encodeURIComponent(slug)) : '#';
+      link.style.opacity = slug ? '1' : '0.4';
+    }
+  }
+  btn.disabled = false; btn.textContent = orig;
 }
 
 // Start session on page load
@@ -2111,7 +2235,8 @@ function switchTab(tab) {
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
 
-  if (tab === 'members') loadMembers();
+  if (tab === 'settings') loadBusinessSettings();
+  else if (tab === 'members') loadMembers();
   else if (tab === 'invites') loadInvites();
   else if (tab === 'approvals') loadApprovals();
   else if (tab === 'connections') loadConnections();
@@ -3778,7 +3903,14 @@ async function fbSubmit() {
 }
 
 // ──────────────── INIT ────────────────
-loadMembers();
+// (initSession runs on DOMContentLoaded and chooses the default tab)
+
+// PWA service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>

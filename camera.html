@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>HyPurShot — Capture</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="logo-nav.webp">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  body { background: #000; overflow: hidden; height: 100vh; height: 100dvh; }
+
+  .camera-shell {
+    position: fixed; inset: 0; background: #000;
+    display: flex; flex-direction: column;
+  }
+
+  .cam-top {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+    height: 60px; padding: 0 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+    color: var(--text);
+    padding-top: env(safe-area-inset-top);
+  }
+  .cam-top button {
+    background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);
+    color: var(--text); width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; padding: 0;
+  }
+  .cam-top .project-name {
+    font-family: var(--font-heading); font-weight: 700;
+    font-size: 0.9rem; max-width: 60%;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    text-align: center;
+  }
+
+  .stage {
+    flex: 1; position: relative; overflow: hidden;
+    background: #000;
+  }
+  #preview {
+    width: 100%; height: 100%; object-fit: cover;
+    background: #000;
+  }
+
+  .cam-error {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 24px;
+    text-align: center; color: var(--text);
+  }
+  .cam-error h3 { margin-bottom: 8px; }
+  .cam-error p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 18px; max-width: 320px; }
+
+  .cam-bottom {
+    position: absolute; bottom: 0; left: 0; right: 0; z-index: 5;
+    padding: 20px 24px calc(28px + env(safe-area-inset-bottom));
+    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .mode-toggle {
+    display: flex; gap: 4px; background: rgba(0,0,0,0.5);
+    border-radius: 999px; padding: 4px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .mode-toggle button {
+    background: none; border: none; color: var(--text-muted);
+    font-size: 0.72rem; font-weight: 600;
+    padding: 6px 14px; border-radius: 999px;
+    cursor: pointer; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .mode-toggle button.active { background: var(--gold); color: var(--bg); }
+
+  .controls-grid {
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    align-items: center; width: 100%; gap: 16px;
+  }
+
+  .shutter {
+    width: 76px; height: 76px; border-radius: 50%;
+    background: var(--text); border: 5px solid rgba(0,0,0,0.4);
+    box-shadow: 0 0 0 3px var(--text);
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .shutter:active { transform: scale(0.92); }
+  .shutter.recording {
+    background: var(--error); border-radius: 12px;
+    width: 56px; height: 56px;
+  }
+
+  .side-btn {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(255,255,255,0.1); border: none;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text); cursor: pointer; padding: 0;
+  }
+  .side-btn:hover { background: rgba(255,255,255,0.16); }
+  .side-btn:disabled { opacity: 0.3; }
+
+  .timer {
+    position: absolute; top: 76px; left: 50%; transform: translateX(-50%);
+    background: var(--error); color: var(--text);
+    padding: 4px 10px; border-radius: 999px;
+    font-family: var(--font-heading); font-weight: 700;
+    font-size: 0.82rem; letter-spacing: 0.04em;
+    z-index: 4; display: none;
+  }
+  .timer.active { display: flex; align-items: center; gap: 6px; }
+  .timer-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--text);
+    animation: blink 1s infinite;
+  }
+  @keyframes blink { 50% { opacity: 0.3; } }
+
+  /* Review modal */
+  .review-modal {
+    position: fixed; inset: 0; background: #000; z-index: 50;
+    display: none; flex-direction: column;
+  }
+  .review-modal.active { display: flex; }
+  .review-modal .review-stage {
+    flex: 1; position: relative; overflow: hidden; background: #000;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .review-modal img, .review-modal video {
+    max-width: 100%; max-height: 100%; object-fit: contain;
+  }
+  .review-modal .review-top {
+    height: 60px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between;
+    padding-top: env(safe-area-inset-top);
+    background: var(--bg); border-bottom: 1px solid var(--border);
+  }
+  .review-modal .review-bottom {
+    padding: 16px 20px calc(24px + env(safe-area-inset-bottom));
+    background: var(--bg);
+    display: flex; gap: 10px;
+  }
+  .review-modal .review-bottom .btn { flex: 1; }
+
+  /* File picker fallback */
+  .fallback-file {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 16px; border-radius: 10px;
+    background: var(--surface); border: 1px solid var(--border-strong);
+    color: var(--text); cursor: pointer; font-size: 0.88rem;
+  }
+
+  /* Toast adjustment over video */
+  .toast { bottom: 120px; }
+</style>
+</head>
+<body>
+
+<div class="camera-shell">
+
+  <div class="cam-top">
+    <button onclick="leavePage()" aria-label="Back">
+      <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="project-name" id="project-name">…</div>
+    <button id="switch-cam-btn" onclick="switchCamera()" aria-label="Switch camera">
+      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none">
+        <path d="M21 8V6a1 1 0 0 0-1-1h-3.5l-1.5-2h-6L7.5 5H4a1 1 0 0 0-1 1v2"/>
+        <path d="M3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2"/>
+        <path d="M16 12l3-3 3 3M6 12l-3 3-3-3"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="stage">
+    <video id="preview" autoplay muted playsinline></video>
+    <div class="timer" id="timer"><span class="timer-dot"></span><span id="timer-text">0:00</span></div>
+    <div class="cam-error hidden" id="cam-error">
+      <h3>Camera not available</h3>
+      <p id="cam-error-msg">Allow camera access in your browser, or pick a file from your library.</p>
+      <label class="fallback-file">
+        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="1.8" fill="none">
+          <rect x="3" y="5" width="18" height="14" rx="2"/>
+          <path d="M3 15l5-5 4 4 3-3 6 6"/>
+        </svg>
+        Choose photo or video
+        <input type="file" accept="image/*,video/*" capture="environment" id="file-input" style="display:none">
+      </label>
+    </div>
+  </div>
+
+  <div class="cam-bottom">
+    <div class="controls-grid">
+      <div style="display:flex;justify-content:flex-start">
+        <label class="side-btn" title="Pick from library" style="cursor:pointer">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none">
+            <rect x="3" y="5" width="18" height="14" rx="2"/>
+            <circle cx="9" cy="11" r="2"/>
+            <path d="M3 17l5-5 4 4 3-3 6 6"/>
+          </svg>
+          <input type="file" accept="image/*,video/*" id="file-input-2" style="display:none">
+        </label>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px">
+        <div class="mode-toggle">
+          <button class="active" data-mode="photo">Photo</button>
+          <button data-mode="video">Video</button>
+        </div>
+        <button class="shutter" id="shutter" aria-label="Capture"></button>
+      </div>
+      <div style="display:flex;justify-content:flex-end">
+        <button class="side-btn" id="torch-btn" onclick="toggleTorch()" title="Torch" disabled>
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none">
+            <path d="M9 2h6v6l-3 14-3-14z"/>
+            <path d="M9 8h6"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Review modal -->
+<div class="review-modal" id="review-modal">
+  <div class="review-top">
+    <button class="nav-back" onclick="retake()" aria-label="Retake">
+      <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M15 18l-6-6 6-6"/></svg>
+      Retake
+    </button>
+    <div class="nav-title">Review</div>
+    <div style="width:60px"></div>
+  </div>
+  <div class="review-stage" id="review-stage"></div>
+  <div class="review-bottom">
+    <button class="btn btn-ghost" onclick="retake()">Discard</button>
+    <button class="btn btn-gold" id="save-btn" onclick="saveCapture()">
+      <span id="save-label">Save to project</span>
+    </button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+const projectId = HPS && HPS.qs ? HPS.qs('project') : null;
+let stream = null;
+let mode = 'photo';        // 'photo' | 'video'
+let facing = 'environment'; // 'environment' | 'user'
+let mediaRecorder = null;
+let recordChunks = [];
+let recording = false;
+let timerInt = null;
+let recordStart = 0;
+let pendingCapture = null; // { blob, kind: 'image'|'video', mime, previewUrl }
+let torchOn = false;
+let project = null;
+
+const $ = (id) => document.getElementById(id);
+
+async function startCamera() {
+  $('cam-error').classList.add('hidden');
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+    stream = null;
+  }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showCamError('Your browser does not support live camera. Use the file picker instead.');
+    return;
+  }
+  try {
+    const constraints = {
+      video: {
+        facingMode: { ideal: facing },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+      },
+      audio: mode === 'video',
+    };
+    stream = await navigator.mediaDevices.getUserMedia(constraints);
+    const video = $('preview');
+    video.srcObject = stream;
+    video.muted = true;
+    video.playsInline = true;
+    await video.play().catch(() => {});
+    // Torch capability check
+    const track = stream.getVideoTracks()[0];
+    const caps = (track && track.getCapabilities) ? track.getCapabilities() : {};
+    $('torch-btn').disabled = !(caps && caps.torch);
+  } catch (e) {
+    console.error(e);
+    let msg = 'Allow camera access in your browser, or pick a file from your library.';
+    if (e && e.name === 'NotAllowedError') msg = 'Camera permission denied. Pick a file from your library or change permissions in your browser settings.';
+    showCamError(msg);
+  }
+}
+
+function showCamError(msg) {
+  $('cam-error-msg').textContent = msg;
+  $('cam-error').classList.remove('hidden');
+}
+
+async function switchCamera() {
+  facing = (facing === 'environment') ? 'user' : 'environment';
+  await startCamera();
+}
+
+async function toggleTorch() {
+  if (!stream) return;
+  const track = stream.getVideoTracks()[0];
+  try {
+    torchOn = !torchOn;
+    await track.applyConstraints({ advanced: [{ torch: torchOn }] });
+  } catch (e) {
+    HPS.toast('Torch unavailable on this device.', 'error');
+    torchOn = false;
+  }
+}
+
+// ─── Mode toggle ───
+document.querySelectorAll('.mode-toggle button').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    if (recording) return;
+    document.querySelectorAll('.mode-toggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    mode = btn.dataset.mode;
+    // Restart stream to enable/disable audio
+    await startCamera();
+  });
+});
+
+// ─── Shutter ───
+$('shutter').addEventListener('click', async () => {
+  if (mode === 'photo') {
+    await takePhoto();
+  } else {
+    if (!recording) startRecord();
+    else stopRecord();
+  }
+});
+
+async function takePhoto() {
+  const video = $('preview');
+  if (!video.videoWidth) { HPS.toast('Camera not ready yet.', 'error'); return; }
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.92));
+  if (!blob) { HPS.toast('Could not capture photo.', 'error'); return; }
+  pendingCapture = { blob, kind: 'image', mime: 'image/jpeg', previewUrl: URL.createObjectURL(blob) };
+  showReview();
+}
+
+function startRecord() {
+  if (!stream) return;
+  recordChunks = [];
+  let mime = '';
+  const candidates = ['video/mp4;codecs=h264,aac', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+  for (const c of candidates) {
+    if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(c)) {
+      mime = c; break;
+    }
+  }
+  try {
+    mediaRecorder = mime ? new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4_000_000 }) : new MediaRecorder(stream);
+  } catch (e) {
+    HPS.toast('Video recording not supported here.', 'error');
+    return;
+  }
+  mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size) recordChunks.push(e.data); };
+  mediaRecorder.onstop = () => {
+    const blob = new Blob(recordChunks, { type: mediaRecorder.mimeType || 'video/mp4' });
+    pendingCapture = {
+      blob, kind: 'video', mime: blob.type,
+      previewUrl: URL.createObjectURL(blob),
+    };
+    recording = false;
+    $('shutter').classList.remove('recording');
+    $('timer').classList.remove('active');
+    clearInterval(timerInt);
+    showReview();
+  };
+  mediaRecorder.start(250);
+  recording = true;
+  recordStart = Date.now();
+  $('shutter').classList.add('recording');
+  $('timer').classList.add('active');
+  timerInt = setInterval(() => {
+    const sec = Math.floor((Date.now() - recordStart) / 1000);
+    const m = Math.floor(sec / 60), s = sec % 60;
+    $('timer-text').textContent = m + ':' + String(s).padStart(2, '0');
+    if (sec >= 60 * 3) stopRecord(); // 3-minute cap
+  }, 250);
+}
+
+function stopRecord() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+}
+
+// ─── File pickers (fallback + library) ───
+function wireFilePicker(input) {
+  input.addEventListener('change', async (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const kind = f.type.startsWith('video') ? 'video' : 'image';
+    pendingCapture = { blob: f, kind, mime: f.type, previewUrl: URL.createObjectURL(f) };
+    showReview();
+    input.value = '';
+  });
+}
+wireFilePicker($('file-input'));
+wireFilePicker($('file-input-2'));
+
+// ─── Review modal ───
+function showReview() {
+  const stage = $('review-stage');
+  stage.innerHTML = '';
+  if (pendingCapture.kind === 'video') {
+    const v = document.createElement('video');
+    v.src = pendingCapture.previewUrl;
+    v.controls = true; v.playsInline = true; v.autoplay = true; v.muted = false;
+    stage.appendChild(v);
+  } else {
+    const img = document.createElement('img');
+    img.src = pendingCapture.previewUrl;
+    stage.appendChild(img);
+  }
+  $('review-modal').classList.add('active');
+}
+
+function retake() {
+  if (pendingCapture && pendingCapture.previewUrl) URL.revokeObjectURL(pendingCapture.previewUrl);
+  pendingCapture = null;
+  $('review-modal').classList.remove('active');
+}
+
+async function saveCapture() {
+  if (!pendingCapture) return;
+  const btn = $('save-btn'); const label = $('save-label');
+  btn.disabled = true; label.textContent = 'Saving…';
+
+  try {
+    const ext = pendingCapture.kind === 'video'
+      ? (pendingCapture.mime.includes('mp4') ? 'mp4' : 'webm')
+      : 'jpg';
+    const fakeName = 'capture-' + Date.now() + '.' + ext;
+    const fileForUpload = new File([pendingCapture.blob], fakeName, { type: pendingCapture.mime });
+    const up = await HPS.uploadToStorage(fileForUpload, 'capture');
+
+    const { error } = await HPS.sb.from('media').insert({
+      job_id: projectId,
+      business_id: HPS.businessId,
+      original_url: up.public_url,
+      storage_path: up.path,
+      mime_type: up.content_type,
+      media_type: pendingCapture.kind === 'video' ? 'video' : 'photo',
+      phase: pendingCapture.kind === 'video' ? 'video' : 'after',
+      is_public: false,
+      captured_at: new Date().toISOString(),
+    });
+    if (error) throw error;
+
+    HPS.toast('Saved to project.', 'success');
+    URL.revokeObjectURL(pendingCapture.previewUrl);
+    pendingCapture = null;
+    $('review-modal').classList.remove('active');
+    btn.disabled = false; label.textContent = 'Save to project';
+  } catch (e) {
+    console.error(e);
+    HPS.toast(e && e.message ? e.message : 'Could not save.', 'error');
+    btn.disabled = false; label.textContent = 'Save to project';
+  }
+}
+
+function leavePage() {
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  if (projectId) window.location.href = 'project.html?id=' + projectId;
+  else window.location.href = 'projects.html';
+}
+
+window.addEventListener('beforeunload', () => {
+  if (stream) stream.getTracks().forEach(t => t.stop());
+});
+
+(async () => {
+  const ok = await HPS.init();
+  if (!ok) return;
+  if (!projectId) {
+    HPS.toast('No project selected.', 'error');
+    setTimeout(() => window.location.href = 'projects.html', 1200);
+    return;
+  }
+  // Load project name
+  const { data } = await HPS.sb
+    .from('jobs')
+    .select('id, description, vehicle_info, service_type, customer_name')
+    .eq('id', projectId)
+    .maybeSingle();
+  project = data;
+  if (data) {
+    $('project-name').textContent = data.description || data.vehicle_info || data.customer_name || 'Project';
+  }
+  await startCamera();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0D0D0D">
+<title>HyPurShot — Projects</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="logo-nav.webp">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<header class="navbar">
+  <a href="projects.html" class="nav-logo">
+    <img src="logo-nav.webp" alt="HyPurShot">
+  </a>
+  <div class="nav-title">Projects</div>
+  <a href="team.html" class="nav-avatar" id="nav-avatar">··</a>
+</header>
+
+<main class="page">
+
+  <div class="filter-row" id="filter-row">
+    <button class="chip active" data-filter="active">Active</button>
+    <button class="chip" data-filter="completed">Completed</button>
+    <button class="chip" data-filter="all">All</button>
+  </div>
+
+  <div id="list-container">
+    <!-- Skeleton -->
+    <div class="card" style="opacity:.5">
+      <div class="row" style="gap:14px;align-items:center">
+        <div style="width:64px;height:64px;background:var(--surface-2);border-radius:10px"></div>
+        <div style="flex:1">
+          <div style="width:60%;height:14px;background:var(--surface-2);border-radius:4px;margin-bottom:8px"></div>
+          <div style="width:40%;height:11px;background:var(--surface-2);border-radius:4px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<button class="fab" onclick="window.location.href='project-new.html'" aria-label="New project">+</button>
+
+<script src="app.js"></script>
+<script>
+let currentFilter = 'active';
+let allProjects = [];
+
+async function loadProjects() {
+  const container = document.getElementById('list-container');
+  const { data, error } = await HPS.sb
+    .from('jobs')
+    .select('id, customer_name, vehicle_info, service_type, description, status, started_at, completed_at, created_at')
+    .eq('business_id', HPS.businessId)
+    .order('started_at', { ascending: false, nullsFirst: false })
+    .limit(200);
+
+  if (error) {
+    container.innerHTML = '<div class="empty"><h3>Could not load projects</h3><p>' + (error.message || 'Please try again.') + '</p></div>';
+    return;
+  }
+  allProjects = data || [];
+
+  // Pull a representative thumbnail per job (latest media)
+  const jobIds = allProjects.map(p => p.id);
+  let thumbsByJob = {};
+  if (jobIds.length) {
+    const { data: media } = await HPS.sb
+      .from('media')
+      .select('job_id, original_url, watermarked_url, media_type, created_at')
+      .in('job_id', jobIds)
+      .order('created_at', { ascending: false });
+    if (media) {
+      for (const m of media) {
+        if (!thumbsByJob[m.job_id]) {
+          thumbsByJob[m.job_id] = m.watermarked_url || m.original_url || null;
+        }
+      }
+    }
+  }
+  renderList(thumbsByJob);
+}
+
+function renderList(thumbsByJob) {
+  const container = document.getElementById('list-container');
+  let list = allProjects;
+  if (currentFilter === 'active') list = list.filter(p => p.status === 'in_progress');
+  else if (currentFilter === 'completed') list = list.filter(p => p.status === 'completed');
+  // 'all' shows everything except archived
+  if (currentFilter === 'all') list = list.filter(p => p.status !== 'archived');
+
+  if (!list.length) {
+    container.innerHTML = renderEmpty();
+    return;
+  }
+
+  container.innerHTML = list.map(p => {
+    const title = p.description || p.vehicle_info || p.service_type || 'Untitled project';
+    const date = HPS.fmtDate(p.started_at || p.created_at);
+    const pill = p.status === 'completed'
+      ? '<span class="pill success"><span class="pill-dot"></span>Completed</span>'
+      : '<span class="pill gold"><span class="pill-dot"></span>Active</span>';
+    const thumb = thumbsByJob[p.id]
+      ? '<img src="' + escapeAttr(thumbsByJob[p.id]) + '" alt="">'
+      : '<span>—</span>';
+    const meta = p.customer_name ? p.customer_name : '';
+    return '<div class="project-card fade-in" onclick="window.location.href=\'project.html?id=' + p.id + '\'">' +
+             '<div class="project-thumb">' + thumb + '</div>' +
+             '<div class="project-info">' +
+               '<h3>' + escapeHtml(title) + '</h3>' +
+               '<div class="meta">' + escapeHtml(meta || '—') + '</div>' +
+               '<div class="meta-row">' + pill + '<span>' + date + '</span></div>' +
+             '</div>' +
+           '</div>';
+  }).join('');
+}
+
+function renderEmpty() {
+  if (currentFilter === 'completed') {
+    return '<div class="empty"><h3>No completed projects yet</h3><p>Finish a project to see it here.</p></div>';
+  }
+  return '<div class="empty">' +
+    '<h3>Start your first project</h3>' +
+    '<p>Capture proof of your work. Build a portfolio that closes sales.</p>' +
+    '<button class="btn btn-gold" onclick="window.location.href=\'project-new.html\'">New project</button>' +
+  '</div>';
+}
+
+function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { return escapeHtml(s); }
+
+document.getElementById('filter-row').addEventListener('click', (e) => {
+  const btn = e.target.closest('.chip');
+  if (!btn) return;
+  document.querySelectorAll('.filter-row .chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = btn.dataset.filter;
+  // Re-render from cache
+  loadProjects();
+});
+
+(async () => {
+  const ok = await HPS.init();
+  if (!ok) return;
+  // Set avatar initials
+  const nm = (HPS.business && HPS.business.name) ? HPS.business.name : '';
+  const initials = nm.split(/\s+/).map(w => w[0]).filter(Boolean).slice(0,2).join('').toUpperCase() || 'HS';
+  document.getElementById('nav-avatar').textContent = initials;
+  HPS.renderBottomNav('projects');
+  await loadProjects();
+})();
+</script>
+</body>
+</html>

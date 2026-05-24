@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0D0D0D">
+<title>HyPurShot — New Project</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="logo-nav.webp">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<header class="navbar">
+  <button class="nav-back" onclick="window.location.href='projects.html'" aria-label="Back">
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M15 18l-6-6 6-6"/></svg>
+    Back
+  </button>
+  <div class="nav-title">New Project</div>
+  <div style="width:60px"></div>
+</header>
+
+<main class="page">
+
+  <form id="form" autocomplete="off">
+
+    <div class="field">
+      <label for="description">Work description</label>
+      <textarea id="description" class="textarea" rows="2" placeholder="Lamborghini Urus full ceramic coating" required></textarea>
+      <div class="hint">Briefly describe the job. This is the title clients will see.</div>
+    </div>
+
+    <div class="field">
+      <label for="vehicle">Vehicle</label>
+      <input id="vehicle" class="input" type="text" placeholder="2024 Lamborghini Urus — Nero">
+    </div>
+
+    <div class="field">
+      <label for="customer_name">Customer name</label>
+      <input id="customer_name" class="input" type="text" placeholder="Full name" required>
+    </div>
+
+    <div class="row" style="gap:12px">
+      <div class="field" style="flex:1">
+        <label for="customer_phone">Phone</label>
+        <input id="customer_phone" class="input" type="tel" placeholder="(555) 555-0123" inputmode="tel">
+      </div>
+      <div class="field" style="flex:1">
+        <label for="customer_email">Email</label>
+        <input id="customer_email" class="input" type="email" placeholder="name@email.com" inputmode="email">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Location</label>
+      <div class="card" style="padding:14px">
+        <div class="row between" style="gap:10px">
+          <div style="flex:1;min-width:0">
+            <div id="loc-status" class="text-muted" style="font-size:.85rem">Location not set</div>
+            <div id="loc-coords" class="text-dim" style="font-size:.74rem;margin-top:3px"></div>
+          </div>
+          <button type="button" id="loc-btn" class="btn btn-ghost btn-sm">Use my location</button>
+        </div>
+        <input id="loc-label" class="input mt-8" type="text" placeholder="Or type a location (e.g. Ashburn, VA)" style="margin-top:10px">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Started</label>
+      <div class="card" style="padding:14px">
+        <div id="ts-display" class="text-muted" style="font-size:.9rem">—</div>
+        <div class="text-dim" style="font-size:.74rem;margin-top:3px">Automatically recorded.</div>
+      </div>
+    </div>
+
+    <div class="stack mt-24">
+      <button id="submit-btn" type="submit" class="btn btn-gold btn-lg btn-block">
+        <span id="submit-label">Create & start capturing</span>
+      </button>
+      <button type="button" class="btn btn-ghost btn-block" onclick="window.location.href='projects.html'">Cancel</button>
+    </div>
+
+  </form>
+
+</main>
+
+<script src="app.js"></script>
+<script>
+let startedAt = new Date();
+let locLat = null, locLng = null;
+
+function refreshTs() {
+  document.getElementById('ts-display').textContent =
+    startedAt.toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+
+function geolocate() {
+  const btn = document.getElementById('loc-btn');
+  const status = document.getElementById('loc-status');
+  const coords = document.getElementById('loc-coords');
+  if (!navigator.geolocation) {
+    status.textContent = 'Geolocation not supported';
+    status.classList.add('text-error');
+    return;
+  }
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  navigator.geolocation.getCurrentPosition((pos) => {
+    locLat = pos.coords.latitude;
+    locLng = pos.coords.longitude;
+    status.textContent = 'Location captured';
+    status.classList.remove('text-error');
+    status.classList.add('text-gold');
+    coords.textContent = locLat.toFixed(5) + ', ' + locLng.toFixed(5);
+    btn.disabled = false; btn.textContent = 'Update';
+  }, (err) => {
+    status.textContent = 'Could not get location — type one below';
+    status.classList.add('text-error');
+    btn.disabled = false; btn.textContent = 'Try again';
+  }, { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 });
+}
+
+document.getElementById('loc-btn').addEventListener('click', geolocate);
+
+document.getElementById('form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const description = document.getElementById('description').value.trim();
+  const vehicle = document.getElementById('vehicle').value.trim();
+  const customer_name = document.getElementById('customer_name').value.trim();
+  const customer_phone = document.getElementById('customer_phone').value.trim();
+  const customer_email = document.getElementById('customer_email').value.trim();
+  const loc_label = document.getElementById('loc-label').value.trim();
+
+  if (!description) { HPS.toast('Add a work description.', 'error'); return; }
+  if (!customer_name) { HPS.toast('Add a customer name.', 'error'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  const label = document.getElementById('submit-label');
+  btn.disabled = true; label.textContent = 'Creating…';
+
+  const payload = {
+    business_id: HPS.businessId,
+    description,
+    vehicle_info: vehicle || null,
+    customer_name,
+    customer_phone: customer_phone || null,
+    customer_email: customer_email || null,
+    status: 'in_progress',
+    started_at: startedAt.toISOString(),
+    location_lat: locLat,
+    location_lng: locLng,
+    location_label: loc_label || null,
+    created_by: HPS.userId,
+  };
+
+  const { data, error } = await HPS.sb
+    .from('jobs')
+    .insert(payload)
+    .select('id')
+    .single();
+
+  if (error || !data) {
+    HPS.toast(error && error.message ? error.message : 'Could not create project.', 'error');
+    btn.disabled = false; label.textContent = 'Create & start capturing';
+    return;
+  }
+
+  // Straight to camera (one less tap)
+  window.location.href = 'camera.html?project=' + data.id;
+});
+
+(async () => {
+  const ok = await HPS.init();
+  if (!ok) return;
+  refreshTs();
+  // Try geolocation automatically once on mount
+  setTimeout(geolocate, 400);
+})();
+</script>
+</body>
+</html>
