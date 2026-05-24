@@ -446,6 +446,21 @@
 
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* ───── BROWSER AUTOFILL OVERRIDE ───── */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px var(--bg) inset !important;
+    -webkit-text-fill-color: var(--text) !important;
+    caret-color: var(--text) !important;
+    transition: background-color 9999s ease-in-out 0s;
+    border: 1px solid var(--border) !important;
+  }
+  input:-webkit-autofill:focus {
+    border-color: var(--gold) !important;
+  }
+
   /* ───── OAUTH BUTTONS ───── */
   .oauth-divider {
     display: flex;
@@ -1295,7 +1310,7 @@ function setAccountMode(mode) {
   document.getElementById('invite-code-error').style.display = 'none';
 }
 
-// Auto-uppercase invite code input
+// Auto-uppercase invite code input + bounce already-signed-in users to the app
 document.addEventListener('DOMContentLoaded', function() {
   const codeInput = document.getElementById('su-invite-code');
   if (codeInput) {
@@ -1303,6 +1318,18 @@ document.addEventListener('DOMContentLoaded', function() {
       this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
     });
   }
+
+  // If a session already exists, skip the auth screen.
+  // Honor ?stay=1 so password-reset or sign-out flows can stay on this page.
+  (async () => {
+    try {
+      if (!_supabase) return;
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('stay') === '1') return;
+      const { data: { session } } = await _supabase.auth.getSession();
+      if (session) window.location.replace('projects.html');
+    } catch (e) {}
+  })();
 });
 
 // ──────────────── JOIN TEAM ────────────────
@@ -1631,6 +1658,14 @@ async function createAccount() {
 
     showToast('Account created! Check your email to confirm.', 'success');
     setLoading(btn, false);
+    // If email confirmation is disabled, a session will exist — send them to the app.
+    // Otherwise leave them on this view so they can read the toast and check their email.
+    setTimeout(async () => {
+      try {
+        const { data: { session } } = await _supabase.auth.getSession();
+        if (session) window.location.href = 'projects.html';
+      } catch (e) {}
+    }, 800);
 
   } catch (err) {
     showToast('Something went wrong. Please try again.', 'error');
@@ -1672,7 +1707,8 @@ async function signIn() {
 
     showToast('Signed in successfully!', 'success');
     setLoading(btn, false);
-    // Redirect or update UI as needed
+    // Redirect to the app after a brief moment so the toast is visible
+    setTimeout(() => { window.location.href = 'projects.html'; }, 600);
 
   } catch (err) {
     showToast('Something went wrong. Please try again.', 'error');
