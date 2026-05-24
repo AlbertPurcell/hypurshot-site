@@ -2483,8 +2483,64 @@ function closeInviteModal() {
 
 let lastGeneratedCode = '';
 
+// ───── Freemium seat-cap gate ─────
+const PLAN_SEATS = { free: 1, starter: 1, pro: 5, agency: Infinity };
+
+async function checkSeatLimit() {
+  if (!_supabase || !currentBusinessId) return { allowed: true };
+  const { data, error } = await _supabase.rpc('get_business_usage', { p_business_id: currentBusinessId });
+  if (error || !data || !data.length) return { allowed: true };
+  const row = data[0];
+  const plan = (row.plan || 'free').toLowerCase();
+  const limit = PLAN_SEATS[plan] != null ? PLAN_SEATS[plan] : 1;
+  const current = Number(row.active_members || 0);
+  if (current >= limit) {
+    return { allowed: false, reason: 'seat', current, limit, plan };
+  }
+  return { allowed: true };
+}
+
+function showUpgradeModal(info) {
+  info = info || {};
+  const old = document.getElementById('hps-upgrade-modal');
+  if (old) old.remove();
+  const title = info.reason === 'seat' ? 'Free plan includes one user' : 'Upgrade to unlock more';
+  const body = info.reason === 'seat'
+    ? 'The Free plan supports one user. Upgrade to Pro to invite up to 5 team members, or Agency for unlimited.'
+    : 'Unlock unlimited media, reviews, and team seats with a paid plan.';
+  const usageLine = (info.current != null && info.limit != null && isFinite(info.limit))
+    ? '<div style="font-size:13px;color:#9b9590;margin-top:8px;">Current usage: <b style="color:#F0EDE8;">' + info.current + ' / ' + info.limit + '</b></div>'
+    : '';
+  const modal = document.createElement('div');
+  modal.id = 'hps-upgrade-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  modal.innerHTML =
+    '<div style="background:#161616;border:1px solid #2a2a2a;border-radius:14px;padding:32px;max-width:440px;width:100%;color:#F0EDE8;font-family:Satoshi,system-ui,sans-serif;">' +
+      '<div style="width:48px;height:48px;border-radius:50%;background:rgba(212,160,23,0.15);color:#D4A017;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">' +
+        '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 19h20L12 2z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
+      '</div>' +
+      '<h2 style="font-family:&quot;Cabinet Grotesk&quot;,system-ui,sans-serif;font-size:22px;margin:0 0 12px;">' + title + '</h2>' +
+      '<p style="font-size:15px;line-height:1.5;color:#c8c2bd;margin:0 0 4px;">' + body + '</p>' +
+      usageLine +
+      '<div style="display:flex;gap:10px;margin-top:22px;">' +
+        '<button onclick="window.location.href=\'index.html#pricing\'" style="flex:1;background:#D4A017;color:#0D0D0D;border:none;border-radius:8px;padding:11px 16px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;">See plans</button>' +
+        '<button onclick="document.getElementById(\'hps-upgrade-modal\').remove()" style="flex:1;background:transparent;color:#F0EDE8;border:1px solid #2a2a2a;border-radius:8px;padding:11px 16px;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">Not now</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+}
+
 async function generateInvite() {
   const btn = document.getElementById('btn-generate-invite');
+
+  // Freemium gate: block invite if seat cap reached
+  const gate = await checkSeatLimit();
+  if (!gate.allowed) {
+    showUpgradeModal(gate);
+    return;
+  }
+
   setLoading(btn, true);
 
   const payload = {

@@ -189,6 +189,151 @@
     });
   };
 
+  // ─── Freemium plan limits ───
+  HPS.PLAN_LIMITS = {
+    free:    { media: 30,       reviews_month: 3,        seats: 1   },
+    starter: { media: Infinity, reviews_month: Infinity, seats: 1   },
+    pro:     { media: Infinity, reviews_month: Infinity, seats: 5   },
+    agency:  { media: Infinity, reviews_month: Infinity, seats: Infinity }
+  };
+
+  // Fetch current usage for the active business. Cached for 30s on the window.
+  HPS._usageCache = { data: null, ts: 0 };
+  HPS.getUsage = async function (opts) {
+    opts = opts || {};
+    if (!HPS.sb || !HPS.businessId) return null;
+    const now = Date.now();
+    if (!opts.force && HPS._usageCache.data && (now - HPS._usageCache.ts) < 30000) {
+      return HPS._usageCache.data;
+    }
+    const { data, error } = await HPS.sb.rpc('get_business_usage', { p_business_id: HPS.businessId });
+    if (error || !data || !data.length) return null;
+    const row = data[0];
+    const plan = (row.plan || 'free').toLowerCase();
+    const limits = HPS.PLAN_LIMITS[plan] || HPS.PLAN_LIMITS.free;
+    const out = {
+      plan,
+      limits,
+      media_count: Number(row.media_count || 0),
+      reviews_this_month: Number(row.reviews_this_month || 0),
+      active_members: Number(row.active_members || 0),
+      media_remaining: Math.max(0, limits.media - Number(row.media_count || 0)),
+      reviews_remaining: Math.max(0, limits.reviews_month - Number(row.reviews_this_month || 0)),
+      seats_remaining: Math.max(0, limits.seats - Number(row.active_members || 0))
+    };
+    HPS._usageCache = { data: out, ts: now };
+    return out;
+  };
+
+  // Invalidate the usage cache (call after an upload, review send, or member invite).
+  HPS.invalidateUsage = function () { HPS._usageCache = { data: null, ts: 0 }; };
+
+  // Pre-flight check: returns { allowed, usage, reason }.
+  // kind: 'media' | 'review' | 'seat'
+  HPS.checkLimit = async function (kind) {
+    const usage = await HPS.getUsage();
+    if (!usage) return { allowed: true, usage: null };
+    const L = usage.limits;
+    if (kind === 'media' && usage.media_count >= L.media) {
+      return { allowed: false, usage, reason: 'media', limit: L.media, current: usage.media_count };
+    }
+    if (kind === 'review' && usage.reviews_this_month >= L.reviews_month) {
+      return { allowed: false, usage, reason: 'review', limit: L.reviews_month, current: usage.reviews_this_month };
+    }
+    if (kind === 'seat' && usage.active_members >= L.seats) {
+      return { allowed: false, usage, reason: 'seat', limit: L.seats, current: usage.active_members };
+    }
+    return { allowed: true, usage };
+  };
+
+  // Upgrade modal — soft block. Renders into body, idempotent.
+  HPS.showUpgradeModal = function (info) {
+    info = info || {};
+    const titles = {
+      media: 'You\u2019ve reached your media limit',
+      review: 'You\u2019ve sent all your review requests this month',
+      seat: 'Free plan includes one user',
+      generic: 'Upgrade to unlock more'
+    };
+    const bodies = {
+      media: 'The Free plan includes 30 media items. Upgrade to Starter for unlimited photos and videos, white-labeled showcase, and unlimited review requests.',
+      review: 'The Free plan includes 3 review requests per month. Upgrade to Starter for unlimited review requests and a white-labeled showcase page.',
+      seat: 'The Free plan supports one user. Upgrade to Pro to invite up to 5 team members, or Agency for unlimited.',
+      generic: 'Unlock unlimited media, reviews, and team seats with a paid plan.'
+    };
+    const reason = info.reason || 'generic';
+    const title = titles[reason] || titles.generic;
+    const body = bodies[reason] || bodies.generic;
+    const usageLine = info.current != null && info.limit != null && isFinite(info.limit)
+      ? '<div class="upg-usage">Current usage: <b>' + info.current + ' / ' + info.limit + '</b></div>'
+      : '';
+
+    // Remove any existing modal
+    const old = document.getElementById('hps-upgrade-modal');
+    if (old) old.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'hps-upgrade-modal';
+    modal.className = 'hps-modal-backdrop';
+    modal.innerHTML =
+      '<div class="hps-modal">' +
+        '<div class="hps-modal-icon">' +
+          '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+            '<path d="M12 2L2 19h20L12 2z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>' +
+          '</svg>' +
+        '</div>' +
+        '<h2>' + title + '</h2>' +
+        '<p>' + body + '</p>' +
+        usageLine +
+        '<div class="hps-modal-actions">' +
+          '<button class="hps-btn-gold" onclick="window.location.href=\'index.html#pricing\'">See plans</button>' +
+          '<button class="hps-btn-ghost" onclick="document.getElementById(\'hps-upgrade-modal\').remove()">Not now</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(modal);
+    // Close on backdrop click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+  };
+
+  // Inject modal CSS once.
+  (function injectUpgradeCSS() {
+    if (document.getElementById('hps-upgrade-css')) return;
+    const css = document.createElement('style');
+    css.id = 'hps-upgrade-css';
+    css.textContent =
+      '.hps-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.78);' +
+        'display:flex;align-items:center;justify-content:center;z-index:9999;' +
+        'padding:24px;animation:hpsFade .18s ease-out}' +
+      '@keyframes hpsFade{from{opacity:0}to{opacity:1}}' +
+      '.hps-modal{background:#161616;border:1px solid rgba(255,255,255,.08);' +
+        'border-radius:14px;padding:32px 28px;max-width:420px;width:100%;' +
+        'color:#F0EDE8;font-family:\'Satoshi\',sans-serif;text-align:center;' +
+        'box-shadow:0 20px 60px rgba(0,0,0,.5)}' +
+      '.hps-modal-icon{width:56px;height:56px;border-radius:50%;' +
+        'background:rgba(212,160,23,.12);border:1px solid rgba(212,160,23,.35);' +
+        'color:#D4A017;display:flex;align-items:center;justify-content:center;' +
+        'margin:0 auto 18px}' +
+      '.hps-modal h2{font-family:\'Cabinet Grotesk\',sans-serif;font-weight:800;' +
+        'font-size:1.35rem;margin-bottom:10px;letter-spacing:-.01em}' +
+      '.hps-modal p{color:#888680;font-size:.92rem;line-height:1.55;margin-bottom:14px}' +
+      '.upg-usage{font-size:.82rem;color:#888680;margin-bottom:20px;' +
+        'padding:10px 14px;background:#0D0D0D;border:1px solid rgba(255,255,255,.06);' +
+        'border-radius:8px;display:inline-block}' +
+      '.upg-usage b{color:#F0EDE8;font-weight:700}' +
+      '.hps-modal-actions{display:flex;gap:10px;justify-content:center;margin-top:8px}' +
+      '.hps-btn-gold{background:#D4A017;color:#000;border:none;border-radius:8px;' +
+        'padding:12px 22px;font-family:\'Satoshi\',sans-serif;font-weight:700;font-size:.92rem;' +
+        'cursor:pointer;transition:background .15s}' +
+      '.hps-btn-gold:hover{background:#c2920f}' +
+      '.hps-btn-ghost{background:transparent;color:#888680;border:1px solid rgba(255,255,255,.1);' +
+        'border-radius:8px;padding:12px 22px;font-family:\'Satoshi\',sans-serif;font-weight:500;' +
+        'font-size:.92rem;cursor:pointer;transition:color .15s,border-color .15s}' +
+      '.hps-btn-ghost:hover{color:#F0EDE8;border-color:rgba(255,255,255,.2)}';
+    document.head.appendChild(css);
+  })();
+
   // ─── Service worker registration ───
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

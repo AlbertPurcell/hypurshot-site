@@ -447,6 +447,14 @@ async function saveCapture() {
   btn.disabled = true; label.textContent = 'Saving…';
 
   try {
+    // Freemium gate: block if media cap reached
+    const gate = await HPS.checkLimit('media');
+    if (!gate.allowed) {
+      btn.disabled = false; label.textContent = 'Save to project';
+      HPS.showUpgradeModal(gate);
+      return;
+    }
+
     const ext = pendingCapture.kind === 'video'
       ? (pendingCapture.mime.includes('mp4') ? 'mp4' : 'webm')
       : 'jpg';
@@ -467,6 +475,7 @@ async function saveCapture() {
     });
     if (error) throw error;
 
+    HPS.invalidateUsage();
     HPS.toast('Saved to project.', 'success');
     URL.revokeObjectURL(pendingCapture.previewUrl);
     pendingCapture = null;

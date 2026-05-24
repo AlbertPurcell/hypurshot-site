@@ -439,6 +439,13 @@ async function sendReviewRequest() {
   if (selectedChannels.email && project.customer_email) channels.push('email');
   if (!channels.length) { HPS.toast('Pick at least one channel.', 'error'); return; }
 
+  // Freemium gate: block if monthly review cap reached
+  const gate = await HPS.checkLimit('review');
+  if (!gate.allowed) {
+    HPS.showUpgradeModal(gate);
+    return;
+  }
+
   const btn = document.getElementById('rev-send-btn');
   btn.disabled = true; btn.textContent = 'Sending…';
 
@@ -488,6 +495,8 @@ async function sendReviewRequest() {
       window.open(mailto, '_blank');
     }
   }
+
+  HPS.invalidateUsage();
 
   HPS.toast('Review request sent.', 'success');
   btn.disabled = false; btn.textContent = 'Send request';
