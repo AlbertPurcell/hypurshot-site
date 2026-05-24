@@ -93,7 +93,11 @@
 <body>
 
 <header class="navbar">
-  <a href="https://hypurshot.com" class="nav-logo">
+  <button class="nav-back" id="nav-back-btn" onclick="window.location.href='projects.html'" style="display:none">
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M15 18l-6-6 6-6"/></svg>
+    My Projects
+  </button>
+  <a href="https://hypurshot.com" class="nav-logo" id="nav-logo-link">
     <img src="logo-nav.webp" alt="HyPurShot">
   </a>
   <div class="nav-title" id="biz-title">Showcase</div>
@@ -221,6 +225,19 @@ function showEmpty(msg) {
 
 function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function escapeAttr(s) { return escapeHtml(s); }
+
+// Show 'My Projects' back button if a signed-in user is viewing — likely the owner.
+(async () => {
+  try {
+    const { data: { session } } = await HPS.sb.auth.getSession();
+    if (session) {
+      const btn = document.getElementById('nav-back-btn');
+      const logo = document.getElementById('nav-logo-link');
+      if (btn) btn.style.display = 'inline-flex';
+      if (logo) logo.style.display = 'none';
+    }
+  } catch (e) {}
+})();
 
 // No auth needed — public page
 loadShowcase();

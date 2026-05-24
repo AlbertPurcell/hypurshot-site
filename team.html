@@ -64,6 +64,22 @@
     object-fit: contain;
   }
 
+  .nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 10px 8px 0;
+    transition: color 0.15s ease;
+  }
+  .nav-back:hover { color: var(--gold); }
+
   .nav-title {
     font-family: var(--font-heading);
     font-weight: 700;
@@ -1430,7 +1446,10 @@
 
 <!-- NAV BAR -->
 <nav class="navbar">
-  <a href="projects.html" class="nav-logo"><img src="logo-nav.webp" alt="HyPurShot"></a>
+  <button class="nav-back" onclick="window.location.href='projects.html'">
+    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M15 18l-6-6 6-6"/></svg>
+    Projects
+  </button>
   <span class="nav-title">Settings</span>
   <div class="nav-avatar" id="nav-avatar">A</div>
 </nav>
