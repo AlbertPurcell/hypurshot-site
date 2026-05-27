@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0D0D0D">
+<title>Find a detailer near you — HyPurShot Directory</title>
+<meta name="description" content="Find vetted mobile detailers and home-service operators with verified proof-of-work portfolios and live Google reviews.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="logo-nav.webp">
+<meta property="og:type" content="website">
+<meta property="og:title" content="HyPurShot Directory — Find a detailer near you">
+<meta property="og:description" content="Verified portfolios. Live Google reviews. Find your operator.">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  .page { max-width: 1100px; padding-bottom: 60px; }
+
+  .dir-hero {
+    padding: 40px 0 24px;
+    text-align: center;
+  }
+  .dir-hero h1 {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 2.2rem;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+  .dir-hero p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    max-width: 540px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+
+  /* Filter bar */
+  .dir-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 28px 0 14px;
+  }
+  .dir-filter-field {
+    position: relative;
+  }
+  .dir-filter-field label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .dir-filter-field input,
+  .dir-filter-field select {
+    width: 100%;
+    height: 42px;
+    padding: 0 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    outline: none;
+  }
+  .dir-filter-field input:focus,
+  .dir-filter-field select:focus { border-color: var(--gold); }
+  .dir-filter-field select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%23888680' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+  .dir-filter-field select option { background: var(--surface); color: var(--text); }
+
+  /* Service chip filter */
+  .dir-service-tags {
+    display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 18px;
+    min-height: 32px;
+  }
+  .dir-service-tag {
+    padding: 6px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 999px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .dir-service-tag:hover { color: var(--text); border-color: var(--border-strong); }
+  .dir-service-tag.active {
+    background: rgba(212,160,23,0.12);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  .dir-result-count {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+  }
+  .dir-result-count b { color: var(--text); font-weight: 700; }
+
+  /* Operator grid */
+  .dir-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  @media (min-width: 600px) { .dir-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; } }
+  @media (min-width: 980px) { .dir-grid { grid-template-columns: repeat(3, 1fr); gap: 18px; } }
+
+  .op-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color 0.2s, transform 0.2s;
+    display: flex;
+    flex-direction: column;
+  }
+  .op-card:hover {
+    border-color: var(--gold);
+    transform: translateY(-2px);
+  }
+
+  .op-cover {
+    aspect-ratio: 4 / 3;
+    background: var(--surface-2);
+    position: relative;
+    overflow: hidden;
+  }
+  .op-cover img, .op-cover video {
+    width: 100%; height: 100%; object-fit: cover;
+    display: block;
+  }
+  .op-cover-empty {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-dim);
+    font-size: 0.78rem;
+  }
+  .op-plan-badge {
+    position: absolute;
+    top: 10px; left: 10px;
+    background: rgba(0,0,0,0.72);
+    backdrop-filter: blur(8px);
+    color: var(--gold);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border: 1px solid var(--gold-dim);
+  }
+
+  .op-body { padding: 14px 16px 16px; flex: 1; display: flex; flex-direction: column; }
+  .op-name {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+  .op-meta {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  }
+  .op-meta-dot { color: var(--text-dim); }
+  .op-rating {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 0.8rem; color: var(--text);
+    margin-bottom: 10px;
+  }
+  .op-rating .star { color: var(--gold); }
+  .op-rating .count { color: var(--text-muted); font-size: 0.74rem; }
+  .op-no-rating { font-size: 0.74rem; color: var(--text-dim); margin-bottom: 10px; }
+
+  .op-services {
+    display: flex; gap: 5px; flex-wrap: wrap;
+    margin-top: auto; padding-top: 8px;
+  }
+  .op-service-chip {
+    padding: 3px 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 999px;
+    font-size: 0.7rem;
+  }
+
+  /* States */
+  .dir-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+  }
+  .dir-state h3 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .dir-state p { font-size: 0.88rem; line-height: 1.5; max-width: 420px; margin: 0 auto; }
+
+  .dir-skeleton {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .dir-skeleton .sk-cover { aspect-ratio: 4/3; background: var(--surface-2); }
+  .dir-skeleton .sk-body { padding: 14px 16px 16px; }
+  .dir-skeleton .sk-line {
+    height: 12px; background: var(--surface-2); border-radius: 4px;
+    margin-bottom: 8px;
+  }
+  .dir-skeleton .sk-line.short { width: 60%; }
+  @keyframes dir-pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 0.8; } }
+  .dir-skeleton .sk-cover, .dir-skeleton .sk-line { animation: dir-pulse 1.4s ease-in-out infinite; }
+
+  /* Footer CTA strip */
+  .dir-cta-strip {
+    margin-top: 60px;
+    padding: 32px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    text-align: center;
+  }
+  .dir-cta-strip h3 {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .dir-cta-strip p { color: var(--text-muted); font-size: 0.92rem; margin-bottom: 18px; }
+  .dir-cta-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 44px; padding: 0 22px;
+    background: var(--gold); color: var(--bg);
+    border: 0; border-radius: 8px;
+    font-family: var(--font-body); font-weight: 700; font-size: 0.92rem;
+    cursor: pointer; text-decoration: none;
+  }
+  .dir-cta-btn:hover { background: var(--gold-hover); }
+
+  /* Top nav for public pages */
+  .pub-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(13,13,13,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    height: var(--nav-h);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px;
+  }
+  .pub-nav-logo { display: flex; align-items: center; gap: 10px; font-family: var(--font-heading); font-weight: 800; font-size: 1.05rem; color: var(--text); }
+  .pub-nav-logo img { height: 30px; }
+  .pub-nav-cta {
+    height: 36px; padding: 0 14px;
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    color: var(--text);
+    border-radius: 8px;
+    font-size: 0.82rem; font-weight: 600;
+    text-decoration: none;
+    display: inline-flex; align-items: center;
+  }
+  .pub-nav-cta:hover { border-color: var(--gold); color: var(--gold); }
+
+  @media (max-width: 560px) {
+    .dir-hero h1 { font-size: 1.7rem; }
+    .dir-filters { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="pub-nav">
+  <a href="index.html" class="pub-nav-logo">
+    <img src="logo-nav.webp" alt="HyPurShot">
+    <span>HyPurShot</span>
+  </a>
+  <a href="index.html#pricing" class="pub-nav-cta">For operators</a>
+</header>
+
+<main class="page">
+
+  <div class="dir-hero">
+    <h1>Find your detailer.</h1>
+    <p>Vetted mobile detailers and home-service operators with verified proof-of-work portfolios and live Google reviews.</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="dir-filters">
+    <div class="dir-filter-field">
+      <label for="filter-city">City or state</label>
+      <input type="text" id="filter-city" placeholder="e.g. Ashburn or VA" autocomplete="off">
+    </div>
+    <div class="dir-filter-field">
+      <label for="filter-sort">Sort by</label>
+      <select id="filter-sort">
+        <option value="newest">Newest</option>
+        <option value="rating">Highest rated</option>
+        <option value="experience">Most experience</option>
+        <option value="name">Name (A–Z)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Service tag filters (populated from data) -->
+  <div id="service-tags-wrap" style="margin-bottom:8px;display:none">
+    <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">Filter by service</div>
+    <div id="service-tags" class="dir-service-tags"></div>
+  </div>
+
+  <div id="result-count" class="dir-result-count"></div>
+
+  <!-- Results grid -->
+  <div id="results-state" style="display:none">
+    <div class="dir-state">
+      <h3 id="state-title">No operators yet</h3>
+      <p id="state-body">Be the first to list your business in the HyPurShot directory.</p>
+    </div>
+  </div>
+
+  <div id="results-grid" class="dir-grid">
+    <!-- Skeleton loaders -->
+    <div class="dir-skeleton"><div class="sk-cover"></div><div class="sk-body"><div class="sk-line"></div><div class="sk-line short"></div></div></div>
+    <div class="dir-skeleton"><div class="sk-cover"></div><div class="sk-body"><div class="sk-line"></div><div class="sk-line short"></div></div></div>
+    <div class="dir-skeleton"><div class="sk-cover"></div><div class="sk-body"><div class="sk-line"></div><div class="sk-line short"></div></div></div>
+    <div class="dir-skeleton"><div class="sk-cover"></div><div class="sk-body"><div class="sk-line"></div><div class="sk-line short"></div></div></div>
+    <div class="dir-skeleton"><div class="sk-cover"></div><div class="sk-body"><div class="sk-line"></div><div class="sk-line short"></div></div></div>
+    <div class="dir-skeleton"><div class="sk-cover"></div><div class="sk-body"><div class="sk-line"></div><div class="sk-line short"></div></div></div>
+  </div>
+
+  <!-- Operator CTA strip -->
+  <div class="dir-cta-strip">
+    <h3>Are you an operator?</h3>
+    <p>Build a verified portfolio, collect Google reviews, and get listed here.</p>
+    <a href="index.html#pricing" class="dir-cta-btn">Get listed →</a>
+  </div>
+
+</main>
+
+<script>
+  const SUPABASE_URL = 'https://xjsicupdpzawxlwcvxzv.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhqc2ljdXBkcHphd3hsd2N2eHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MjgxNjEsImV4cCI6MjA5MDMwNDE2MX0.ZIuEFOCz1T7aVv6a39hXzvUucSZKgTJhDW5iPyXh1KM';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // State
+  let allOperators = [];
+  let selectedServiceTags = new Set();
+  let cityFilter = '';
+  let sortKey = 'newest';
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;' }[c]));
+  }
+
+  function debounce(fn, ms) {
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+  }
+
+  async function loadDirectory() {
+    try {
+      const { data, error } = await sb
+        .from('directory_listings')
+        .select('id, name, first_name, last_name, city, state, showcase_slug, years_experience, services_tags, cover_media_id, google_rating_avg, google_rating_count, plan');
+      if (error) { console.error('Directory load error:', error); showState('Could not load directory', 'Please refresh the page.'); return; }
+
+      // For each operator with a cover_media_id (or none), fetch the cover URL
+      const coverIds = data.map(d => d.cover_media_id).filter(Boolean);
+      const opIds = data.map(d => d.id);
+
+      // Fetch cover media rows
+      let coverMap = {};
+      if (coverIds.length) {
+        const { data: coverRows } = await sb.from('media').select('id, enhanced_url, watermarked_url, original_url, media_type').in('id', coverIds);
+        (coverRows || []).forEach(r => { coverMap[r.id] = r; });
+      }
+
+      // For operators without cover_media_id, fall back to latest published media
+      const opsNeedingFallback = data.filter(d => !d.cover_media_id).map(d => d.id);
+      let fallbackMap = {};
+      if (opsNeedingFallback.length) {
+        // Get the latest published media per business — fetch all then group
+        const { data: fbRows } = await sb
+          .from('media')
+          .select('id, business_id, enhanced_url, watermarked_url, original_url, media_type, created_at')
+          .in('business_id', opsNeedingFallback)
+          .eq('is_public', true)
+          .order('created_at', { ascending: false });
+        (fbRows || []).forEach(r => {
+          if (!fallbackMap[r.business_id]) fallbackMap[r.business_id] = r;
+        });
+      }
+
+      allOperators = data.map(op => {
+        let coverRow = null;
+        if (op.cover_media_id && coverMap[op.cover_media_id]) coverRow = coverMap[op.cover_media_id];
+        else if (fallbackMap[op.id]) coverRow = fallbackMap[op.id];
+        const coverUrl = coverRow ? (coverRow.enhanced_url || coverRow.watermarked_url || coverRow.original_url) : null;
+        const coverIsVideo = coverRow ? (coverRow.media_type || '').startsWith('video') : false;
+        return { ...op, coverUrl, coverIsVideo };
+      });
+
+      buildServiceTagFilter();
+      render();
+    } catch (e) {
+      console.error(e);
+      showState('Something went wrong', 'Please refresh the page.');
+    }
+  }
+
+  function buildServiceTagFilter() {
+    const tagSet = new Set();
+    allOperators.forEach(op => {
+      (op.services_tags || []).forEach(t => { if (t) tagSet.add(t); });
+    });
+    const wrap = document.getElementById('service-tags-wrap');
+    const container = document.getElementById('service-tags');
+    if (!tagSet.size) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+    const sortedTags = Array.from(tagSet).sort((a, b) => a.localeCompare(b));
+    container.innerHTML = sortedTags.map(t => `<button class="dir-service-tag" data-tag="${escapeHtml(t)}" onclick="toggleServiceTag('${escapeHtml(t).replace(/'/g, "\\'")}')">${escapeHtml(t)}</button>`).join('');
+  }
+
+  function toggleServiceTag(tag) {
+    if (selectedServiceTags.has(tag)) selectedServiceTags.delete(tag);
+    else selectedServiceTags.add(tag);
+    document.querySelectorAll('.dir-service-tag').forEach(el => {
+      el.classList.toggle('active', selectedServiceTags.has(el.getAttribute('data-tag')));
+    });
+    render();
+  }
+
+  function filterAndSort(ops) {
+    let out = ops.slice();
+
+    // City filter
+    if (cityFilter) {
+      const q = cityFilter.toLowerCase();
+      out = out.filter(op => {
+        const c = (op.city || '').toLowerCase();
+        const s = (op.state || '').toLowerCase();
+        return c.includes(q) || s.includes(q);
+      });
+    }
+
+    // Service tags filter (AND across selected tags)
+    if (selectedServiceTags.size) {
+      out = out.filter(op => {
+        const tags = (op.services_tags || []).map(t => t.toLowerCase());
+        return Array.from(selectedServiceTags).every(t => tags.includes(t.toLowerCase()));
+      });
+    }
+
+    // Sort
+    if (sortKey === 'rating') {
+      out.sort((a, b) => (b.google_rating_avg || 0) - (a.google_rating_avg || 0));
+    } else if (sortKey === 'experience') {
+      out.sort((a, b) => (b.years_experience || 0) - (a.years_experience || 0));
+    } else if (sortKey === 'name') {
+      out.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    }
+    // 'newest' = keep API order (created_at desc would require an order in the view; for now natural order)
+
+    return out;
+  }
+
+  function showState(title, body) {
+    document.getElementById('results-grid').innerHTML = '';
+    document.getElementById('state-title').textContent = title;
+    document.getElementById('state-body').textContent = body;
+    document.getElementById('results-state').style.display = 'block';
+    document.getElementById('result-count').textContent = '';
+  }
+
+  function render() {
+    const ops = filterAndSort(allOperators);
+    const grid = document.getElementById('results-grid');
+    const stateBlock = document.getElementById('results-state');
+    const count = document.getElementById('result-count');
+
+    if (!allOperators.length) {
+      showState('No operators yet', 'Be the first to list your business in the HyPurShot directory.');
+      return;
+    }
+    if (!ops.length) {
+      showState('No matches', 'Try clearing some filters or searching a different city.');
+      return;
+    }
+
+    stateBlock.style.display = 'none';
+    count.innerHTML = `<b>${ops.length}</b> operator${ops.length===1?'':'s'} found`;
+
+    grid.innerHTML = ops.map(op => {
+      const slug = op.showcase_slug ? `showcase.html?b=${encodeURIComponent(op.showcase_slug)}` : `showcase.html?id=${op.id}`;
+      const planBadge = (op.plan && op.plan !== 'free')
+        ? `<div class="op-plan-badge">${escapeHtml(op.plan.charAt(0).toUpperCase() + op.plan.slice(1))}</div>` : '';
+      const coverHtml = op.coverUrl
+        ? (op.coverIsVideo
+            ? `<video src="${escapeHtml(op.coverUrl)}" muted playsinline preload="metadata"></video>`
+            : `<img src="${escapeHtml(op.coverUrl)}" alt="${escapeHtml(op.name || 'Operator')} portfolio" loading="lazy">`)
+        : `<div class="op-cover-empty">Portfolio coming soon</div>`;
+      const locParts = [op.city, op.state].filter(Boolean);
+      const loc = locParts.length ? locParts.join(', ') : 'Location not set';
+      const years = op.years_experience ? `${op.years_experience} yr${op.years_experience===1?'':'s'} experience` : null;
+      const ratingHtml = (op.google_rating_avg && op.google_rating_count)
+        ? `<div class="op-rating"><span class="star">★</span><b>${Number(op.google_rating_avg).toFixed(1)}</b><span class="count">(${op.google_rating_count} Google review${op.google_rating_count===1?'':'s'})</span></div>`
+        : `<div class="op-no-rating">No Google reviews yet</div>`;
+      const services = (op.services_tags || []).slice(0, 4).map(t => `<span class="op-service-chip">${escapeHtml(t)}</span>`).join('');
+      const extraServices = (op.services_tags || []).length > 4 ? `<span class="op-service-chip">+${op.services_tags.length - 4}</span>` : '';
+
+      return `<a class="op-card" href="${slug}">
+        <div class="op-cover">${coverHtml}${planBadge}</div>
+        <div class="op-body">
+          <div class="op-name">${escapeHtml(op.name || 'Unnamed operator')}</div>
+          <div class="op-meta">
+            <span>${escapeHtml(loc)}</span>
+            ${years ? `<span class="op-meta-dot">·</span><span>${escapeHtml(years)}</span>` : ''}
+          </div>
+          ${ratingHtml}
+          ${(services || extraServices) ? `<div class="op-services">${services}${extraServices}</div>` : ''}
+        </div>
+      </a>`;
+    }).join('');
+  }
+
+  // Filter wiring
+  document.getElementById('filter-city').addEventListener('input', debounce(e => {
+    cityFilter = e.target.value.trim();
+    render();
+  }, 200));
+  document.getElementById('filter-sort').addEventListener('change', e => {
+    sortKey = e.target.value;
+    render();
+  });
+
+  // Boot
+  loadDirectory();
+</script>
+
+</body>
+</html>
