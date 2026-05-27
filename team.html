@@ -1451,7 +1451,14 @@
     Projects
   </button>
   <span class="nav-title">Settings</span>
-  <div class="nav-avatar" id="nav-avatar">A</div>
+  <div style="position:relative">
+    <button type="button" class="nav-avatar" id="nav-avatar" onclick="toggleAccountMenu(event)" aria-haspopup="true" aria-expanded="false">A</button>
+    <div id="account-menu" role="menu" style="display:none;position:absolute;top:calc(100% + 8px);right:0;min-width:240px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;box-shadow:0 8px 24px rgba(0,0,0,0.4);z-index:1000">
+      <div style="padding:8px 10px;font-size:.72rem;color:var(--text-muted);letter-spacing:.04em;text-transform:uppercase;font-weight:700">Signed in as</div>
+      <div id="account-menu-email" style="padding:0 10px 10px;font-size:.86rem;color:var(--text);word-break:break-all;border-bottom:1px solid var(--border);margin-bottom:6px">—</div>
+      <button type="button" onclick="signOutAccount()" style="display:block;width:100%;text-align:left;padding:10px;background:transparent;border:0;border-radius:6px;color:var(--text);font:inherit;font-size:.88rem;cursor:pointer" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">Sign out</button>
+    </div>
+  </div>
 </nav>
 
 <!-- TAB BAR -->
@@ -1509,11 +1516,22 @@
           <div id="billing-status" style="font-size:.78rem;color:var(--text-muted);margin-top:2px"></div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button id="btn-manage-subscription" class="btn btn-secondary" onclick="openCustomerPortal()" style="display:none">Manage subscription</button>
+          <button id="btn-manage-subscription" class="btn btn-ghost" onclick="openCustomerPortal()" style="display:none">Manage subscription</button>
           <a id="btn-upgrade-plan" class="btn btn-gold" href="index.html#pricing" style="display:none">Upgrade</a>
         </div>
       </div>
       <div id="billing-next" style="font-size:.78rem;color:var(--text-muted);margin-top:10px"></div>
+    </div>
+
+    <div class="section-header" style="margin-top:28px"><h2>Account</h2></div>
+    <div class="card" style="padding:18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:.74rem;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase;font-weight:700">Signed in as</div>
+          <div id="account-email" style="font-size:1rem;margin-top:4px;color:var(--text);word-break:break-all">—</div>
+        </div>
+        <button type="button" class="btn btn-ghost-danger" onclick="signOutAccount()">Sign out</button>
+      </div>
     </div>
   </div>
 
@@ -2125,6 +2143,7 @@ try {
 // Session-driven IDs — populated on page load from Supabase Auth
 let currentBusinessId = null;
 let currentUserId = null;
+let currentUserEmail = null;
 
 let editingMemberId = null;
 let openMenuId = null;
@@ -2142,6 +2161,14 @@ async function initSession() {
   }
 
   currentUserId = session.user.id;
+  currentUserEmail = session.user.email || '';
+  // Populate account UI (avatar initial + email in dropdown and Account card)
+  try {
+    const initial = (currentUserEmail || 'A').trim().charAt(0).toUpperCase() || 'A';
+    const av = document.getElementById('nav-avatar'); if (av) av.textContent = initial;
+    const em = document.getElementById('account-email'); if (em) em.textContent = currentUserEmail || '—';
+    const em2 = document.getElementById('account-menu-email'); if (em2) em2.textContent = currentUserEmail || '—';
+  } catch (_) {}
 
   // Look up the business this user owns
   const { data: biz, error } = await _supabase
@@ -2270,6 +2297,45 @@ function loadBilling(b) {
   // Buttons
   if (manageBtn) manageBtn.style.display = (plan !== 'free' && b.stripe_customer_id) ? 'inline-flex' : 'none';
   if (upgradeBtn) upgradeBtn.style.display = (plan === 'free') ? 'inline-flex' : 'none';
+}
+
+// ───── Account menu / sign out ─────
+function toggleAccountMenu(ev) {
+  if (ev) ev.stopPropagation();
+  const menu = document.getElementById('account-menu');
+  const trigger = document.getElementById('nav-avatar');
+  if (!menu) return;
+  const open = menu.style.display === 'block';
+  menu.style.display = open ? 'none' : 'block';
+  if (trigger) trigger.setAttribute('aria-expanded', open ? 'false' : 'true');
+}
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('account-menu');
+  const trigger = document.getElementById('nav-avatar');
+  if (!menu || menu.style.display !== 'block') return;
+  if (e.target === trigger || (trigger && trigger.contains(e.target))) return;
+  if (menu.contains(e.target)) return;
+  menu.style.display = 'none';
+  if (trigger) trigger.setAttribute('aria-expanded', 'false');
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const menu = document.getElementById('account-menu');
+  if (menu && menu.style.display === 'block') {
+    menu.style.display = 'none';
+    const trigger = document.getElementById('nav-avatar');
+    if (trigger) trigger.setAttribute('aria-expanded', 'false');
+  }
+});
+
+async function signOutAccount() {
+  try {
+    if (_supabase) {
+      await _supabase.auth.signOut();
+    }
+  } catch (_) {}
+  // Clear any in-memory state and redirect to public landing
+  window.location.href = 'index.html';
 }
 
 async function openCustomerPortal() {
