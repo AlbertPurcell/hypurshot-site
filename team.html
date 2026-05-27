@@ -1464,6 +1464,7 @@
 <!-- TAB BAR -->
 <div class="tab-bar">
   <button class="tab-btn active" data-tab="settings" onclick="switchTab('settings')">Business</button>
+  <button class="tab-btn" data-tab="directory" onclick="switchTab('directory')">Directory</button>
   <button class="tab-btn" data-tab="members" onclick="switchTab('members')">Members</button>
   <button class="tab-btn" data-tab="invites" onclick="switchTab('invites')">Invites</button>
   <button class="tab-btn" data-tab="approvals" onclick="switchTab('approvals')">Approvals</button>
@@ -1532,6 +1533,93 @@
         </div>
         <button type="button" class="btn btn-ghost-danger" onclick="signOutAccount()">Sign out</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ═══════ DIRECTORY TAB ═══════ -->
+  <div id="tab-directory" class="tab-content">
+    <div class="section-header"><h2>Directory visibility</h2></div>
+    <div class="card" style="padding:18px">
+      <div style="font-size:.86rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5">
+        Control how your profile appears to customers searching for operators on hypurshot.com.
+      </div>
+      <div id="vis-options" style="display:flex;flex-direction:column;gap:10px">
+        <label class="vis-opt" data-val="private" style="display:flex;gap:12px;padding:14px;border:1px solid var(--border);border-radius:10px;cursor:pointer;align-items:flex-start;transition:border-color .15s,background .15s">
+          <input type="radio" name="visibility" value="private" style="margin-top:3px;accent-color:var(--gold)">
+          <div>
+            <div style="font-weight:700;color:var(--text);font-size:.95rem">Private</div>
+            <div style="font-size:.8rem;color:var(--text-muted);margin-top:3px">Only you and your team can see your profile. Not listed anywhere public.</div>
+          </div>
+        </label>
+        <label class="vis-opt" data-val="shared" style="display:flex;gap:12px;padding:14px;border:1px solid var(--border);border-radius:10px;cursor:pointer;align-items:flex-start;transition:border-color .15s,background .15s">
+          <input type="radio" name="visibility" value="shared" style="margin-top:3px;accent-color:var(--gold)">
+          <div style="flex:1">
+            <div style="font-weight:700;color:var(--text);font-size:.95rem">Shared link</div>
+            <div style="font-size:.8rem;color:var(--text-muted);margin-top:3px">Anyone with the private link can view your showcase. Not listed in the public directory.</div>
+            <div id="share-link-row" style="display:none;margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <input type="text" id="share-link-input" readonly style="flex:1;min-width:220px;height:36px;font-size:.78rem">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="copyShareLink()">Copy</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="regenerateShareLink()">Regenerate</button>
+            </div>
+          </div>
+        </label>
+        <label class="vis-opt" data-val="public" style="display:flex;gap:12px;padding:14px;border:1px solid var(--border);border-radius:10px;cursor:pointer;align-items:flex-start;transition:border-color .15s,background .15s">
+          <input type="radio" name="visibility" value="public" style="margin-top:3px;accent-color:var(--gold)">
+          <div>
+            <div style="font-weight:700;color:var(--text);font-size:.95rem">Public</div>
+            <div style="font-size:.8rem;color:var(--text-muted);margin-top:3px">Listed in the hypurshot.com directory where customers can find you.</div>
+          </div>
+        </label>
+      </div>
+      <div id="dir-gate-banner" style="display:none;margin-top:14px;padding:12px 14px;background:rgba(212,160,23,0.08);border:1px solid rgba(212,160,23,0.3);border-radius:8px;font-size:.82rem;color:var(--text);line-height:1.5"></div>
+    </div>
+
+    <div class="section-header" style="margin-top:28px"><h2>Profile details</h2></div>
+    <div class="card" style="padding:18px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div>
+          <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Years of experience</label>
+          <input type="number" id="dir-years" min="0" max="100" placeholder="e.g. 7" style="width:100%;height:42px;padding:0 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-body);font-size:.85rem">
+        </div>
+        <div>
+          <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">State</label>
+          <input type="text" id="dir-state" maxlength="2" placeholder="VA" style="text-transform:uppercase">
+        </div>
+      </div>
+      <div style="margin-top:14px">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Services offered</label>
+        <div id="services-chip-list" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;align-items:center"></div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input type="text" id="services-input" placeholder="Add a service (e.g. Ceramic coating) and press Enter" onkeydown="servicesInputKeydown(event)" style="flex:1">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="addServiceTagFromInput()">Add</button>
+        </div>
+        <div style="font-size:.72rem;color:var(--text-muted);margin-top:6px">Customers can filter operators by these tags. Keep them short and clear.</div>
+      </div>
+      <button class="btn btn-gold" id="dir-save-btn" onclick="saveDirectorySettings()" style="margin-top:18px">Save directory settings</button>
+    </div>
+
+    <div class="section-header" style="margin-top:28px"><h2>Cover photo</h2></div>
+    <div class="card" style="padding:18px">
+      <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:12px;line-height:1.5">Shown on your directory card and the top of your showcase page. We default to your most recent media — you can pick a different one.</div>
+      <div id="cover-preview-wrap" style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+        <div id="cover-preview" style="width:160px;height:160px;border-radius:10px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.78rem;color:var(--text-muted);overflow:hidden">No cover yet</div>
+        <div style="flex:1;min-width:200px">
+          <button type="button" class="btn btn-ghost" onclick="openCoverPicker()">Choose from your media</button>
+          <button type="button" class="btn btn-ghost" onclick="clearCover()" style="margin-left:8px">Use latest</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cover picker modal -->
+  <div id="cover-picker-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:2000;align-items:center;justify-content:center;padding:20px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;max-width:720px;width:100%;max-height:80vh;overflow:auto;padding:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <h3 style="font-family:var(--font-heading);font-size:1.1rem">Choose cover photo</h3>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="closeCoverPicker()">Close</button>
+      </div>
+      <div id="cover-picker-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px"></div>
+      <div id="cover-picker-empty" style="display:none;text-align:center;padding:40px 20px;color:var(--text-muted);font-size:.86rem">No published media yet. Upload some media first.</div>
     </div>
   </div>
 
@@ -2299,6 +2387,269 @@ function loadBilling(b) {
   if (upgradeBtn) upgradeBtn.style.display = (plan === 'free') ? 'inline-flex' : 'none';
 }
 
+// ───── Directory tab ─────
+let _dirServices = [];
+let _dirCoverMediaId = null;
+let _dirVisibility = 'private';
+let _dirShareToken = null;
+let _dirMediaCount = 0;
+let _dirLoaded = false;
+
+async function loadDirectorySettings() {
+  if (!_supabase || !currentBusinessId) return;
+  const { data: b, error } = await _supabase.from('businesses').select('visibility, share_token, years_experience, services_tags, cover_media_id, state, plan').eq('id', currentBusinessId).maybeSingle();
+  if (error || !b) { showToast('Could not load directory settings.', 'error'); return; }
+
+  _dirVisibility = b.visibility || 'private';
+  _dirShareToken = b.share_token || null;
+  _dirServices = Array.isArray(b.services_tags) ? b.services_tags.slice() : [];
+  _dirCoverMediaId = b.cover_media_id || null;
+
+  document.getElementById('dir-years').value = b.years_experience || '';
+  document.getElementById('dir-state').value = b.state || '';
+
+  // Visibility radios
+  document.querySelectorAll('input[name="visibility"]').forEach(r => { r.checked = (r.value === _dirVisibility); });
+  highlightVisibilityCard();
+
+  // Share link row visibility + value
+  updateShareLinkUI();
+
+  // Services chips
+  renderServiceChips();
+
+  // Count media for gate banner
+  const { count } = await _supabase.from('media').select('id', { count: 'exact', head: true }).eq('business_id', currentBusinessId).eq('is_public', true);
+  _dirMediaCount = count || 0;
+  updateGateBanner(b.plan);
+
+  // Cover preview
+  await renderCoverPreview();
+
+  // Wire radio changes
+  if (!_dirLoaded) {
+    document.querySelectorAll('input[name="visibility"]').forEach(r => {
+      r.addEventListener('change', async () => {
+        _dirVisibility = r.value;
+        highlightVisibilityCard();
+        updateShareLinkUI();
+        updateGateBanner(b.plan);
+        // Persist immediately for the visibility choice (separate from Save button for profile details)
+        await persistVisibility();
+      });
+    });
+    _dirLoaded = true;
+  }
+}
+
+function highlightVisibilityCard() {
+  document.querySelectorAll('.vis-opt').forEach(el => {
+    const isActive = el.getAttribute('data-val') === _dirVisibility;
+    el.style.borderColor = isActive ? 'var(--gold)' : 'var(--border)';
+    el.style.background = isActive ? 'rgba(212,160,23,0.06)' : 'transparent';
+  });
+}
+
+function updateShareLinkUI() {
+  const row = document.getElementById('share-link-row');
+  if (!row) return;
+  if (_dirVisibility === 'shared') {
+    row.style.display = 'flex';
+    const input = document.getElementById('share-link-input');
+    if (_dirShareToken) {
+      input.value = `${window.location.origin}/p/${_dirShareToken}`;
+    } else {
+      input.value = 'Generating link…';
+    }
+  } else {
+    row.style.display = 'none';
+  }
+}
+
+function updateGateBanner(plan) {
+  const banner = document.getElementById('dir-gate-banner');
+  if (!banner) return;
+  const isFree = !plan || plan === 'free';
+  if (_dirVisibility === 'public' && isFree && _dirMediaCount < 5) {
+    const remaining = 5 - _dirMediaCount;
+    banner.innerHTML = `<strong style="color:var(--gold)">Almost ready.</strong> You're on the free plan. Add <strong>${remaining} more</strong> media item${remaining===1?'':'s'} (you have ${_dirMediaCount} of 5) to appear in the public directory, or <a href="index.html#pricing" style="color:var(--gold);text-decoration:underline">upgrade to skip the requirement</a>.`;
+    banner.style.display = 'block';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+async function persistVisibility() {
+  // Generate a share token if switching to shared and none exists
+  let token = _dirShareToken;
+  if (_dirVisibility === 'shared' && !token) {
+    token = generateShareToken();
+    _dirShareToken = token;
+  }
+  const payload = { visibility: _dirVisibility, share_token: token };
+  const { error } = await _supabase.from('businesses').update(payload).eq('id', currentBusinessId);
+  if (error) { showToast('Could not save visibility: ' + error.message, 'error'); return; }
+  updateShareLinkUI();
+  showToast('Visibility updated.', 'success');
+}
+
+function generateShareToken() {
+  // 16 chars, url-safe
+  const arr = new Uint8Array(12);
+  crypto.getRandomValues(arr);
+  return Array.from(arr).map(b => b.toString(36).padStart(2, '0')).join('').slice(0, 16);
+}
+
+async function regenerateShareLink() {
+  if (!confirm('Generate a new share link? The old link will stop working.')) return;
+  _dirShareToken = generateShareToken();
+  await persistVisibility();
+}
+
+async function copyShareLink() {
+  const input = document.getElementById('share-link-input');
+  if (!input || !input.value || input.value.startsWith('Generating')) return;
+  try {
+    await navigator.clipboard.writeText(input.value);
+    showToast('Link copied.', 'success');
+  } catch (_) {
+    input.select(); document.execCommand('copy');
+    showToast('Link copied.', 'success');
+  }
+}
+
+function renderServiceChips() {
+  const wrap = document.getElementById('services-chip-list');
+  if (!wrap) return;
+  if (!_dirServices.length) {
+    wrap.innerHTML = '<span style="font-size:.8rem;color:var(--text-muted)">No services added yet.</span>';
+    return;
+  }
+  wrap.innerHTML = _dirServices.map((s, i) => `
+    <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 4px 4px 10px;background:rgba(212,160,23,0.12);border:1px solid rgba(212,160,23,0.3);color:var(--text);border-radius:999px;font-size:.78rem">
+      ${escapeHtml(s)}
+      <button type="button" onclick="removeServiceTag(${i})" aria-label="Remove" style="width:18px;height:18px;border-radius:50%;border:0;background:rgba(255,255,255,0.06);color:var(--text-muted);font-size:.7rem;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center">×</button>
+    </span>
+  `).join('');
+}
+
+function servicesInputKeydown(ev) {
+  if (ev.key === 'Enter' || ev.key === ',') {
+    ev.preventDefault();
+    addServiceTagFromInput();
+  }
+}
+
+function addServiceTagFromInput() {
+  const input = document.getElementById('services-input');
+  const v = (input.value || '').trim().replace(/^,+|,+$/g, '');
+  if (!v) return;
+  // Split if user pasted comma-separated
+  v.split(/,/).map(s => s.trim()).filter(Boolean).forEach(tag => {
+    if (tag.length > 40) tag = tag.slice(0,40);
+    if (!_dirServices.find(x => x.toLowerCase() === tag.toLowerCase())) {
+      _dirServices.push(tag);
+    }
+  });
+  input.value = '';
+  renderServiceChips();
+}
+
+function removeServiceTag(i) {
+  _dirServices.splice(i, 1);
+  renderServiceChips();
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;' }[c]));
+}
+
+async function saveDirectorySettings() {
+  if (!_supabase || !currentBusinessId) { showToast('Not signed in.', 'error'); return; }
+  const btn = document.getElementById('dir-save-btn');
+  btn.disabled = true; const orig = btn.textContent; btn.textContent = 'Saving…';
+
+  const years = document.getElementById('dir-years').value;
+  const state = (document.getElementById('dir-state').value || '').trim().toUpperCase().slice(0,2);
+
+  const payload = {
+    years_experience: years === '' ? null : Math.max(0, Math.min(100, parseInt(years, 10) || 0)),
+    services_tags: _dirServices,
+    state: state || null,
+  };
+  const { error } = await _supabase.from('businesses').update(payload).eq('id', currentBusinessId);
+  btn.disabled = false; btn.textContent = orig;
+  if (error) { showToast('Could not save: ' + error.message, 'error'); return; }
+  showToast('Directory settings saved.', 'success');
+}
+
+// Cover photo picker
+async function renderCoverPreview() {
+  const wrap = document.getElementById('cover-preview');
+  if (!wrap) return;
+  let mediaRow = null;
+  if (_dirCoverMediaId) {
+    const { data } = await _supabase.from('media').select('id, enhanced_url, watermarked_url, original_url, media_type').eq('id', _dirCoverMediaId).maybeSingle();
+    mediaRow = data;
+  }
+  if (!mediaRow) {
+    // Latest published media as fallback preview
+    const { data } = await _supabase.from('media').select('id, enhanced_url, watermarked_url, original_url, media_type').eq('business_id', currentBusinessId).eq('is_public', true).order('created_at', { ascending: false }).limit(1).maybeSingle();
+    mediaRow = data;
+  }
+  if (mediaRow) {
+    const url = mediaRow.enhanced_url || mediaRow.watermarked_url || mediaRow.original_url;
+    wrap.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover" alt="Cover preview">`;
+  } else {
+    wrap.innerHTML = 'No cover yet';
+  }
+}
+
+async function openCoverPicker() {
+  const modal = document.getElementById('cover-picker-modal');
+  const grid = document.getElementById('cover-picker-grid');
+  const empty = document.getElementById('cover-picker-empty');
+  modal.style.display = 'flex';
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);font-size:.86rem;padding:24px">Loading…</div>';
+  const { data: rows } = await _supabase.from('media').select('id, enhanced_url, watermarked_url, original_url, media_type, created_at').eq('business_id', currentBusinessId).eq('is_public', true).order('created_at', { ascending: false }).limit(60);
+  if (!rows || !rows.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = rows.map(r => {
+    const url = r.enhanced_url || r.watermarked_url || r.original_url;
+    const isVideo = (r.media_type || '').startsWith('video');
+    return `<button type="button" onclick="selectCoverMedia('${r.id}')" style="position:relative;aspect-ratio:1;padding:0;background:var(--bg);border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer">
+      ${isVideo
+        ? `<video src="${url}" muted style="width:100%;height:100%;object-fit:cover"></video>`
+        : `<img src="${url}" style="width:100%;height:100%;object-fit:cover" alt="">`}
+    </button>`;
+  }).join('');
+}
+
+function closeCoverPicker() {
+  document.getElementById('cover-picker-modal').style.display = 'none';
+}
+
+async function selectCoverMedia(mediaId) {
+  _dirCoverMediaId = mediaId;
+  const { error } = await _supabase.from('businesses').update({ cover_media_id: mediaId }).eq('id', currentBusinessId);
+  closeCoverPicker();
+  if (error) { showToast('Could not save cover: ' + error.message, 'error'); return; }
+  await renderCoverPreview();
+  showToast('Cover photo set.', 'success');
+}
+
+async function clearCover() {
+  _dirCoverMediaId = null;
+  const { error } = await _supabase.from('businesses').update({ cover_media_id: null }).eq('id', currentBusinessId);
+  if (error) { showToast('Could not reset: ' + error.message, 'error'); return; }
+  await renderCoverPreview();
+  showToast('Using your latest media as cover.', 'success');
+}
+
 // ───── Account menu / sign out ─────
 function toggleAccountMenu(ev) {
   if (ev) ev.stopPropagation();
@@ -2403,6 +2754,7 @@ function switchTab(tab) {
   document.getElementById('tab-' + tab).classList.add('active');
 
   if (tab === 'settings') loadBusinessSettings();
+  else if (tab === 'directory') loadDirectorySettings();
   else if (tab === 'members') loadMembers();
   else if (tab === 'invites') loadInvites();
   else if (tab === 'approvals') loadApprovals();
