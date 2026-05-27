@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0D0D0D">
+<title>HyPurShot</title>
+<link rel="icon" type="image/png" href="/logo-nav.webp">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/app.css">
+<style>
+  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+  .nf {
+    max-width: 460px; text-align: center;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 36px 28px;
+  }
+  .nf h1 {
+    font-family: var(--font-heading); font-weight: 800;
+    font-size: 1.6rem; letter-spacing: -0.01em; margin-bottom: 10px;
+  }
+  .nf p { color: var(--text-muted); font-size: 0.92rem; line-height: 1.55; margin-bottom: 22px; }
+  .nf a {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 42px; padding: 0 20px;
+    background: var(--gold); color: var(--bg);
+    border-radius: 8px; font-weight: 700; font-size: 0.88rem;
+  }
+  .nf a:hover { background: var(--gold-hover); }
+  .nf .loading { color: var(--text-muted); font-size: 0.86rem; }
+</style>
+</head>
+<body>
+
+<div class="nf" id="card">
+  <h1 id="title">Page not found</h1>
+  <p id="body">The page you're looking for doesn't exist or has moved.</p>
+  <a href="/" id="cta">Back to home</a>
+</div>
+
+<script>
+  // /p/{token} routing for shared-link visibility.
+  // GitHub Pages serves this file for any unknown path. Rewrite to /p.html?t={token}.
+  (function() {
+    var path = window.location.pathname || '';
+    var m = path.match(/^\/p\/([A-Za-z0-9_-]{4,64})\/?$/);
+    if (m && m[1]) {
+      // Replace the URL invisibly to /p.html?t={token}
+      window.location.replace('/p.html?t=' + encodeURIComponent(m[1]));
+      // Show a brief loading state while replacing
+      document.getElementById('title').textContent = 'Loading…';
+      document.getElementById('body').textContent = 'One moment.';
+      document.getElementById('cta').style.display = 'none';
+    }
+  })();
+</script>
+
+</body>
+</html>

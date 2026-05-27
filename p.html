@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0D0D0D">
+<title>Loading… — HyPurShot</title>
+<link rel="icon" type="image/png" href="/logo-nav.webp">
+<meta name="robots" content="noindex">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/app.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+  .wrap {
+    max-width: 460px; text-align: center;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 36px 28px;
+  }
+  .wrap h1 {
+    font-family: var(--font-heading); font-weight: 800;
+    font-size: 1.5rem; letter-spacing: -0.01em; margin-bottom: 12px;
+  }
+  .wrap p { color: var(--text-muted); font-size: 0.92rem; line-height: 1.55; margin-bottom: 22px; }
+  .wrap .spinner {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid var(--border); border-top-color: var(--gold);
+    margin: 0 auto 18px; animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .wrap a {
+    display: inline-flex; align-items: center;
+    height: 42px; padding: 0 20px;
+    background: var(--gold); color: var(--bg);
+    border-radius: 8px; font-weight: 700; font-size: 0.88rem;
+  }
+  .wrap a:hover { background: var(--gold-hover); }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="card">
+  <div class="spinner" id="spinner"></div>
+  <h1 id="title">Loading…</h1>
+  <p id="body">One moment.</p>
+  <a id="cta" href="/" style="display:none">Back to home</a>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://xjsicupdpzawxlwcvxzv.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhqc2ljdXBkcHphd3hsd2N2eHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MjgxNjEsImV4cCI6MjA5MDMwNDE2MX0.ZIuEFOCz1T7aVv6a39hXzvUucSZKgTJhDW5iPyXh1KM';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function showError(title, body) {
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('title').textContent = title;
+    document.getElementById('body').textContent = body;
+    document.getElementById('cta').style.display = 'inline-flex';
+  }
+
+  async function resolveToken() {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('t');
+    if (!token || !/^[A-Za-z0-9_-]{4,64}$/.test(token)) {
+      showError('Invalid link', 'The link you used is missing or malformed.');
+      return;
+    }
+    const { data, error } = await sb
+      .from('businesses')
+      .select('id, name, showcase_slug, visibility')
+      .eq('share_token', token)
+      .maybeSingle();
+    if (error || !data) {
+      showError('Link not found', 'This shared link no longer works. Ask the operator for an updated link.');
+      return;
+    }
+    if (data.visibility === 'private') {
+      showError('Link disabled', 'The operator has set their profile to private.');
+      return;
+    }
+    // Redirect to showcase with their slug or id
+    const dest = data.showcase_slug
+      ? `/showcase.html?slug=${encodeURIComponent(data.showcase_slug)}`
+      : `/showcase.html?business=${encodeURIComponent(data.id)}`;
+    window.location.replace(dest);
+  }
+
+  resolveToken();
+</script>
+
+</body>
+</html>

@@ -516,7 +516,7 @@
     count.innerHTML = `<b>${ops.length}</b> operator${ops.length===1?'':'s'} found`;
 
     grid.innerHTML = ops.map(op => {
-      const slug = op.showcase_slug ? `showcase.html?b=${encodeURIComponent(op.showcase_slug)}` : `showcase.html?id=${op.id}`;
+      const slug = op.showcase_slug ? `showcase.html?slug=${encodeURIComponent(op.showcase_slug)}` : `showcase.html?business=${encodeURIComponent(op.id)}`;
       const planBadge = (op.plan && op.plan !== 'free')
         ? `<div class="op-plan-badge">${escapeHtml(op.plan.charAt(0).toUpperCase() + op.plan.slice(1))}</div>` : '';
       const coverHtml = op.coverUrl
