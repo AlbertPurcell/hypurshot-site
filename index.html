@@ -604,7 +604,7 @@
             <li>Unlimited review requests</li>
             <li>Email support</li>
           </ul>
-          <a href="/auth.html" class="btn btn-secondary">Start with Starter</a>
+          <a href="/auth.html?next=checkout&plan=starter" class="btn btn-secondary checkout-cta" data-plan="starter">Start with Starter</a>
         </div>
 
         <div class="price featured">
@@ -618,7 +618,7 @@
             <li>Google Business integration</li>
             <li>Priority support</li>
           </ul>
-          <a href="/auth.html" class="btn btn-primary">Start with Pro</a>
+          <a href="/auth.html?next=checkout&plan=pro" class="btn btn-primary checkout-cta" data-plan="pro">Start with Pro</a>
         </div>
 
         <div class="price">
@@ -632,7 +632,7 @@
             <li>Custom branding</li>
             <li>Dedicated onboarding</li>
           </ul>
-          <a href="/auth.html" class="btn btn-secondary">Start with Agency</a>
+          <a href="/auth.html?next=checkout&plan=agency" class="btn btn-secondary checkout-cta" data-plan="agency">Start with Agency</a>
         </div>
       </div>
     </div>
@@ -685,6 +685,54 @@
       </div>
     </div>
   </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // ───── Pricing CTAs → Stripe Checkout (if signed in) ─────
+    (function() {
+      const SUPABASE_URL = 'https://xjsicupdpzawxlwcvxzv.supabase.co';
+      const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhqc2ljdXBkcHphd3hsd2N2eHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MjgxNjEsImV4cCI6MjA5MDMwNDE2MX0.ZIuEFOCz1T7aVv6a39hXzvUucSZKgTJhDW5iPyXh1KM';
+      const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+      async function startCheckout(plan, btn) {
+        const originalText = btn.textContent;
+        btn.style.pointerEvents = 'none';
+        btn.textContent = 'Loading\u2026';
+        try {
+          const { data: { session } } = await client.auth.getSession();
+          if (!session) {
+            window.location.href = '/auth.html?next=checkout&plan=' + encodeURIComponent(plan);
+            return;
+          }
+          const res = await fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + session.access_token,
+            },
+            body: JSON.stringify({ plan }),
+          });
+          const j = await res.json();
+          if (!res.ok || !j.url) throw new Error(j.error || 'Checkout failed');
+          window.location.href = j.url;
+        } catch (err) {
+          console.error('checkout error', err);
+          alert('Could not start checkout: ' + (err && err.message ? err.message : 'unknown error'));
+          btn.style.pointerEvents = '';
+          btn.textContent = originalText;
+        }
+      }
+
+      document.querySelectorAll('.checkout-cta').forEach(function(a) {
+        a.addEventListener('click', function(e) {
+          e.preventDefault();
+          const plan = a.getAttribute('data-plan');
+          if (!plan) { window.location.href = a.getAttribute('href'); return; }
+          startCheckout(plan, a);
+        });
+      });
+    })();
+  </script>
 
 </body>
 </html>

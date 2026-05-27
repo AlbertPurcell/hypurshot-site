@@ -1499,6 +1499,22 @@
 
       <button class="btn btn-gold" id="settings-save-btn" onclick="saveBusinessSettings()" style="margin-top:6px">Save settings</button>
     </div>
+
+    <div class="section-header" style="margin-top:28px"><h2>Billing</h2></div>
+    <div class="card" style="padding:18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px">
+        <div>
+          <div style="font-size:.74rem;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase;font-weight:700">Current plan</div>
+          <div id="billing-plan-name" style="font-family:var(--font-heading,inherit);font-size:1.4rem;margin-top:4px;color:var(--text)">—</div>
+          <div id="billing-status" style="font-size:.78rem;color:var(--text-muted);margin-top:2px"></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button id="btn-manage-subscription" class="btn btn-secondary" onclick="openCustomerPortal()" style="display:none">Manage subscription</button>
+          <a id="btn-upgrade-plan" class="btn btn-gold" href="index.html#pricing" style="display:none">Upgrade</a>
+        </div>
+      </div>
+      <div id="billing-next" style="font-size:.78rem;color:var(--text-muted);margin-top:10px"></div>
+    </div>
   </div>
 
   <!-- ═══════ MEMBERS TAB ═══════ -->
@@ -2208,6 +2224,72 @@ async function loadBusinessSettings() {
   if (link) {
     link.href = b.showcase_slug ? ('showcase.html?slug=' + encodeURIComponent(b.showcase_slug)) : '#';
     link.style.opacity = b.showcase_slug ? '1' : '0.4';
+  }
+  loadBilling(b);
+}
+
+// ───── Billing panel ─────
+function loadBilling(b) {
+  const PLAN_LABEL = { free: 'Free', starter: 'Starter · $19/mo', pro: 'Pro · $39/mo', agency: 'Agency · $79/mo' };
+  const plan = (b.plan || 'free').toLowerCase();
+  const nameEl = document.getElementById('billing-plan-name');
+  const statusEl = document.getElementById('billing-status');
+  const nextEl = document.getElementById('billing-next');
+  const manageBtn = document.getElementById('btn-manage-subscription');
+  const upgradeBtn = document.getElementById('btn-upgrade-plan');
+  if (nameEl) nameEl.textContent = PLAN_LABEL[plan] || plan;
+
+  // Status line
+  const status = b.subscription_status;
+  if (statusEl) {
+    if (plan === 'free') {
+      statusEl.textContent = 'No active subscription.';
+    } else if (status === 'past_due') {
+      statusEl.textContent = 'Payment past due — update your card to keep your plan active.';
+      statusEl.style.color = 'var(--error, #e07a7a)';
+    } else if (status === 'canceled') {
+      statusEl.textContent = 'Subscription canceled.';
+    } else if (b.cancel_at_period_end) {
+      statusEl.textContent = 'Cancels at end of current period.';
+    } else {
+      statusEl.textContent = status ? ('Status: ' + status) : '';
+    }
+  }
+
+  // Next billing line
+  if (nextEl) {
+    if (b.current_period_end && plan !== 'free') {
+      const d = new Date(b.current_period_end);
+      const label = b.cancel_at_period_end ? 'Access ends' : 'Next charge';
+      nextEl.textContent = label + ': ' + d.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+    } else {
+      nextEl.textContent = '';
+    }
+  }
+
+  // Buttons
+  if (manageBtn) manageBtn.style.display = (plan !== 'free' && b.stripe_customer_id) ? 'inline-flex' : 'none';
+  if (upgradeBtn) upgradeBtn.style.display = (plan === 'free') ? 'inline-flex' : 'none';
+}
+
+async function openCustomerPortal() {
+  const btn = document.getElementById('btn-manage-subscription');
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Loading\u2026';
+  try {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) { showToast('Please sign in again.', 'error'); return; }
+    const SUPABASE_URL = 'https://xjsicupdpzawxlwcvxzv.supabase.co';
+    const res = await fetch(SUPABASE_URL + '/functions/v1/stripe-portal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+    });
+    const j = await res.json();
+    if (!res.ok || !j.url) throw new Error(j.error || 'Portal failed');
+    window.location.href = j.url;
+  } catch (e) {
+    showToast('Could not open billing portal: ' + (e && e.message ? e.message : 'unknown'), 'error');
+    btn.disabled = false; btn.textContent = orig;
   }
 }
 

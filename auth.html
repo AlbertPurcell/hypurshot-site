@@ -1327,10 +1327,36 @@ document.addEventListener('DOMContentLoaded', function() {
       const params = new URLSearchParams(window.location.search);
       if (params.get('stay') === '1') return;
       const { data: { session } } = await _supabase.auth.getSession();
-      if (session) window.location.replace('projects.html');
+      if (session) routeAfterAuth(session, { replace: true });
     } catch (e) {}
   })();
 });
+
+// ───── Post-auth router ─────
+// Honors ?next=checkout&plan=<starter|pro|agency> by launching Stripe Checkout.
+// Falls through to projects.html otherwise.
+async function routeAfterAuth(session, opts) {
+  opts = opts || {};
+  const navigate = opts.replace ? (u) => window.location.replace(u) : (u) => { window.location.href = u; };
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const next = params.get('next');
+    const plan = params.get('plan');
+    if (next === 'checkout' && ['starter','pro','agency'].includes(plan)) {
+      const SUPABASE_URL = 'https://xjsicupdpzawxlwcvxzv.supabase.co';
+      const res = await fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+        body: JSON.stringify({ plan }),
+      });
+      const j = await res.json();
+      if (res.ok && j.url) { navigate(j.url); return; }
+      console.error('checkout error', j);
+      // Fall through to projects.html on failure
+    }
+  } catch (e) { console.error('routeAfterAuth', e); }
+  navigate('projects.html');
+}
 
 // ──────────────── JOIN TEAM ────────────────
 async function joinTeam() {
@@ -1663,7 +1689,7 @@ async function createAccount() {
     setTimeout(async () => {
       try {
         const { data: { session } } = await _supabase.auth.getSession();
-        if (session) window.location.href = 'projects.html';
+        if (session) routeAfterAuth(session);
       } catch (e) {}
     }, 800);
 
@@ -1707,8 +1733,14 @@ async function signIn() {
 
     showToast('Signed in successfully!', 'success');
     setLoading(btn, false);
-    // Redirect to the app after a brief moment so the toast is visible
-    setTimeout(() => { window.location.href = 'projects.html'; }, 600);
+    // Redirect to the app (or Stripe Checkout if ?next=checkout) after a brief moment
+    setTimeout(async () => {
+      try {
+        const { data: { session } } = await _supabase.auth.getSession();
+        if (session) routeAfterAuth(session);
+        else window.location.href = 'projects.html';
+      } catch (e) { window.location.href = 'projects.html'; }
+    }, 600);
 
   } catch (err) {
     showToast('Something went wrong. Please try again.', 'error');
