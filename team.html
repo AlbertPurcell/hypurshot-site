@@ -1609,6 +1609,34 @@
         </div>
       </div>
     </div>
+
+    <div class="section-header" style="margin-top:28px"><h2>Google reviews</h2></div>
+    <div class="card" style="padding:18px">
+      <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5">Connect your Google Business Profile so your real rating and reviews show on your showcase page. We refresh once a day automatically — or hit Refresh now any time.</div>
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:.78rem;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Google Business Profile URL</label>
+        <input id="dir-gbp-url" type="url" placeholder="https://g.page/r/... or https://maps.google.com/?cid=..." style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:var(--font-body);font-size:.92rem">
+        <div style="font-size:.72rem;color:var(--text-muted);margin-top:6px">Open your Google Business listing on Google Maps, click Share, copy the link.</div>
+      </div>
+      <div id="dir-gbp-summary" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div>
+            <div style="font-size:1.8rem;font-family:var(--font-heading);color:var(--gold);line-height:1" id="dir-gbp-rating">—</div>
+            <div style="font-size:.72rem;color:var(--text-muted);margin-top:4px">rating</div>
+          </div>
+          <div style="width:1px;align-self:stretch;background:var(--border)"></div>
+          <div>
+            <div style="font-size:1.8rem;font-family:var(--font-heading);color:var(--text);line-height:1" id="dir-gbp-count">—</div>
+            <div style="font-size:.72rem;color:var(--text-muted);margin-top:4px">reviews</div>
+          </div>
+          <div style="flex:1;min-width:140px;font-size:.78rem;color:var(--text-muted)" id="dir-gbp-synced"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button type="button" class="btn btn-gold" id="dir-gbp-refresh-btn" onclick="refreshGbpReviews()">Refresh reviews now</button>
+      </div>
+      <div id="dir-gbp-status" style="font-size:.78rem;color:var(--text-muted);margin-top:10px"></div>
+    </div>
   </div>
 
   <!-- Cover picker modal -->
@@ -2397,7 +2425,7 @@ let _dirLoaded = false;
 
 async function loadDirectorySettings() {
   if (!_supabase || !currentBusinessId) return;
-  const { data: b, error } = await _supabase.from('businesses').select('visibility, share_token, years_experience, services_tags, cover_media_id, state, plan').eq('id', currentBusinessId).maybeSingle();
+  const { data: b, error } = await _supabase.from('businesses').select('visibility, share_token, years_experience, services_tags, cover_media_id, state, plan, gbp_review_link, google_rating_avg, google_rating_count, gbp_synced_at').eq('id', currentBusinessId).maybeSingle();
   if (error || !b) { showToast('Could not load directory settings.', 'error'); return; }
 
   _dirVisibility = b.visibility || 'private';
@@ -2425,6 +2453,9 @@ async function loadDirectorySettings() {
 
   // Cover preview
   await renderCoverPreview();
+
+  // Google reviews UI
+  renderGbpSummary(b);
 
   // Wire radio changes
   if (!_dirLoaded) {
@@ -2498,6 +2529,66 @@ function generateShareToken() {
   const arr = new Uint8Array(12);
   crypto.getRandomValues(arr);
   return Array.from(arr).map(b => b.toString(36).padStart(2, '0')).join('').slice(0, 16);
+}
+
+function renderGbpSummary(b) {
+  const urlInput = document.getElementById('dir-gbp-url');
+  if (urlInput) urlInput.value = b && b.gbp_review_link ? b.gbp_review_link : '';
+  const summary = document.getElementById('dir-gbp-summary');
+  const ratingEl = document.getElementById('dir-gbp-rating');
+  const countEl = document.getElementById('dir-gbp-count');
+  const syncedEl = document.getElementById('dir-gbp-synced');
+  if (!summary) return;
+  const hasData = b && (b.google_rating_avg != null || b.google_rating_count != null);
+  if (hasData) {
+    summary.style.display = 'block';
+    ratingEl.textContent = b.google_rating_avg != null ? Number(b.google_rating_avg).toFixed(1) : '—';
+    countEl.textContent = b.google_rating_count != null ? b.google_rating_count : '—';
+    if (b.gbp_synced_at) {
+      const d = new Date(b.gbp_synced_at);
+      syncedEl.textContent = 'Synced ' + d.toLocaleString();
+    } else {
+      syncedEl.textContent = '';
+    }
+  } else {
+    summary.style.display = 'none';
+  }
+}
+
+async function refreshGbpReviews() {
+  if (!_supabase || !currentBusinessId) return;
+  const btn = document.getElementById('dir-gbp-refresh-btn');
+  const status = document.getElementById('dir-gbp-status');
+  const urlInput = document.getElementById('dir-gbp-url');
+  const gbpUrl = (urlInput && urlInput.value || '').trim();
+  if (!gbpUrl) { showToast('Paste your Google Business Profile URL first.', 'error'); urlInput && urlInput.focus(); return; }
+  if (btn) { btn.disabled = true; btn.textContent = 'Refreshing…'; }
+  if (status) { status.textContent = 'Talking to Google…'; status.style.color = 'var(--text-muted)'; }
+  try {
+    const { data: sess } = await _supabase.auth.getSession();
+    const accessToken = sess && sess.session && sess.session.access_token;
+    if (!accessToken) throw new Error('Not signed in.');
+    const res = await fetch(SUPABASE_URL + '/functions/v1/gbp-sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken },
+      body: JSON.stringify({ business_id: currentBusinessId, gbp_url: gbpUrl })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok || !body.ok) {
+      const msg = (body && body.error) ? body.error : ('HTTP ' + res.status);
+      throw new Error(msg);
+    }
+    // Re-fetch businesses row to refresh the summary
+    const { data: b2 } = await _supabase.from('businesses').select('gbp_review_link, google_rating_avg, google_rating_count, gbp_synced_at').eq('id', currentBusinessId).maybeSingle();
+    renderGbpSummary(b2);
+    if (status) { status.style.color = 'var(--text)'; status.textContent = 'Pulled ' + (body.reviews_upserted || 0) + ' review' + ((body.reviews_upserted === 1) ? '' : 's') + '.'; }
+    showToast('Google reviews updated.', 'success');
+  } catch (e) {
+    if (status) { status.style.color = '#e07474'; status.textContent = String(e.message || e); }
+    showToast('Could not refresh: ' + (e.message || e), 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Refresh reviews now'; }
+  }
 }
 
 async function regenerateShareLink() {
