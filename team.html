@@ -336,6 +336,43 @@
     flex-shrink: 0;
   }
 
+  .pill-soon {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--text-muted);
+    background: rgba(212,160,23,0.08);
+    border: 1px solid rgba(212,160,23,0.35);
+    padding: 6px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .pill-soon::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold, #D4A017);
+  }
+  .pill-beta {
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gold, #D4A017);
+    background: rgba(212,160,23,0.10);
+    border: 1px solid rgba(212,160,23,0.40);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
   .pill {
     font-size: 0.68rem;
     font-weight: 500;
@@ -1716,7 +1753,7 @@
     <!-- Platform sub-tabs: TikTok / Instagram / Facebook -->
     <div class="platform-tabs" role="tablist" aria-label="Choose a platform to post to">
       <button type="button" class="platform-tab active" data-platform="tiktok" role="tab" aria-selected="true" onclick="switchPlatform('tiktok')">
-        <span class="platform-tab-label">TikTok</span>
+        <span class="platform-tab-label">TikTok<span class="pill-beta" title="TikTok app review in progress">Beta</span></span>
         <span class="platform-tab-dot" id="platform-dot-tiktok" aria-hidden="true"></span>
       </button>
       <button type="button" class="platform-tab" data-platform="instagram" role="tab" aria-selected="false" onclick="switchPlatform('instagram')">
@@ -1910,10 +1947,10 @@
 
       <!-- Disconnected state -->
       <div id="ig-disconnected" class="composer-empty" style="display:none;">
-        <h3>Instagram is not connected.</h3>
-        <p>Connect your Instagram Business or Creator account to post photos and Reels directly from HyPurShot.</p>
-        <button type="button" class="btn btn-gold" onclick="connectMeta()">Connect Instagram</button>
-        <p class="composer-empty-note">Note: Instagram personal accounts can't be used — you'll need a Business or Creator account linked to a Facebook Page.</p>
+        <h3>Instagram posting is coming soon.</h3>
+        <p>HyPurShot is in Meta app review. Once Instagram approves us, you'll be able to post photos and Reels directly from here.</p>
+        <span class="pill-soon">Coming soon · Meta review in progress</span>
+        <p class="composer-empty-note">When live, you'll need an Instagram Business or Creator account linked to a Facebook Page.</p>
       </div>
 
       <!-- Connected composer -->
@@ -1991,10 +2028,10 @@
 
       <!-- Disconnected state -->
       <div id="fb-disconnected" class="composer-empty" style="display:none;">
-        <h3>Facebook is not connected.</h3>
-        <p>Connect your Facebook Page to post updates, photos, and videos directly from HyPurShot.</p>
-        <button type="button" class="btn btn-gold" onclick="connectMeta()">Connect Facebook</button>
-        <p class="composer-empty-note">Connecting Instagram also connects the linked Facebook Page automatically.</p>
+        <h3>Facebook posting is coming soon.</h3>
+        <p>HyPurShot is in Meta app review. Once approved, you'll be able to post updates, photos, and videos to your Facebook Page directly from here.</p>
+        <span class="pill-soon">Coming soon · Meta review in progress</span>
+        <p class="composer-empty-note">When live, connecting Instagram will also connect the linked Facebook Page automatically.</p>
       </div>
 
       <!-- Connected composer -->
@@ -2123,7 +2160,7 @@
             </div>
           </div>
           <div id="instagram-actions">
-            <button class="btn btn-gold" onclick="connectMeta()">Connect</button>
+            <span class="pill-soon">Coming soon · Meta review</span>
           </div>
         </div>
       </div>
@@ -2141,7 +2178,7 @@
             </div>
           </div>
           <div id="facebook-actions">
-            <button class="btn btn-gold" onclick="connectMeta()">Connect</button>
+            <span class="pill-soon">Coming soon · Meta review</span>
           </div>
         </div>
       </div>
@@ -3459,7 +3496,7 @@ async function loadConnections() {
         igActionsEl.innerHTML = '<button class="btn btn-outline" onclick="disconnectMeta()" style="font-size:13px; padding:8px 16px; border:1px solid var(--border); border-radius:8px;">Disconnect</button>';
       } else {
         igStatusEl.textContent = 'Not connected';
-        igActionsEl.innerHTML = '<button class="btn btn-gold" onclick="connectMeta()">Connect</button>';
+        igActionsEl.innerHTML = '<span class="pill-soon">Coming soon · Meta review</span>';
       }
     }
     const fbStatusEl = document.getElementById('facebook-status');
@@ -3471,7 +3508,7 @@ async function loadConnections() {
         fbActionsEl.innerHTML = '<button class="btn btn-outline" onclick="disconnectMeta()" style="font-size:13px; padding:8px 16px; border:1px solid var(--border); border-radius:8px;">Disconnect</button>';
       } else {
         fbStatusEl.textContent = 'Not connected';
-        fbActionsEl.innerHTML = '<button class="btn btn-gold" onclick="connectMeta()">Connect</button>';
+        fbActionsEl.innerHTML = '<span class="pill-soon">Coming soon · Meta review</span>';
       }
     }
   } catch (err) {

@@ -369,6 +369,41 @@
       text-align: center;
       width: 100%;
     }
+    .price-original {
+      color: var(--text-dim);
+      text-decoration: line-through;
+      font-size: 18px;
+      font-weight: 600;
+      margin-right: 8px;
+      letter-spacing: -0.01em;
+    }
+    .price-eyebrow {
+      display: inline-block;
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold);
+      background: rgba(212,160,23,0.10);
+      border: 1px solid rgba(212,160,23,0.35);
+      border-radius: 999px;
+      padding: 4px 10px;
+      margin-bottom: 12px;
+    }
+    .roadmap-note {
+      margin-top: 28px;
+      padding: 18px 22px;
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text-dim);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .roadmap-note b { color: var(--text); font-weight: 700; }
+    .roadmap-note ul { margin: 8px 0 0; padding-left: 20px; }
+    .roadmap-note li { padding: 2px 0; }
 
     /* ================================================================
        INTEGRATION CALLOUT (currently unused, kept for future use)
@@ -597,14 +632,16 @@
         </div>
 
         <div class="price">
+          <span class="price-eyebrow">Early access</span>
           <div class="price-name">Starter</div>
-          <div class="price-amount">$19<span class="per">/ month</span></div>
-          <div class="price-tag">For solo operators ready to scale.</div>
+          <div class="price-amount"><span class="price-original">$19</span>$12<span class="per">/ month</span></div>
+          <div class="price-tag">For solo operators ready to scale. Early-access price; goes to $19 at v1.0.</div>
           <ul>
             <li>1 user</li>
             <li>Unlimited media + projects</li>
             <li>White-labeled showcase, custom slug</li>
             <li>Unlimited review requests</li>
+            <li>Live Google reviews on your showcase</li>
             <li>Email support</li>
           </ul>
           <a href="/auth.html?next=checkout&plan=starter" class="btn btn-secondary checkout-cta" data-plan="starter">Start with Starter</a>
@@ -637,6 +674,15 @@
           </ul>
           <a href="/auth.html?next=checkout&plan=agency" class="btn btn-secondary checkout-cta" data-plan="agency">Start with Agency</a>
         </div>
+
+      <div class="roadmap-note">
+        <b>Honest roadmap.</b> HyPurShot is currently in early access — about 80% feature complete. Every plan today includes the full Capture, Showcase, Get Reviewed, and live Google Reviews workflow. The following are built and pending platform approval:
+        <ul>
+          <li><b>TikTok posting</b> — in TikTok app review (beta available on Pro and Agency)</li>
+          <li><b>Instagram Business + Facebook Page posting</b> — submitting to Meta app review after our trust pages ship; expected late summer 2026</li>
+          <li><b>SEO-friendly static portfolio pages</b> — on deck after Meta review</li>
+        </ul>
+        We will only enable a feature once the platform approves it. No surprises, no overpromises.
       </div>
     </div>
   </section>
