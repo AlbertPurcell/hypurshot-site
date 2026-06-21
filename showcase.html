@@ -123,7 +123,7 @@
 
 <main class="page" style="padding-bottom:40px">
 
-  <section class="hero">
+  <section class="hero reveal">
     <h1 id="biz-name">…</h1>
     <div class="tagline" id="biz-tagline">Proof of work</div>
     <div class="meta" id="biz-meta" style="display:none">
@@ -132,7 +132,7 @@
     </div>
   </section>
 
-  <section id="reviews-section" class="reviews-section" style="display:none">
+  <section id="reviews-section" class="reviews-section reveal" data-delay="1" style="display:none">
     <div class="reviews-head">
       <div class="reviews-rating">
         <span class="num" id="rev-num">—</span>
@@ -238,7 +238,7 @@ async function loadGoogleReviews(biz) {
       ? '<img class="review-avatar" src="' + escapeAttr(rv.reviewer_photo_url) + '" alt="" loading="lazy" referrerpolicy="no-referrer">'
       : '<div class="review-avatar"></div>';
     const when = rv.review_time ? formatReviewDate(rv.review_time) : '';
-    return '<div class="review-card">' +
+    return '<div class="review-card reveal" data-delay="' + (((reviews.indexOf(rv)) % 5) + 1) + '">' +
       '<div class="review-top">' + avatar +
       '<div class="review-name">' + name + '</div>' +
       '<div class="review-stars">' + renderStars(rv.star_rating || 0) + '</div>' +
@@ -247,6 +247,7 @@ async function loadGoogleReviews(biz) {
       (text ? '<div class="review-text">' + text + '</div>' : '') +
       '</div>';
   }).join('');
+  document.dispatchEvent(new CustomEvent('hypurshot:rendered'));
 }
 
 function renderStars(n) {
@@ -277,7 +278,7 @@ function renderGrid() {
   grid.innerHTML = mediaList.map((m, i) => {
     const url = m.watermarked_url || m.original_url;
     const isVideo = m.media_type === 'video';
-    return '<div class="showcase-tile fade-in" data-idx="' + i + '">' +
+    return '<div class="showcase-tile reveal" data-delay="' + ((i % 5) + 1) + '" data-idx="' + i + '">' +
       (isVideo
         ? '<video src="' + escapeAttr(url) + '" preload="metadata" muted playsinline></video>'
         : '<img src="' + escapeAttr(url) + '" alt="" loading="lazy">') +
@@ -285,6 +286,7 @@ function renderGrid() {
     '</div>';
   }).join('');
   grid.querySelectorAll('.showcase-tile').forEach(t => t.addEventListener('click', () => openLightbox(parseInt(t.dataset.idx, 10))));
+  document.dispatchEvent(new CustomEvent('hypurshot:rendered'));
 }
 
 function openLightbox(idx) {
@@ -331,5 +333,6 @@ function escapeAttr(s) { return escapeHtml(s); }
 // No auth needed — public page
 loadShowcase();
 </script>
+<script src="polish.js"></script>
 </body>
 </html>

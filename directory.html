@@ -305,7 +305,7 @@
 
 <main class="page">
 
-  <div class="dir-hero">
+  <div class="dir-hero reveal">
     <h1>Find your detailer.</h1>
     <p>Vetted mobile detailers and home-service operators with verified proof-of-work portfolios and live Google reviews.</p>
   </div>
@@ -533,7 +533,8 @@
       const services = (op.services_tags || []).slice(0, 4).map(t => `<span class="op-service-chip">${escapeHtml(t)}</span>`).join('');
       const extraServices = (op.services_tags || []).length > 4 ? `<span class="op-service-chip">+${op.services_tags.length - 4}</span>` : '';
 
-      return `<a class="op-card" href="${slug}">
+      const _idx = ops.indexOf(op);
+      return `<a class="op-card reveal" data-delay="${(_idx % 5) + 1}" href="${slug}">
         <div class="op-cover">${coverHtml}${planBadge}</div>
         <div class="op-body">
           <div class="op-name">${escapeHtml(op.name || 'Unnamed operator')}</div>
@@ -546,6 +547,7 @@
         </div>
       </a>`;
     }).join('');
+    document.dispatchEvent(new CustomEvent('hypurshot:rendered'));
   }
 
   // Filter wiring
@@ -561,6 +563,7 @@
   // Boot
   loadDirectory();
 </script>
+<script src="polish.js"></script>
 
 </body>
 </html>

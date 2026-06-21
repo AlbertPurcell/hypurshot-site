@@ -39,12 +39,26 @@ a { color: inherit; text-decoration: none; }
 img, video { display: block; max-width: 100%; }
 button { font-family: inherit; }
 
-/* ─── Top nav ─── */
+/* ─── Top nav (frosted glass) ─── */
 .navbar {
   position: fixed; top: 0; left: 0; right: 0; height: var(--nav-h);
-  background: var(--surface); border-bottom: 1px solid var(--border);
+  background: rgba(13,13,13,0.72);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 20px; z-index: 100;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.navbar.scrolled,
+.pub-nav.scrolled {
+  background: rgba(13,13,13,0.85);
+  border-bottom-color: rgba(255,255,255,0.12);
+  box-shadow: 0 6px 20px -12px rgba(0,0,0,0.6);
+}
+.pub-nav { transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease; }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .navbar { background: var(--surface); }
 }
 .nav-logo { display: flex; align-items: center; gap: 10px; }
 .nav-logo img { height: 32px; width: auto; object-fit: contain; }
@@ -304,6 +318,42 @@ h3 { font-size: 1rem; }
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ─── Scroll reveal ─── */
+.reveal {
+  opacity: 0; transform: translateY(14px);
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2,0.7,0.2,1);
+  will-change: opacity, transform;
+}
+.reveal.in { opacity: 1; transform: none; }
+.reveal[data-delay="1"] { transition-delay: 0.06s; }
+.reveal[data-delay="2"] { transition-delay: 0.12s; }
+.reveal[data-delay="3"] { transition-delay: 0.18s; }
+.reveal[data-delay="4"] { transition-delay: 0.24s; }
+.reveal[data-delay="5"] { transition-delay: 0.30s; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* ─── Lift on hover ─── */
+.lift-hover {
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.lift-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(212,160,23,0.45);
+  box-shadow: 0 10px 28px -14px rgba(0,0,0,0.65);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lift-hover, .lift-hover:hover { transform: none; transition: none; }
+}
+
+/* ─── View transitions (smooth page swaps) ─── */
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: vt-fade-out 0.2s ease forwards; }
+::view-transition-new(root) { animation: vt-fade-in 0.3s ease forwards; }
+@keyframes vt-fade-out { to { opacity: 0; } }
+@keyframes vt-fade-in  { from { opacity: 0; } to { opacity: 1; } }
 
 /* ─── Utility ─── */
 .hidden { display: none !important; }
