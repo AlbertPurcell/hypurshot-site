@@ -88,6 +88,23 @@
     padding: 16px 20px calc(20px + env(safe-area-inset-bottom));
     display: flex; gap: 10px; justify-content: center;
   }
+
+  /* Google reviews */
+  .reviews-section { margin: 0 auto 28px; max-width: 720px; padding: 0 20px; }
+  .reviews-head { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+  .reviews-rating { display: flex; align-items: baseline; gap: 8px; }
+  .reviews-rating .num { font-family: var(--font-heading); font-size: 2.2rem; color: var(--gold); line-height: 1; }
+  .reviews-rating .stars { font-size: 1rem; color: var(--gold); letter-spacing: 2px; }
+  .reviews-count { font-size: .82rem; color: var(--text-muted); }
+  .reviews-via { margin-left: auto; font-size: .72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .08em; }
+  .reviews-list { display: grid; gap: 12px; }
+  .review-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .review-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .review-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--bg); border: 1px solid var(--border); object-fit: cover; flex-shrink: 0; }
+  .review-name { font-size: .9rem; font-weight: 500; color: var(--text); }
+  .review-stars { font-size: .82rem; color: var(--gold); letter-spacing: 1px; }
+  .review-date { font-size: .72rem; color: var(--text-dim); margin-left: auto; }
+  .review-text { font-size: .88rem; color: var(--text-muted); line-height: 1.55; white-space: pre-wrap; }
 </style>
 </head>
 <body>
@@ -113,6 +130,18 @@
       <b id="biz-name-meta"></b>
       <span id="biz-city"></span>
     </div>
+  </section>
+
+  <section id="reviews-section" class="reviews-section" style="display:none">
+    <div class="reviews-head">
+      <div class="reviews-rating">
+        <span class="num" id="rev-num">—</span>
+        <span class="stars" id="rev-stars"></span>
+      </div>
+      <div class="reviews-count" id="rev-count"></div>
+      <div class="reviews-via">via Google</div>
+    </div>
+    <div class="reviews-list" id="reviews-list"></div>
   </section>
 
   <div id="showcase-grid" class="showcase-grid"></div>
@@ -143,7 +172,7 @@ let mediaList = [];
 async function loadShowcase() {
   const slug = HPS.qs('slug');
   const bizQ = HPS.qs('business');
-  let bizQuery = HPS.sb.from('businesses').select('id, name, city, showcase_slug');
+  let bizQuery = HPS.sb.from('businesses').select('id, name, city, showcase_slug, google_rating_avg, google_rating_count, gbp_synced_at');
   if (slug) bizQuery = bizQuery.ilike('showcase_slug', slug);
   else if (bizQ) bizQuery = bizQuery.eq('id', bizQ);
   else {
@@ -176,6 +205,66 @@ async function loadShowcase() {
   if (mediaErr) { showEmpty('Could not load this portfolio.'); return; }
   mediaList = media || [];
   renderGrid();
+  await loadGoogleReviews(biz);
+}
+
+async function loadGoogleReviews(biz) {
+  // Only show if there is at least a rating on file.
+  if (biz.google_rating_avg == null) return;
+  const section = document.getElementById('reviews-section');
+  const num = document.getElementById('rev-num');
+  const stars = document.getElementById('rev-stars');
+  const count = document.getElementById('rev-count');
+  const list = document.getElementById('reviews-list');
+
+  const r = Number(biz.google_rating_avg);
+  num.textContent = r.toFixed(1);
+  stars.textContent = renderStars(r);
+  count.textContent = (biz.google_rating_count || 0) + ' Google review' + (biz.google_rating_count === 1 ? '' : 's');
+  section.style.display = 'block';
+
+  const { data: reviews } = await HPS.sb
+    .from('google_reviews_cache')
+    .select('reviewer_name, reviewer_photo_url, star_rating, comment, review_time')
+    .eq('business_id', biz.id)
+    .order('review_time', { ascending: false, nullsFirst: false })
+    .limit(5);
+
+  if (!reviews || !reviews.length) { list.innerHTML = ''; return; }
+  list.innerHTML = reviews.map(rv => {
+    const name = escapeHtml(rv.reviewer_name || 'Google user');
+    const text = escapeHtml(rv.comment || '');
+    const avatar = rv.reviewer_photo_url
+      ? '<img class="review-avatar" src="' + escapeAttr(rv.reviewer_photo_url) + '" alt="" loading="lazy" referrerpolicy="no-referrer">'
+      : '<div class="review-avatar"></div>';
+    const when = rv.review_time ? formatReviewDate(rv.review_time) : '';
+    return '<div class="review-card">' +
+      '<div class="review-top">' + avatar +
+      '<div class="review-name">' + name + '</div>' +
+      '<div class="review-stars">' + renderStars(rv.star_rating || 0) + '</div>' +
+      (when ? '<div class="review-date">' + when + '</div>' : '') +
+      '</div>' +
+      (text ? '<div class="review-text">' + text + '</div>' : '') +
+      '</div>';
+  }).join('');
+}
+
+function renderStars(n) {
+  const full = Math.round(Number(n) || 0);
+  return '★'.repeat(Math.max(0, Math.min(5, full))) + '☆'.repeat(Math.max(0, 5 - full));
+}
+
+function formatReviewDate(iso) {
+  try {
+    const d = new Date(iso);
+    const now = new Date();
+    const days = Math.floor((now - d) / 86400000);
+    if (days < 1) return 'today';
+    if (days < 7) return days + 'd ago';
+    if (days < 30) return Math.floor(days / 7) + 'w ago';
+    if (days < 365) return Math.floor(days / 30) + 'mo ago';
+    return Math.floor(days / 365) + 'y ago';
+  } catch { return ''; }
 }
 
 function renderGrid() {
