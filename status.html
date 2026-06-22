@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Status — HyPurShot</title>
+  <meta name="description" content="HyPurShot system status: live overview of every component that powers the platform — site, database, payments, SMS, email, and review sync.">
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0D0D0D;
+      --surface: #161616;
+      --gold: #D4A017;
+      --ice: #A8D4E6;
+      --text: #F0EDE8;
+      --muted: #888680;
+      --border: #2a2a28;
+      --ok: #6FCF97;
+      --font-heading: 'Cabinet Grotesk', sans-serif;
+      --font-body: 'Satoshi', sans-serif;
+    }
+
+    html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-weight: 400;
+      line-height: 1.7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    a { color: var(--gold); text-decoration: none; transition: opacity 0.2s ease; }
+    a:hover { opacity: 0.8; }
+
+    .header { border-bottom: 1px solid var(--border); padding: 1.25rem 0; }
+    .header-inner {
+      max-width: 720px; margin: 0 auto; padding: 0 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-logo img { height: 44px; display: block; }
+    .header-nav { display: flex; gap: 1.25rem; }
+    .header-nav a { font-size: 0.875rem; font-weight: 500; color: var(--muted); letter-spacing: 0.01em; }
+    .header-nav a:hover { color: var(--text); opacity: 1; }
+
+    .content {
+      flex: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 3.5rem 1.5rem 5rem;
+      width: 100%;
+    }
+
+    .page-title {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 2.25rem;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+
+    .lede {
+      font-size: 1.0625rem;
+      color: var(--text);
+      margin-bottom: 2rem;
+    }
+
+    h2 {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1.375rem;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin-top: 2.75rem;
+      margin-bottom: 1rem;
+    }
+
+    p { margin-bottom: 1rem; color: var(--text); font-size: 0.9375rem; }
+    p:last-child { margin-bottom: 0; }
+
+    strong { font-weight: 700; color: var(--text); }
+
+    .section { margin-bottom: 2rem; }
+
+    /* Overall status banner */
+    .status-banner {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--ok);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .status-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--ok);
+      box-shadow: 0 0 0 4px rgba(111, 207, 151, 0.15);
+      flex-shrink: 0;
+    }
+    .status-banner-text {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1.125rem;
+      color: var(--text);
+      letter-spacing: -0.005em;
+    }
+    .status-meta {
+      font-size: 0.8125rem;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    /* Component row using pillar pattern */
+    .pillar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .pillar-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem;
+    }
+    .pillar-title {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1.0625rem;
+      letter-spacing: -0.005em;
+      color: var(--text);
+    }
+    .pillar-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ok);
+    }
+    .pillar-status::before {
+      content: "";
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--ok);
+    }
+    .pillar-desc {
+      font-size: 0.875rem;
+      color: var(--muted);
+      margin-bottom: 0;
+    }
+    .pillar-desc a { color: var(--ice); }
+
+    /* Incident history */
+    .incident-empty {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9375rem;
+    }
+    .incident-empty strong { color: var(--text); display: block; margin-bottom: 0.35rem; font-family: var(--font-heading); font-weight: 700; }
+
+    /* Footer */
+    .footer { border-top: 1px solid var(--border); padding: 2rem 0; }
+    .footer-inner {
+      max-width: 720px; margin: 0 auto; padding: 0 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 0.75rem;
+    }
+    .footer-company { font-size: 0.8125rem; color: var(--muted); }
+    .footer-links { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+    .footer-links a {
+      font-size: 0.8125rem; color: var(--muted); font-weight: 500;
+    }
+    .footer-links a:hover { color: var(--text); opacity: 1; }
+    .footer-links a.active { color: var(--gold); }
+
+    @media (max-width: 600px) {
+      .page-title { font-size: 1.75rem; }
+      h2 { font-size: 1.2rem; }
+      .content { padding: 2.5rem 1.25rem 4rem; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .status-meta { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+      <a href="index.html" class="header-logo">
+        <img src="logo-nav.webp" alt="HyPurShot" height="44">
+      </a>
+      <nav class="header-nav">
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="content">
+    <h1 class="page-title">System Status</h1>
+    <p class="lede">Live overview of every component that powers HyPurShot. We monitor each system continuously and post incidents here if anything degrades.</p>
+
+    <div class="status-banner">
+      <div class="status-dot" aria-hidden="true"></div>
+      <div class="status-banner-text">All systems operational</div>
+      <div class="status-meta">Last checked: <span id="last-checked">June 22, 2026 · 11:43 AM EDT</span></div>
+    </div>
+
+    <div class="section">
+      <h2>Components</h2>
+
+      <div class="pillar">
+        <div class="pillar-head">
+          <div class="pillar-title">Website &amp; PWA</div>
+          <span class="pillar-status">Operational</span>
+        </div>
+        <p class="pillar-desc">hypurshot.com — static site and Progressive Web App served via <a href="https://www.githubstatus.com/" target="_blank" rel="noopener">GitHub Pages</a>. Health-checked weekly for HTTPS, manifest, and service worker integrity.</p>
+      </div>
+
+      <div class="pillar">
+        <div class="pillar-head">
+          <div class="pillar-title">Database</div>
+          <span class="pillar-status">Operational</span>
+        </div>
+        <p class="pillar-desc">Supabase Postgres with Row-Level Security. Customer data, review requests, and media metadata. <a href="https://status.supabase.com/" target="_blank" rel="noopener">Supabase status</a>.</p>
+      </div>
+
+      <div class="pillar">
+        <div class="pillar-head">
+          <div class="pillar-title">Authentication</div>
+          <span class="pillar-status">Operational</span>
+        </div>
+        <p class="pillar-desc">Supabase Auth — email magic links, password sign-in, and session JWTs. Same upstream as the database. <a href="https://status.supabase.com/" target="_blank" rel="noopener">Supabase status</a>.</p>
+      </div>
+
+      <div class="pillar">
+        <div class="pillar-head">
+          <div class="pillar-title">Payments</div>
+          <span class="pillar-status">Operational</span>
+        </div>
+        <p class="pillar-desc">Stripe Checkout, Customer Portal, and subscription webhooks. PCI DSS Level 1. <a href="https://status.stripe.com/" target="_blank" rel="noopener">Stripe status</a>.</p>
+      </div>
+
+      <div class="pillar">
+        <div class="pillar-head">
+          <div class="pillar-title">SMS — Review requests</div>
+          <span class="pillar-status">Operational</span>
+        </div>
+        <p class="pillar-desc">Twilio A2P 10DLC verified messaging for outbound review request texts. <a href="https://status.twilio.com/" target="_blank" rel="noopener">Twilio status</a>.</p>
+      </div>
+
+      <div class="pillar">
+        <div class="pillar-head">
+          <div class="pillar-title">Email — Transactional &amp; follow-ups</div>
+          <span class="pillar-status">Operational</span>
+        </div>
+        <p class="pillar-desc">Resend on send.hypurshot.com with SPF, DKIM, and DMARC verified. Powers review follow-up emails and account notifications. <a href="https://resend-status.com/" target="_blank" rel="noopener">Resend status</a>.</p>
+      </div>
+
+      <div class="pillar">
+        <div class="pillar-head">
+          <div class="pillar-title">Google Reviews sync</div>
+          <span class="pillar-status">Operational</span>
+        </div>
+        <p class="pillar-desc">Daily background sync of Google Business Profile ratings and review counts via the Google Places API. <a href="https://status.cloud.google.com/" target="_blank" rel="noopener">Google Cloud status</a>.</p>
+      </div>
+
+      <div class="pillar">
+        <div class="pillar-head">
+          <div class="pillar-title">Background jobs</div>
+          <span class="pillar-status">Operational</span>
+        </div>
+        <p class="pillar-desc">Supabase Edge Functions running daily review follow-up batch, Google reviews sync, and the weekly health scan.</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Incident history</h2>
+      <div class="incident-empty">
+        <strong>No incidents reported</strong>
+        We have not recorded any service-affecting incidents. When one occurs, it will be posted here with timeline, impact, and resolution notes.
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>How we monitor</h2>
+      <p>An automated health scan runs every Monday at 6:00 AM Eastern. It verifies that the site is reachable, the manifest and service worker still serve, DNS records for email authentication are intact, third-party SDKs are on supported versions, and that no required configuration value is missing. Failures notify the operator immediately.</p>
+      <p>For security questions or to report an issue, see the <a href="/security.html">Security page</a>.</p>
+    </div>
+
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <span class="footer-company">&copy; 2026 Solidity Innovations LLC</span>
+      <nav class="footer-links">
+        <a href="/terms.html">Terms</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/security.html">Security</a>
+        <a href="/status.html" class="active">Status</a>
+      </nav>
+    </div>
+  </footer>
+
+</body>
+</html>
