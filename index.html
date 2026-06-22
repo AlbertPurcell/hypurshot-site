@@ -517,6 +517,47 @@
     }
     .footer-bottom .legal-links a { color: var(--text-dim); }
     .footer-bottom .legal-links a:hover { color: var(--gold); }
+    .trust-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .trust-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 6px 12px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .trust-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold, #D4A017);
+      opacity: 0.6;
+    }
+    .trust-badges-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      opacity: 0.6;
+      margin-right: 4px;
+    }
   </style>
 </head>
 <body>
@@ -722,6 +763,14 @@
             <li><a href="mailto:hello@hypurshot.com">Contact</a></li>
           </ul>
         </div>
+      </div>
+
+      <div class="trust-badges" aria-label="Built with">
+        <span class="trust-badges-label">Built with</span>
+        <span class="trust-badge">Stripe · Payments</span>
+        <span class="trust-badge">Supabase · Database</span>
+        <span class="trust-badge">Google · Reviews</span>
+        <span class="trust-badge">Twilio · SMS</span>
       </div>
 
       <div class="footer-bottom">
