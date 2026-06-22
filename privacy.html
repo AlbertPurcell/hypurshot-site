@@ -172,7 +172,7 @@
 
   <main class="content">
     <h1 class="page-title">Privacy Policy</h1>
-    <p class="last-updated">Last updated: April 15, 2026</p>
+    <p class="last-updated">Last updated: June 22, 2026</p>
 
     <div class="section">
       <h2>1. Introduction</h2>
@@ -235,8 +235,12 @@
       <p>We work with the following third-party service providers to deliver our platform:</p>
       <ul>
         <li><strong>Supabase:</strong> Database hosting and user authentication. Your account data and application data are stored in Supabase's infrastructure with encryption at rest.</li>
+        <li><strong>Stripe:</strong> Payment processing and subscription billing. When you subscribe to a paid plan, your payment method details are collected and stored by Stripe directly — HyPurShot never sees or stores raw card numbers. Stripe also retains billing email, subscription state, and transaction records to process payments and provide receipts.</li>
+        <li><strong>Google Places API:</strong> Used to fetch and refresh your public Google Business Profile reviews when you link a profile to your HyPurShot showcase. Only the Place ID you provide and the public review data Google returns are exchanged; no personal customer data is sent to Google.</li>
         <li><strong>TikTok API:</strong> Used to publish content to your TikTok account. We access only the permissions you explicitly authorize via OAuth.</li>
+        <li><strong>Meta (Instagram and Facebook):</strong> Pending Meta app review. Once approved, posting to Instagram and Facebook will use OAuth tokens you authorize. No data is exchanged with Meta until you connect an account.</li>
         <li><strong>Twilio:</strong> SMS delivery service for sending customer review requests. Customer phone numbers are transmitted to Twilio solely for message delivery.</li>
+        <li><strong>Resend:</strong> Transactional email delivery (review request emails, account notifications). Recipient email addresses are transmitted to Resend solely for message delivery.</li>
         <li><strong>OpenAI:</strong> AI-powered caption generation. Content you submit for caption generation is sent to OpenAI's API for processing. We do not share personal account information with OpenAI.</li>
       </ul>
       <p>Each third-party service operates under its own privacy policy and data practices. We encourage you to review their respective policies.</p>
