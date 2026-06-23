@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Don't waste crawl budget on the SPA-only routes; the /share/ tree
+# is the canonical entry point for crawlers.
+Disallow: /reset-password.html
+Disallow: /auth.html
+Disallow: /project-new.html
+Disallow: /project.html
+Disallow: /camera.html
+Disallow: /library.html
+Disallow: /team.html
+
+Sitemap: https://hypurshot.com/sitemap.xml

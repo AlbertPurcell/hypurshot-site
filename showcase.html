@@ -9,8 +9,12 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" href="logo-nav.webp">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="HyPurShot">
 <meta property="og:title" id="og-title" content="HyPurShot Showcase">
-<meta property="og:description" content="Proof of work — built with HyPurShot.">
+<meta property="og:description" id="og-desc" content="Proof of work — built with HyPurShot.">
+<meta property="og:image" id="og-image" content="/og-default.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" id="canonical-link" href="https://hypurshot.com/">
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="app.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -184,8 +188,16 @@ async function loadShowcase() {
   business = biz;
   document.getElementById('biz-name').textContent = biz.name || 'Portfolio';
   document.getElementById('biz-title').textContent = biz.name || 'Showcase';
-  document.getElementById('og-title').setAttribute('content', (biz.name || 'Showcase') + ' — HyPurShot');
-  document.title = (biz.name || 'Showcase') + ' — HyPurShot';
+  const ogTitle = (biz.name || 'Showcase') + ' — HyPurShot';
+  document.getElementById('og-title').setAttribute('content', ogTitle);
+  document.title = ogTitle;
+  // Point crawlers at the prerendered share page so they index it instead
+  // of this JS-rendered SPA. Real humans never look at canonical.
+  if (biz.showcase_slug) {
+    const canonicalUrl = 'https://hypurshot.com/share/' + encodeURIComponent(String(biz.showcase_slug).toLowerCase()) + '/';
+    const linkEl = document.getElementById('canonical-link');
+    if (linkEl) linkEl.setAttribute('href', canonicalUrl);
+  }
   if (biz.city) {
     document.getElementById('biz-meta').style.display = 'inline-flex';
     document.getElementById('biz-name-meta').textContent = biz.name || '';

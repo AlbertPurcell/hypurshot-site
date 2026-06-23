@@ -1,0 +1,46 @@
+name: Prerender share pages
+
+on:
+  schedule:
+    # Every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    # Manual trigger from the Actions tab when you want a fresh rebuild now.
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prerender
+  cancel-in-progress: false
+
+jobs:
+  prerender:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Use a token that can push back to master.
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run prerender
+        run: node scripts/prerender.mjs
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name  "hypurshot-prerender[bot]"
+          git config user.email "actions@github.com"
+          # Stage the generated tree
+          git add share sitemap.xml robots.txt
+          if git diff --cached --quiet; then
+            echo "No changes — skipping commit."
+            exit 0
+          fi
+          git commit -m "chore(prerender): refresh share pages + sitemap [skip ci]"
+          git push
