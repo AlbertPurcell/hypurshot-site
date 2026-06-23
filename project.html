@@ -136,7 +136,7 @@
     <div class="title" id="p-title">Loading…</div>
     <div class="summary-row"><span class="pill gold" id="p-status"><span class="pill-dot"></span>Active</span></div>
     <div class="summary-row" id="p-vehicle-row" style="display:none">
-      <svg viewBox="0 0 24 24"><path d="M5 17h14M5 17l1-5h12l1 5M5 17v2M19 17v2M7 12V8a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v4"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.5"/></svg>
       <span id="p-vehicle"></span>
     </div>
     <div class="summary-row" id="p-customer-row">
@@ -415,7 +415,7 @@ function openReviewModal() {
   const bizName = (HPS.business && HPS.business.name) ? HPS.business.name : 'us';
   const firstName = (project.customer_name || '').split(' ')[0] || 'there';
   const link = reviewLink || '';
-  const msg = 'Hi ' + firstName + ', thanks for trusting ' + bizName + ' with your vehicle. If you were happy with the work, a quick Google review would mean a lot: ' + link;
+  const msg = 'Hi ' + firstName + ', thanks for trusting ' + bizName + ' with your project. If you were happy with the work, a quick Google review would mean a lot: ' + link;
   document.getElementById('rev-message').value = msg;
 
   document.getElementById('review-modal').classList.add('active');
