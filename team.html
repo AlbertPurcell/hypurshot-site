@@ -1605,6 +1605,10 @@
           <div>
             <div style="font-weight:700;color:var(--text);font-size:.95rem">Public</div>
             <div style="font-size:.8rem;color:var(--text-muted);margin-top:3px">Listed in the hypurshot.com directory where customers can find you.</div>
+            <div id="public-link-row" style="display:none;margin-top:10px;gap:8px;align-items:center;flex-wrap:wrap">
+              <input type="text" id="public-link-input" readonly style="flex:1;min-width:220px;height:36px;font-size:.78rem">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="copyPublicLink()">Copy</button>
+            </div>
           </div>
         </label>
       </div>
@@ -2457,16 +2461,18 @@ let _dirServices = [];
 let _dirCoverMediaId = null;
 let _dirVisibility = 'private';
 let _dirShareToken = null;
+let _dirSlug = null;
 let _dirMediaCount = 0;
 let _dirLoaded = false;
 
 async function loadDirectorySettings() {
   if (!_supabase || !currentBusinessId) return;
-  const { data: b, error } = await _supabase.from('businesses').select('visibility, share_token, years_experience, services_tags, cover_media_id, state, plan, gbp_review_link, google_rating_avg, google_rating_count, gbp_synced_at').eq('id', currentBusinessId).maybeSingle();
+  const { data: b, error } = await _supabase.from('businesses').select('visibility, share_token, showcase_slug, years_experience, services_tags, cover_media_id, state, plan, gbp_review_link, google_rating_avg, google_rating_count, gbp_synced_at').eq('id', currentBusinessId).maybeSingle();
   if (error || !b) { showToast('Could not load directory settings.', 'error'); return; }
 
   _dirVisibility = b.visibility || 'private';
   _dirShareToken = b.share_token || null;
+  _dirSlug = b.showcase_slug || null;
   _dirServices = Array.isArray(b.services_tags) ? b.services_tags.slice() : [];
   _dirCoverMediaId = b.cover_media_id || null;
 
@@ -2519,19 +2525,47 @@ function highlightVisibilityCard() {
 }
 
 function updateShareLinkUI() {
-  const row = document.getElementById('share-link-row');
-  if (!row) return;
-  if (_dirVisibility === 'shared') {
-    row.style.display = 'flex';
-    const input = document.getElementById('share-link-input');
-    if (_dirShareToken) {
-      input.value = `${window.location.origin}/p/${_dirShareToken}`;
+  // Two share rows: 'shared' visibility uses a token URL, 'public' uses the
+  // SEO-prerendered /share/<slug>/ URL with Open Graph + JSON-LD baked in.
+  const sharedRow = document.getElementById('share-link-row');
+  const publicRow = document.getElementById('public-link-row');
+  if (sharedRow) {
+    if (_dirVisibility === 'shared') {
+      sharedRow.style.display = 'flex';
+      const input = document.getElementById('share-link-input');
+      if (_dirShareToken) {
+        // Use the real file path — returns 200 OK so iMessage, Slack, and
+        // social previews work. The previous /p/<token> form was served by
+        // 404.html with a 404 status, which most crawlers ignore.
+        input.value = `${window.location.origin}/p.html?t=${_dirShareToken}`;
+      } else {
+        input.value = 'Generating link…';
+      }
     } else {
-      input.value = 'Generating link…';
+      sharedRow.style.display = 'none';
     }
-  } else {
-    row.style.display = 'none';
   }
+  if (publicRow) {
+    if (_dirVisibility === 'public' && _dirSlug) {
+      publicRow.style.display = 'flex';
+      const input = document.getElementById('public-link-input');
+      input.value = `${window.location.origin}/share/${encodeURIComponent(String(_dirSlug).toLowerCase())}/`;
+    } else {
+      publicRow.style.display = 'none';
+    }
+  }
+}
+
+function copyPublicLink() {
+  const input = document.getElementById('public-link-input');
+  if (!input || !input.value) return;
+  navigator.clipboard.writeText(input.value).then(() => {
+    showToast('Public link copied.', 'success');
+  }).catch(() => {
+    input.select();
+    document.execCommand('copy');
+    showToast('Public link copied.', 'success');
+  });
 }
 
 function updateGateBanner(plan) {
@@ -2867,6 +2901,10 @@ async function saveBusinessSettings() {
       link.href = slug ? ('showcase.html?slug=' + encodeURIComponent(slug)) : '#';
       link.style.opacity = slug ? '1' : '0.4';
     }
+    // Keep the directory share-link UI in sync if slug changed while the
+    // directory tab is mounted.
+    _dirSlug = slug || null;
+    updateShareLinkUI();
   }
   btn.disabled = false; btn.textContent = orig;
 }
