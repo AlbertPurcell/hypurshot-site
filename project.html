@@ -411,14 +411,58 @@ function openReviewModal() {
   if (!project.customer_phone) { sms.classList.add('disabled'); sms.classList.remove('selected'); selectedChannels.sms = false; } else { selectedChannels.sms = true; sms.classList.remove('disabled'); sms.classList.add('selected'); }
   if (!project.customer_email) { em.classList.add('disabled'); em.classList.remove('selected'); selectedChannels.email = false; } else { selectedChannels.email = true; em.classList.remove('disabled'); em.classList.add('selected'); }
 
-  // Default message
+  // Default message — adapts noun to the operator's trade
   const bizName = (HPS.business && HPS.business.name) ? HPS.business.name : 'us';
   const firstName = (project.customer_name || '').split(' ')[0] || 'there';
   const link = reviewLink || '';
-  const msg = 'Hi ' + firstName + ', thanks for trusting ' + bizName + ' with your project. If you were happy with the work, a quick Google review would mean a lot: ' + link;
+  const noun = serviceNounForBusinessType((HPS.business && HPS.business.business_type) || '', project.service_type || '');
+  const msg = 'Hi ' + firstName + ', thanks for trusting ' + bizName + ' with your ' + noun + '. If you were happy with the work, a quick Google review would mean a lot: ' + link;
   document.getElementById('rev-message').value = msg;
 
   document.getElementById('review-modal').classList.add('active');
+}
+
+// Map a business_type to the natural service noun used in review-request copy.
+function serviceNounForBusinessType(bizType, serviceType) {
+  const t = (bizType || '').toLowerCase().trim();
+  const map = {
+    'mobile detailing': 'detail',
+    'auto detailing (shop)': 'detail',
+    'ppf/paint protection': 'PPF install',
+    'ceramic coating': 'ceramic coating',
+    'window tint': 'tint install',
+    'rim repair': 'rim repair',
+    'mobile mechanic': 'service',
+    'pressure washing': 'wash',
+    'soft wash': 'wash',
+    'roofing': 'roof',
+    'gutter service': 'gutter service',
+    'window cleaning': 'window cleaning',
+    'landscaping': 'landscaping',
+    'lawn care': 'lawn service',
+    'tree service': 'tree service',
+    'fencing': 'fence',
+    'deck building': 'deck',
+    'concrete & masonry': 'project',
+    'house cleaning': 'cleaning',
+    'carpet cleaning': 'carpet cleaning',
+    'painting': 'paint job',
+    'carpentry': 'project',
+    'handyman': 'project',
+    'flooring': 'flooring install',
+    'hvac': 'HVAC service',
+    'plumbing': 'plumbing service',
+    'electrical': 'electrical work',
+    'pest control': 'pest service',
+    'photography': 'photos',
+    'videography': 'video',
+    'barbershop': 'cut',
+    'nail tech': 'appointment',
+    'mobile pet grooming': 'grooming'
+  };
+  if (map[t]) return map[t];
+  if (serviceType && serviceType.trim()) return serviceType.trim();
+  return 'project';
 }
 
 function closeReviewModal() {
