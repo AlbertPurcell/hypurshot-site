@@ -1009,52 +1009,44 @@
 
           <div class="field-group">
             <label>Business Type <span class="required">*</span></label>
-            <select id="su-biz-type">
-              <option value="" disabled selected>Select your business type</option>
-              <optgroup label="Auto">
-                <option>Mobile Detailing</option>
-                <option>Auto Detailing (Shop)</option>
-                <option>PPF/Paint Protection</option>
-                <option>Ceramic Coating</option>
-                <option>Window Tint</option>
-                <option>Rim Repair</option>
-                <option>Mobile Mechanic</option>
-              </optgroup>
-              <optgroup label="Exterior">
-                <option>Pressure Washing</option>
-                <option>Soft Wash</option>
-                <option>Roofing</option>
-                <option>Gutter Service</option>
-                <option>Window Cleaning</option>
-                <option>Landscaping</option>
-                <option>Lawn Care</option>
-                <option>Tree Service</option>
-                <option>Fencing</option>
-                <option>Deck Building</option>
-                <option>Concrete &amp; Masonry</option>
-              </optgroup>
-              <optgroup label="Interior &amp; Home">
-                <option>House Cleaning</option>
-                <option>Carpet Cleaning</option>
-                <option>Painting</option>
-                <option>Carpentry</option>
-                <option>Handyman</option>
-                <option>Flooring</option>
-                <option>HVAC</option>
-                <option>Plumbing</option>
-                <option>Electrical</option>
-                <option>Pest Control</option>
-              </optgroup>
-              <optgroup label="Personal Services">
-                <option>Photography</option>
-                <option>Videography</option>
-                <option>Barbershop</option>
-                <option>Nail Tech</option>
-                <option>Mobile Pet Grooming</option>
-              </optgroup>
-              <option>Other</option>
-            </select>
-            <div class="field-error">Select a business type</div>
+            <input id="su-biz-type" type="text" list="biz-type-suggestions" placeholder="e.g. Handyman, Mobile Detailing, Pressure Washing…" autocomplete="off" />
+            <datalist id="biz-type-suggestions">
+              <option value="Mobile Detailing"></option>
+              <option value="Auto Detailing (Shop)"></option>
+              <option value="PPF/Paint Protection"></option>
+              <option value="Ceramic Coating"></option>
+              <option value="Window Tint"></option>
+              <option value="Rim Repair"></option>
+              <option value="Mobile Mechanic"></option>
+              <option value="Pressure Washing"></option>
+              <option value="Soft Wash"></option>
+              <option value="Roofing"></option>
+              <option value="Gutter Service"></option>
+              <option value="Window Cleaning"></option>
+              <option value="Landscaping"></option>
+              <option value="Lawn Care"></option>
+              <option value="Tree Service"></option>
+              <option value="Fencing"></option>
+              <option value="Deck Building"></option>
+              <option value="Concrete &amp; Masonry"></option>
+              <option value="House Cleaning"></option>
+              <option value="Carpet Cleaning"></option>
+              <option value="Painting"></option>
+              <option value="Carpentry"></option>
+              <option value="Handyman"></option>
+              <option value="Flooring"></option>
+              <option value="HVAC"></option>
+              <option value="Plumbing"></option>
+              <option value="Electrical"></option>
+              <option value="Pest Control"></option>
+              <option value="Photography"></option>
+              <option value="Videography"></option>
+              <option value="Barbershop"></option>
+              <option value="Nail Tech"></option>
+              <option value="Mobile Pet Grooming"></option>
+            </datalist>
+            <div class="hint">Type anything — we serve every solo owner-operator.</div>
+            <div class="field-error">Tell us what kind of work you do</div>
           </div>
 
           <div class="field-group">
@@ -1501,7 +1493,7 @@ function validateStep(step) {
     const type = document.getElementById('su-biz-type');
 
     if (!biz.value.trim()) { setError(biz); valid = false; }
-    if (!type.value) { setError(type); valid = false; }
+    if (!type.value.trim()) { setError(type); valid = false; }
     return valid;
   }
 
@@ -1700,7 +1692,7 @@ async function createAccount() {
       first_name: document.getElementById('su-first').value.trim(),
       last_name: document.getElementById('su-last').value.trim(),
       business_name: document.getElementById('su-business').value.trim(),
-      business_type: document.getElementById('su-biz-type').value,
+      business_type: document.getElementById('su-biz-type').value.trim(),
       phone: document.getElementById('su-phone').value.trim(),
       city: document.getElementById('su-city').value.trim(),
       google_place_id: document.getElementById('su-place-id').value.trim(),
