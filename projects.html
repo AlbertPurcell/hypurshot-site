@@ -27,6 +27,16 @@
 
 <main class="page">
 
+  <div id="gbp-nudge" style="display:none;background:var(--surface);border:1px solid #2a2a2a;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-family:Satoshi,system-ui,sans-serif;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <div style="font-size:13px;color:#c8c2bd;line-height:1.45;">
+        <span style="color:#A8D4E6;font-weight:700;letter-spacing:0.5px;font-size:11px;text-transform:uppercase;">Optional setup</span>
+        <span style="display:block;margin-top:4px;">Add your Google review link to unlock 1-tap review requests. Until then, you can still capture, edit, and showcase your work to customers.</span>
+      </div>
+      <a href="team.html#gbp" style="background:#A8D4E6;color:#0D0D0D;text-decoration:none;font-weight:700;font-size:13px;padding:8px 14px;border-radius:8px;white-space:nowrap;">Add review link</a>
+    </div>
+  </div>
+
   <div id="usage-badge" style="display:none;background:var(--surface);border:1px solid #2a2a2a;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-family:Satoshi,system-ui,sans-serif;">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
       <div style="font-size:13px;color:#c8c2bd;line-height:1.45;">
@@ -179,6 +189,11 @@ async function renderUsageBadge() {
   HPS.renderBottomNav('projects');
   await loadProjects();
   renderUsageBadge();
+  // Nudge if no Google review link is set yet
+  const link = HPS.business && HPS.business.gbp_review_link;
+  if (!link || !String(link).trim()) {
+    document.getElementById('gbp-nudge').style.display = 'block';
+  }
 })();
 </script>
 </body>

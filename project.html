@@ -553,9 +553,22 @@ async function sendReviewRequest() {
 function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function escapeAttr(s) { return escapeHtml(s); }
 
+// If the user has no Google review link yet, swap the "Get reviewed" button
+// to a friendlier "Add review link" CTA that takes them to settings.
+function adaptReviewButton() {
+  const btn = document.getElementById('review-btn');
+  if (!btn) return;
+  const link = HPS.business && HPS.business.gbp_review_link;
+  if (!link || !String(link).trim()) {
+    btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M12 5v14M5 12h14"/></svg> Add review link';
+    btn.onclick = function() { window.location.href = 'team.html#gbp'; };
+  }
+}
+
 (async () => {
   const ok = await HPS.init();
   if (!ok) return;
+  adaptReviewButton();
   await loadProject();
 })();
 </script>
