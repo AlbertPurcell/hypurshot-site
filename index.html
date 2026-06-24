@@ -119,8 +119,16 @@
     }
     .nav-cta:hover { background: var(--gold-hover); color: var(--bg) !important; }
 
+    .nav-lang {
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.02em;
+    }
+    .nav-lang:hover { color: var(--ice); }
+
     @media (max-width: 720px) {
-      .nav-links a:not(.nav-cta) { display: none; }
+      .nav-links a:not(.nav-cta):not(.nav-lang) { display: none; }
+      .nav-lang { font-size: 12px; }
     }
 
     /* ================================================================
@@ -578,6 +586,7 @@
         <a href="/directory.html">Find a professional</a>
         <a href="#features">Features</a>
         <a href="#pricing">Pricing</a>
+        <a href="#" class="nav-lang" id="nav-lang" aria-label="Ver en español">Español</a>
         <a href="/auth.html" class="nav-cta">Sign in</a>
       </div>
     </div>
@@ -837,6 +846,16 @@
           startCheckout(plan, a);
         });
       });
+
+      // Spanish translation: route through Google Translate (works on every browser, no extension)
+      var langBtn = document.getElementById('nav-lang');
+      if (langBtn) {
+        langBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          var here = window.location.href.replace(/^https?:\/\//, '');
+          window.open('https://translate.google.com/translate?sl=en&tl=es&u=https://' + here, '_blank', 'noopener');
+        });
+      }
     })();
   </script>
   <script src="polish.js"></script>
