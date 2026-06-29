@@ -1836,16 +1836,67 @@ async function oauthSignIn(provider) {
 // ──────────────── INIT ────────────────
 updateStepIndicator();
 
-// Spanish translation: route through Google Translate (works on every browser, no extension)
-(function() {
-  var langBtn = document.getElementById('nav-lang');
-  if (langBtn) {
-    langBtn.addEventListener('click', function(e) {
+// In-page language toggle (stays on hypurshot.com so Supabase auth keeps working)
+(function(){
+  var mount = document.createElement('div');
+  mount.id = 'google_translate_element';
+  mount.style.display = 'none';
+  document.body.appendChild(mount);
+
+  function readCookie(name){
+    var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : '';
+  }
+  function writeCookie(name, value, days){
+    var d = new Date(); d.setTime(d.getTime() + (days||365)*86400000);
+    var host = location.hostname;
+    document.cookie = name + '=' + value + ';expires=' + d.toUTCString() + ';path=/';
+    if (host && host.indexOf('.') !== -1) {
+      document.cookie = name + '=' + value + ';expires=' + d.toUTCString() + ';path=/;domain=' + host;
+      document.cookie = name + '=' + value + ';expires=' + d.toUTCString() + ';path=/;domain=.' + host;
+    }
+  }
+  function currentLang(){
+    var c = readCookie('googtrans');
+    if (c && c.indexOf('/es') !== -1) return 'es';
+    return 'en';
+  }
+  function setLang(lang){
+    if (lang === 'es') {
+      writeCookie('googtrans', '/en/es');
+    } else {
+      writeCookie('googtrans', '/en/en');
+      document.cookie = 'googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+    }
+    location.reload();
+  }
+  function paintBtn(){
+    var btn = document.getElementById('nav-lang');
+    if (!btn) return;
+    var lang = currentLang();
+    btn.textContent = (lang === 'es') ? 'English' : 'Español';
+    btn.setAttribute('aria-label', lang === 'es' ? 'View in English' : 'Ver en español');
+  }
+  window.googleTranslateElementInit = function(){
+    new google.translate.TranslateElement({
+      pageLanguage: 'en',
+      includedLanguages: 'en,es',
+      autoDisplay: false,
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+    }, 'google_translate_element');
+  };
+  paintBtn();
+  var btn = document.getElementById('nav-lang');
+  if (btn) {
+    btn.addEventListener('click', function(e){
       e.preventDefault();
-      var here = window.location.href.replace(/^https?:\/\//, '');
-      window.open('https://translate.google.com/translate?sl=en&tl=es&u=https://' + here, '_blank', 'noopener');
+      setLang(currentLang() === 'es' ? 'en' : 'es');
     });
   }
+  var s = document.createElement('script');
+  s.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+  s.async = true;
+  document.body.appendChild(s);
 })();
 </script>
 </body>
