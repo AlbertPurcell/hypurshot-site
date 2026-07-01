@@ -123,6 +123,25 @@
     padding: 0 28px;
     gap: 0;
     z-index: 99;
+    /* Horizontal scroll so all tabs are reachable on narrow phones */
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    scrollbar-width: none; /* Firefox */
+  }
+  .tab-bar::-webkit-scrollbar { display: none; } /* WebKit */
+  /* Right-edge fade hint so users know more tabs exist */
+  .tab-bar::after {
+    content: '';
+    position: fixed;
+    top: 60px;
+    right: 0;
+    width: 28px;
+    height: 47px;
+    background: linear-gradient(to right, rgba(13,13,13,0), var(--bg));
+    pointer-events: none;
+    z-index: 100;
   }
 
   .tab-btn {
@@ -136,6 +155,8 @@
     padding: 0 20px;
     cursor: pointer;
     transition: color 0.2s;
+    flex-shrink: 0;
+    white-space: nowrap;
   }
 
   .tab-btn:hover { color: var(--text); }
@@ -2918,7 +2939,12 @@ document.addEventListener('DOMContentLoaded', initSession);
 // ──────────────── TAB SWITCHING ────────────────
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
+  const activeBtn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+  if (activeBtn) {
+    activeBtn.classList.add('active');
+    // Scroll the active tab into view on narrow screens
+    try { activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); } catch (e) {}
+  }
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
 
