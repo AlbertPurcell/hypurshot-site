@@ -1525,11 +1525,11 @@
 <!-- TAB BAR -->
 <div class="tab-bar">
   <button class="tab-btn active" data-tab="settings" onclick="switchTab('settings')">Business</button>
-  <button class="tab-btn" data-tab="directory" onclick="switchTab('directory')">Directory</button>
-  <button class="tab-btn" data-tab="members" onclick="switchTab('members')">Members</button>
-  <button class="tab-btn" data-tab="invites" onclick="switchTab('invites')">Invites</button>
-  <button class="tab-btn" data-tab="approvals" onclick="switchTab('approvals')">Approvals</button>
-  <button class="tab-btn" data-tab="connections" onclick="switchTab('connections')">Connections</button>
+  <button class="tab-btn" data-tab="directory" onclick="switchTab('directory')">Public listing</button>
+  <button class="tab-btn" data-tab="members" onclick="switchTab('members')">Team</button>
+  <button class="tab-btn" data-tab="invites" onclick="switchTab('invites')">Invite codes</button>
+  <button class="tab-btn" data-tab="approvals" onclick="switchTab('approvals')">Review posts</button>
+  <button class="tab-btn" data-tab="connections" onclick="switchTab('connections')">Social accounts</button>
 </div>
 
 <!-- MAIN CONTENT -->
@@ -1557,7 +1557,7 @@
       </div>
 
       <div style="margin-bottom:14px">
-        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Showcase URL</label>
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Your public page link</label>
         <div style="display:flex;align-items:center;gap:8px">
           <span style="color:var(--text-muted);font-size:.85rem">hypurshot.com/showcase.html?slug=</span>
           <input id="set-slug" type="text" placeholder="flymyride-ashburn" style="flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:var(--font-body);font-size:.88rem">
@@ -1566,7 +1566,7 @@
         <div style="margin-top:10px"><a id="showcase-preview-link" href="#" target="_blank" style="font-size:.78rem;color:var(--gold)">View showcase</a></div>
       </div>
 
-      <button class="btn btn-gold" id="settings-save-btn" onclick="saveBusinessSettings()" style="margin-top:6px">Save settings</button>
+      <button class="btn btn-gold" id="settings-save-btn" onclick="saveBusinessSettings()" style="margin-top:6px">Save changes</button>
     </div>
 
     <div class="section-header" style="margin-top:28px"><h2>Billing</h2></div>
@@ -1599,7 +1599,7 @@
 
   <!-- ═══════ DIRECTORY TAB ═══════ -->
   <div id="tab-directory" class="tab-content">
-    <div class="section-header"><h2>Directory visibility</h2></div>
+    <div class="section-header"><h2>Show my business publicly</h2></div>
     <div class="card" style="padding:18px">
       <div style="font-size:.86rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5">
         Control how your profile appears to customers searching for operators on hypurshot.com.
@@ -1620,7 +1620,7 @@
             <div id="share-link-row" style="display:none;margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
               <input type="text" id="share-link-input" readonly style="flex:1;min-width:220px;height:36px;font-size:.78rem">
               <button type="button" class="btn btn-ghost btn-sm" onclick="copyShareLink()">Copy</button>
-              <button type="button" class="btn btn-ghost btn-sm" onclick="regenerateShareLink()">Regenerate</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="regenerateShareLink()" title="Replaces your current link — the old one will stop working">Replace link</button>
             </div>
           </div>
         </label>
@@ -1639,7 +1639,7 @@
       <div id="dir-gate-banner" style="display:none;margin-top:14px;padding:12px 14px;background:rgba(212,160,23,0.08);border:1px solid rgba(212,160,23,0.3);border-radius:8px;font-size:.82rem;color:var(--text);line-height:1.5"></div>
     </div>
 
-    <div class="section-header" style="margin-top:28px"><h2>Profile details</h2></div>
+    <div class="section-header" style="margin-top:28px"><h2>About your business</h2></div>
     <div class="card" style="padding:18px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
         <div>
@@ -1652,7 +1652,7 @@
         </div>
       </div>
       <div style="margin-top:14px">
-        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Services offered</label>
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Services you offer</label>
         <div id="services-chip-list" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;align-items:center"></div>
         <div style="display:flex;gap:8px;margin-top:8px">
           <input type="text" id="services-input" placeholder="Add a service (e.g. Ceramic coating) and press Enter" onkeydown="servicesInputKeydown(event)" style="flex:1">
@@ -1660,7 +1660,7 @@
         </div>
         <div style="font-size:.72rem;color:var(--text-muted);margin-top:6px">Customers can filter operators by these tags. Keep them short and clear.</div>
       </div>
-      <button class="btn btn-gold" id="dir-save-btn" onclick="saveDirectorySettings()" style="margin-top:18px">Save directory settings</button>
+      <button class="btn btn-gold" id="dir-save-btn" onclick="saveDirectorySettings()" style="margin-top:18px">Save changes</button>
     </div>
 
     <div class="section-header" style="margin-top:28px"><h2>Cover photo</h2></div>
@@ -1670,7 +1670,7 @@
         <div id="cover-preview" style="width:160px;height:160px;border-radius:10px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.78rem;color:var(--text-muted);overflow:hidden">No cover yet</div>
         <div style="flex:1;min-width:200px">
           <button type="button" class="btn btn-ghost" onclick="openCoverPicker()">Choose from your media</button>
-          <button type="button" class="btn btn-ghost" onclick="clearCover()" style="margin-left:8px">Use latest</button>
+          <button type="button" class="btn btn-ghost" onclick="clearCover()" style="margin-left:8px">Use most recent</button>
         </div>
       </div>
     </div>
@@ -1679,7 +1679,7 @@
     <div class="card" style="padding:18px">
       <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5">Connect your Google Business Profile so your real rating and reviews show on your showcase page. We refresh once a day automatically — or hit Refresh now any time.</div>
       <div style="margin-bottom:14px">
-        <label style="display:block;font-size:.78rem;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Google Business Profile URL</label>
+        <label style="display:block;font-size:.78rem;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Google Business page link</label>
         <input id="dir-gbp-url" type="url" placeholder="https://g.page/r/... or https://maps.google.com/?cid=..." style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:var(--font-body);font-size:.92rem">
         <div style="font-size:.72rem;color:var(--text-muted);margin-top:6px">Open your Google Business listing on Google Maps, click Share, copy the link.</div>
       </div>
@@ -1698,7 +1698,7 @@
         </div>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button type="button" class="btn btn-gold" id="dir-gbp-refresh-btn" onclick="refreshGbpReviews()">Refresh reviews now</button>
+        <button type="button" class="btn btn-gold" id="dir-gbp-refresh-btn" onclick="refreshGbpReviews()">Check for new reviews</button>
       </div>
       <div id="dir-gbp-status" style="font-size:.78rem;color:var(--text-muted);margin-top:10px"></div>
     </div>
@@ -1712,14 +1712,14 @@
         <button type="button" class="btn btn-ghost btn-sm" onclick="closeCoverPicker()">Close</button>
       </div>
       <div id="cover-picker-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px"></div>
-      <div id="cover-picker-empty" style="display:none;text-align:center;padding:40px 20px;color:var(--text-muted);font-size:.86rem">No published media yet. Upload some media first.</div>
+      <div id="cover-picker-empty" style="display:none;text-align:center;padding:40px 20px;color:var(--text-muted);font-size:.86rem">No public photos or videos yet — mark one as Public in a job first, then come back.</div>
     </div>
   </div>
 
   <!-- ═══════ MEMBERS TAB ═══════ -->
   <div id="tab-members" class="tab-content">
     <div class="section-header">
-      <h2>Team Members</h2>
+      <h2>Your team</h2>
       <button class="btn btn-gold" onclick="openInviteModal()">
         <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2.5" stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
         <span>Invite Member</span>
@@ -1732,14 +1732,14 @@
 
     <div id="members-empty" class="empty-state" style="display:none;">
       <svg width="48" height="48" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.2"/><path stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-      <p>No team members yet.<br>Invite your first team member to get started.</p>
+      <p>No team members yet<br>Invite your first team member to get started.</p>
     </div>
   </div>
 
   <!-- ═══════ INVITES TAB ═══════ -->
   <div id="tab-invites" class="tab-content">
     <div class="section-header">
-      <h2>Invite Codes</h2>
+      <h2>Invite codes</h2>
       <button class="btn btn-gold" onclick="openInviteModal()">
         <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2.5" stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
         <span>New Invite</span>
@@ -1759,7 +1759,7 @@
   <!-- ═══════ APPROVALS TAB ═══════ -->
   <div id="tab-approvals" class="tab-content">
     <div class="section-header">
-      <h2>Pending Approvals</h2>
+      <h2>Posts waiting for your approval</h2>
     </div>
 
     <div id="approvals-list">
@@ -1775,7 +1775,7 @@
   <!-- ═══════ NEW POST TAB ═══════ -->
   <div id="tab-newpost" class="tab-content">
     <div class="section-header">
-      <h2>New Post</h2>
+      <h2>New post</h2>
     </div>
 
     <!-- Platform sub-tabs: TikTok / Instagram / Facebook -->
@@ -1846,13 +1846,13 @@
       <div class="newpost-field">
         <label class="newpost-label" for="newpost-caption">Caption</label>
         <textarea id="newpost-caption" class="newpost-textarea"
-          placeholder="Write a caption for your TikTok post..."
+          placeholder="Write a caption for your TikTok post…"
           oninput="updatePostPreview(); updatePublishButton();"></textarea>
       </div>
 
       <!-- Privacy -->
       <div class="newpost-field">
-        <label class="newpost-label" for="newpost-privacy">Privacy</label>
+        <label class="newpost-label" for="newpost-privacy">Who can see this?</label>
         <select id="newpost-privacy" class="newpost-select" onchange="handlePrivacyChange(); updatePostPreview(); updatePublishButton();">
           <option value="" disabled selected>Select privacy level...</option>
           <option value="PUBLIC_TO_EVERYONE">Public</option>
@@ -1869,31 +1869,31 @@
 
       <!-- Interaction settings -->
       <div class="newpost-field">
-        <label class="newpost-label">Interactions</label>
+        <label class="newpost-label">What viewers can do</label>
         <div class="newpost-interactions">
           <div class="newpost-check-row">
             <input type="checkbox" id="newpost-allow-comment" class="newpost-check-input" onchange="updatePostPreview(); updatePublishButton();">
-            <label for="newpost-allow-comment" class="newpost-check-label">Allow Comments</label>
+            <label for="newpost-allow-comment" class="newpost-check-label">Let people comment</label>
           </div>
           <div class="newpost-check-row">
             <input type="checkbox" id="newpost-allow-duet" class="newpost-check-input" onchange="updatePostPreview(); updatePublishButton();">
-            <label for="newpost-allow-duet" class="newpost-check-label">Allow Duet</label>
+            <label for="newpost-allow-duet" class="newpost-check-label">Let people Duet</label>
           </div>
           <div class="newpost-check-row">
             <input type="checkbox" id="newpost-allow-stitch" class="newpost-check-input" onchange="updatePostPreview(); updatePublishButton();">
-            <label for="newpost-allow-stitch" class="newpost-check-label">Allow Stitch</label>
+            <label for="newpost-allow-stitch" class="newpost-check-label">Let people Stitch</label>
           </div>
         </div>
       </div>
 
       <!-- Commercial content disclosure -->
       <div class="newpost-field">
-        <label class="newpost-label">Commercial Content</label>
+        <label class="newpost-label">Paid or promotional content</label>
         <div class="newpost-commercial-card">
           <div class="newpost-commercial-header">
             <div>
               <div class="newpost-commercial-title">Disclose commercial content</div>
-              <div class="newpost-commercial-sub">Turn on if this content promotes a brand, product, or service</div>
+              <div class="newpost-commercial-sub">Turn on if you are being paid to post this or promoting a brand</div>
             </div>
             <button type="button" class="toggle-switch" id="newpost-commercial-toggle"
               onclick="handleCommercialToggle()" aria-label="Toggle commercial content disclosure"></button>
@@ -1903,18 +1903,18 @@
               <div class="newpost-commercial-option-row">
                 <input type="checkbox" id="newpost-your-brand" class="newpost-check-input"
                   onchange="handleCommercialBrandChange(); updatePublishButton();">
-                <label for="newpost-your-brand" class="newpost-check-label">Your Brand</label>
+                <label for="newpost-your-brand" class="newpost-check-label">Promoting my own business</label>
               </div>
-              <div class="newpost-commercial-option-desc">You are promoting yourself or your own business</div>
+              <div class="newpost-commercial-option-desc">I am promoting my own business</div>
               <div class="newpost-commercial-note" id="newpost-your-brand-note" style="display:none;">Your video will be labeled as &ldquo;Promotional content&rdquo;</div>
             </div>
             <div class="newpost-commercial-option">
               <div class="newpost-commercial-option-row">
                 <input type="checkbox" id="newpost-branded-content" class="newpost-check-input"
                   onchange="handleCommercialBrandChange(); updatePublishButton();">
-                <label for="newpost-branded-content" class="newpost-check-label">Branded Content</label>
+                <label for="newpost-branded-content" class="newpost-check-label">Promoting another brand</label>
               </div>
-              <div class="newpost-commercial-option-desc">You are promoting another brand or a third party</div>
+              <div class="newpost-commercial-option-desc">I am promoting another brand or a third party</div>
               <div class="newpost-commercial-note" id="newpost-branded-content-note" style="display:none;">Your video will be labeled as &ldquo;Paid partnership&rdquo;</div>
             </div>
             <div class="newpost-commercial-warn" id="newpost-commercial-warn">
@@ -1934,18 +1934,18 @@
         <div class="newpost-preview-header">Preview</div>
         <div class="newpost-preview-body">
           <div class="newpost-preview-thumb" id="newpost-preview-thumb">
-            <span>Add a video to see the preview</span>
+            <span>Pick a video above to see how it will look</span>
           </div>
           <div class="newpost-preview-meta">
             <div class="newpost-preview-creator" id="newpost-preview-creator">
               <span>TikTok Creator</span>
             </div>
-            <div class="newpost-preview-caption empty" id="newpost-preview-caption">No caption yet.</div>
+            <div class="newpost-preview-caption empty" id="newpost-preview-caption">No caption yet</div>
             <div class="newpost-preview-tags" id="newpost-preview-tags">
-              <span class="newpost-preview-tag">Privacy: Not selected</span>
-              <span class="newpost-preview-tag">Comments: off</span>
-              <span class="newpost-preview-tag">Duet: off</span>
-              <span class="newpost-preview-tag">Stitch: off</span>
+              <span class="newpost-preview-tag">Pick who can see this</span>
+              <span class="newpost-preview-tag">Comments off</span>
+              <span class="newpost-preview-tag">Duet off</span>
+              <span class="newpost-preview-tag">Stitch off</span>
             </div>
           </div>
         </div>
@@ -1958,7 +1958,7 @@
       <!-- Save to TikTok Drafts (uses video.upload scope; user finishes inside TikTok) -->
       <div style="margin-top:12px; display:flex; flex-direction:column; gap:6px;">
         <button type="button" id="newpost-draft-btn" class="btn btn-ghost" style="width:100%; justify-content:center;"
-          onclick="saveDraftToTikTok()" disabled>Save to TikTok Drafts</button>
+          onclick="saveDraftToTikTok()" disabled>Save as TikTok draft</button>
         <p style="font-size:12px; color:var(--text-muted); margin:0; text-align:center;">
           Sends the video to your TikTok inbox. Open TikTok to set caption, privacy, and publish.
         </p>
@@ -1975,9 +1975,9 @@
 
       <!-- Disconnected state -->
       <div id="ig-disconnected" class="composer-empty" style="display:none;">
-        <h3>Instagram posting is coming soon.</h3>
+        <h3>Instagram posting — coming soon</h3>
         <p>HyPurShot is in Meta app review. Once Instagram approves us, you'll be able to post photos and Reels directly from here.</p>
-        <span class="pill-soon">Coming soon · Meta review in progress</span>
+        <span class="pill-soon">Coming soon — Meta reviewing</span>
         <p class="composer-empty-note">When live, you'll need an Instagram Business or Creator account linked to a Facebook Page.</p>
       </div>
 
@@ -2035,7 +2035,7 @@
           <div class="newpost-field">
             <label class="newpost-label" for="ig-caption">Caption</label>
             <textarea id="ig-caption" class="newpost-textarea" maxlength="2200" rows="4"
-              placeholder="Write a caption... use #hashtags and @mentions to reach people."
+              placeholder="Write a caption… use #hashtags and @mentions to reach people."
               oninput="igUpdateCounter()"></textarea>
             <div class="newpost-counter">
               <span id="ig-counter">0</span> / 2200
@@ -2056,9 +2056,9 @@
 
       <!-- Disconnected state -->
       <div id="fb-disconnected" class="composer-empty" style="display:none;">
-        <h3>Facebook posting is coming soon.</h3>
+        <h3>Facebook posting — coming soon</h3>
         <p>HyPurShot is in Meta app review. Once approved, you'll be able to post updates, photos, and videos to your Facebook Page directly from here.</p>
-        <span class="pill-soon">Coming soon · Meta review in progress</span>
+        <span class="pill-soon">Coming soon — Meta reviewing</span>
         <p class="composer-empty-note">When live, connecting Instagram will also connect the linked Facebook Page automatically.</p>
       </div>
 
@@ -2070,7 +2070,7 @@
           </div>
           <div class="newpost-creator-info">
             <div class="newpost-creator-name" id="fb-page-name">Loading...</div>
-            <div class="newpost-creator-sub">Posting to Facebook Page</div>
+            <div class="newpost-creator-sub">Posting to Facebook</div>
           </div>
         </div>
 
@@ -2117,7 +2117,7 @@
 
           <!-- Link URL (hidden unless link mode) -->
           <div class="newpost-field" id="fb-link-wrap" style="display:none;">
-            <label class="newpost-label" for="fb-link-input">Link URL</label>
+            <label class="newpost-label" for="fb-link-input">Link to include (optional)</label>
             <input type="url" id="fb-link-input" class="newpost-input" placeholder="https://example.com/page" oninput="fbUpdateButton()">
           </div>
 
@@ -2125,7 +2125,7 @@
           <div class="newpost-field">
             <label class="newpost-label" for="fb-message">Message</label>
             <textarea id="fb-message" class="newpost-textarea" maxlength="63206" rows="5"
-              placeholder="What's on your mind?"
+              placeholder="Write a caption…"
               oninput="fbUpdateCounter(); fbUpdateButton();"></textarea>
             <div class="newpost-counter">
               <span id="fb-counter">0</span> / 63,206
@@ -2148,7 +2148,7 @@
   <!-- ═══════ CONNECTIONS TAB ═══════ -->
   <div id="tab-connections" class="tab-content">
     <div class="section-header">
-      <h2>Social Accounts</h2>
+      <h2>Social accounts</h2>
     </div>
 
     <div id="connections-list">
@@ -2188,7 +2188,7 @@
             </div>
           </div>
           <div id="instagram-actions">
-            <span class="pill-soon">Coming soon · Meta review</span>
+            <span class="pill-soon">Coming soon — Meta review</span>
           </div>
         </div>
       </div>
@@ -2206,7 +2206,7 @@
             </div>
           </div>
           <div id="facebook-actions">
-            <span class="pill-soon">Coming soon · Meta review</span>
+            <span class="pill-soon">Coming soon — Meta review</span>
           </div>
         </div>
       </div>
@@ -2708,7 +2708,7 @@ function renderServiceChips() {
   const wrap = document.getElementById('services-chip-list');
   if (!wrap) return;
   if (!_dirServices.length) {
-    wrap.innerHTML = '<span style="font-size:.8rem;color:var(--text-muted)">No services added yet.</span>';
+    wrap.innerHTML = '<span style="font-size:.8rem;color:var(--text-muted)">No services added yet</span>';
     return;
   }
   wrap.innerHTML = _dirServices.map((s, i) => `
@@ -3036,9 +3036,9 @@ function renderMembers() {
       </div>
       <span class="badge badge-${m.role}">${capitalize(m.role)}</span>
       <div class="pills">
-        ${m.can_post ? '<span class="pill">Can Post</span>' : ''}
-        ${m.can_capture ? '<span class="pill">Can Capture</span>' : ''}
-        ${m.needs_approval ? '<span class="pill">Needs Approval</span>' : ''}
+        ${m.can_post ? '<span class="pill">Can post to social</span>' : ''}
+        ${m.can_capture ? '<span class="pill">Can add photos</span>' : ''}
+        ${m.needs_approval ? '<span class="pill">Needs your approval</span>' : ''}
       </div>
       ${m.role !== 'owner' ? `
       <div class="menu-wrap">
@@ -3408,7 +3408,7 @@ function renderApprovals() {
         <button class="btn btn-ghost-danger btn-sm" onclick="showRejectInput('${a.id}')">Reject</button>
       </div>
       <div class="reject-reason" id="reject-${a.id}">
-        <input type="text" placeholder="Reason for rejection..." id="reject-input-${a.id}">
+        <input type="text" placeholder="Tell them why (optional)" id="reject-input-${a.id}">
         <button class="btn btn-ghost-danger btn-sm" onclick="rejectPost('${a.id}')">Send</button>
       </div>
     </div>
@@ -3563,7 +3563,7 @@ async function loadConnections() {
         igActionsEl.innerHTML = '<button class="btn btn-outline" onclick="disconnectMeta()" style="font-size:13px; padding:8px 16px; border:1px solid var(--border); border-radius:8px;">Disconnect</button>';
       } else {
         igStatusEl.textContent = 'Not connected';
-        igActionsEl.innerHTML = '<span class="pill-soon">Coming soon · Meta review</span>';
+        igActionsEl.innerHTML = '<span class="pill-soon">Coming soon — Meta review</span>';
       }
     }
     const fbStatusEl = document.getElementById('facebook-status');
@@ -3575,7 +3575,7 @@ async function loadConnections() {
         fbActionsEl.innerHTML = '<button class="btn btn-outline" onclick="disconnectMeta()" style="font-size:13px; padding:8px 16px; border:1px solid var(--border); border-radius:8px;">Disconnect</button>';
       } else {
         fbStatusEl.textContent = 'Not connected';
-        fbActionsEl.innerHTML = '<span class="pill-soon">Coming soon · Meta review</span>';
+        fbActionsEl.innerHTML = '<span class="pill-soon">Coming soon — Meta review</span>';
       }
     }
   } catch (err) {
@@ -3956,7 +3956,7 @@ function updatePostPreview() {
   if (thumbEl && sourceVideo && sourceVideo.src && sourceVideo.style.display !== 'none') {
     thumbEl.innerHTML = '<video src="' + sourceVideo.src + '" muted playsinline preload="metadata"></video>';
   } else if (thumbEl && (!sourceVideo || !sourceVideo.src)) {
-    thumbEl.innerHTML = '<span>Add a video to see the preview</span>';
+    thumbEl.innerHTML = '<span>Pick a video above to see how it will look</span>';
   }
 
   // Tags

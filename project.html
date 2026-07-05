@@ -167,15 +167,15 @@
 
   <!-- Status actions row -->
   <div class="row between mb-16">
-    <h2>Media</h2>
-    <button class="btn btn-ghost btn-sm" id="complete-btn" onclick="toggleComplete()">Mark complete</button>
+    <h2>Photos & videos</h2>
+    <button class="btn btn-ghost btn-sm" id="complete-btn" onclick="toggleComplete()">Mark job done</button>
   </div>
 
   <!-- Media grid -->
   <div id="media-grid" class="media-grid"></div>
   <div id="media-empty" class="empty hidden">
-    <h3>No captures yet</h3>
-    <p>Tap Capture to add your first photo or video.</p>
+    <h3>No photos or videos yet</h3>
+    <p>Tap the camera button below to add your first shot.</p>
   </div>
 
 </main>
@@ -191,7 +191,7 @@
     <div class="toggle-row">
       <div>
         <div class="label">Public on showcase</div>
-        <div class="hint">Only public items appear on your portfolio page.</div>
+        <div class="hint">Only Public photos and videos appear on your public page.</div>
       </div>
       <div class="switch" id="public-switch" onclick="togglePublic()"></div>
     </div>
@@ -201,12 +201,12 @@
 <!-- Review request modal -->
 <div class="modal" id="review-modal">
   <div class="modal-panel">
-    <h2>Request a Google review</h2>
-    <p class="desc">Send your customer a one-tap link to your Google Business profile.</p>
+    <h2>Ask for a Google review</h2>
+    <p class="desc">Send your customer a one-tap link to leave you a Google review.</p>
 
     <div id="rev-no-link" class="card hidden" style="margin-bottom:14px;background:var(--surface-2)">
       <div class="text-error" style="font-size:.88rem;font-weight:600;margin-bottom:6px">No review link set</div>
-      <div class="text-muted" style="font-size:.82rem;margin-bottom:12px">Add your Google review link in Settings before sending.</div>
+      <div class="text-muted" style="font-size:.82rem;margin-bottom:12px">Add your Google review link in Business Profile settings before sending.</div>
       <a href="team.html#gbp" class="btn btn-ghost btn-sm">Go to Settings</a>
     </div>
 
@@ -229,7 +229,7 @@
       </div>
 
       <div class="stack mt-8">
-        <button class="btn btn-ice btn-lg btn-block" id="rev-send-btn" onclick="sendReviewRequest()">Send request</button>
+        <button class="btn btn-ice btn-lg btn-block" id="rev-send-btn" onclick="sendReviewRequest()">Send review request</button>
         <button class="btn btn-ghost btn-block" onclick="closeReviewModal()">Cancel</button>
       </div>
     </div>

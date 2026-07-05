@@ -31,9 +31,9 @@
   <form id="form" autocomplete="off">
 
     <div class="field">
-      <label for="description">Work description</label>
+      <label for="description">What's the job?</label>
       <textarea id="description" class="textarea" rows="2" placeholder="Lamborghini Urus full ceramic coating" required></textarea>
-      <div class="hint">Briefly describe the job. This is the title clients will see.</div>
+      <div class="hint">A short line describing the job. This becomes the title customers see.</div>
     </div>
 
     <div class="field">
@@ -58,14 +58,14 @@
     </div>
 
     <div class="field">
-      <label>Location</label>
+      <label>Where</label>
       <div class="card" style="padding:14px">
         <div class="row between" style="gap:10px">
           <div style="flex:1;min-width:0">
-            <div id="loc-status" class="text-muted" style="font-size:.85rem">Location not set</div>
+            <div id="loc-status" class="text-muted" style="font-size:.85rem">No location yet</div>
             <div id="loc-coords" class="text-dim" style="font-size:.74rem;margin-top:3px"></div>
           </div>
-          <button type="button" id="loc-btn" class="btn btn-ghost btn-sm">Use my location</button>
+          <button type="button" id="loc-btn" class="btn btn-ghost btn-sm">Use my current location</button>
         </div>
         <input id="loc-label" class="input mt-8" type="text" placeholder="Or type a location (e.g. Ashburn, VA)" style="margin-top:10px">
       </div>

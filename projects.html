@@ -68,7 +68,7 @@
 
 </main>
 
-<button class="fab" onclick="window.location.href='project-new.html'" aria-label="New project">+</button>
+<button class="fab" onclick="window.location.href='project-new.html'" aria-label="New job">+</button>
 
 <script src="app.js"></script>
 <script>
@@ -85,7 +85,7 @@ async function loadProjects() {
     .limit(200);
 
   if (error) {
-    container.innerHTML = '<div class="empty"><h3>Could not load projects</h3><p>' + (error.message || 'Please try again.') + '</p></div>';
+    container.innerHTML = '<div class="empty"><h3>We could not load your jobs</h3><p>' + (error.message || 'Please try again.') + '</p></div>';
     return;
   }
   allProjects = data || [];
@@ -146,12 +146,12 @@ function renderList(thumbsByJob) {
 
 function renderEmpty() {
   if (currentFilter === 'completed') {
-    return '<div class="empty"><h3>No completed projects yet</h3><p>Finish a project to see it here.</p></div>';
+    return '<div class="empty"><h3>No finished jobs yet</h3><p>Finish a job to see it here.</p></div>';
   }
   return '<div class="empty">' +
-    '<h3>Start your first project</h3>' +
-    '<p>Capture proof of your work. Build a portfolio that closes sales.</p>' +
-    '<button class="btn btn-gold" onclick="window.location.href=\'project-new.html\'">New project</button>' +
+    '<h3>Start your first job</h3>' +
+    "<p>Snap before-and-after photos. Text customers a review link. That's it.</p>" +
+    '<button class="btn btn-gold" onclick="window.location.href=\'project-new.html\'">New job</button>' +
   '</div>';
 }
 

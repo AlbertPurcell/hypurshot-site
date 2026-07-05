@@ -73,9 +73,9 @@
 
   <div id="media-grid" class="media-grid"></div>
   <div id="media-empty" class="empty hidden">
-    <h3>Library is empty</h3>
+    <h3>No photos or videos yet</h3>
     <p>Start a project and capture content to fill your library.</p>
-    <button class="btn btn-gold" onclick="window.location.href='project-new.html'">New project</button>
+    <button class="btn btn-gold" onclick="window.location.href='project-new.html'">New job</button>
   </div>
 
 </main>
@@ -84,7 +84,7 @@
 <div class="lightbox" id="lightbox">
   <div class="lightbox-top">
     <button onclick="closeLightbox()">Close</button>
-    <button onclick="goToProject()">Open project</button>
+    <button onclick="goToProject()">Open job</button>
   </div>
   <div class="lightbox-stage" id="lightbox-stage"></div>
   <div class="lightbox-bottom">
@@ -95,7 +95,7 @@
           <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v14"/></svg>
           Share
         </button>
-        <button class="btn btn-ghost" onclick="openComposer()">Post to social</button>
+        <button class="btn btn-ghost" onclick="openComposer()">Share to social</button>
         <button class="btn btn-ghost" onclick="copyLink()">Copy link</button>
         <button class="btn btn-ghost" onclick="downloadMedia()">Download</button>
       </div>
@@ -148,7 +148,7 @@ function renderGrid() {
     if (currentFilter === 'all') empty.classList.remove('hidden');
     else {
       empty.classList.add('hidden');
-      grid.innerHTML = '<div class="empty"><h3>Nothing here yet</h3><p>Try a different filter.</p></div>';
+      grid.innerHTML = '<div class="empty"><h3>Nothing matches that filter</h3><p>Try a different filter.</p></div>';
     }
     return;
   }
