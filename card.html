@@ -58,7 +58,7 @@
   /* Business header — Blinq-style hero band + offset headshot */
   .biz-header {
     padding: 0;
-    margin-bottom: 76px; /* room for the offset headshot */
+    margin-bottom: 60px; /* room for the offset headshot */
     position: relative;
   }
   .biz-hero {
@@ -67,8 +67,8 @@
     padding: 32px 24px;
     display: flex; align-items: center; justify-content: center;
     min-height: 200px;
-    overflow: hidden;
     position: relative;
+    /* No overflow:hidden — the offset headshot needs to hang below */
   }
   .biz-logo-large {
     max-width: 82%;
@@ -102,7 +102,7 @@
   }
   .biz-headshot img { width: 100%; height: 100%; object-fit: cover; }
   .biz-identity {
-    padding: 62px 4px 0;
+    padding: 8px 4px 0;
     text-align: left;
   }
   .biz-name {
