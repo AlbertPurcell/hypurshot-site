@@ -55,43 +55,82 @@
     padding: 24px 20px 120px;
   }
 
-  /* Business header */
+  /* Business header — Blinq-style hero band + offset headshot */
   .biz-header {
-    text-align: center;
-    padding: 24px 0 20px;
+    padding: 0;
+    margin-bottom: 76px; /* room for the offset headshot */
+    position: relative;
   }
-  .biz-logo {
-    width: 96px; height: 96px;
+  .biz-hero {
+    background: #F0EDE8;
     border-radius: 20px;
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    margin: 0 auto 18px;
+    padding: 32px 24px;
     display: flex; align-items: center; justify-content: center;
+    min-height: 200px;
     overflow: hidden;
+    position: relative;
   }
-  .biz-logo img { width: 100%; height: 100%; object-fit: contain; }
-  .biz-logo-fallback {
+  .biz-logo-large {
+    max-width: 82%;
+    max-height: 156px;
+    width: auto; height: auto;
+    object-fit: contain;
+  }
+  .biz-logo-initials {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 800;
-    font-size: 34px;
+    font-size: 72px;
+    letter-spacing: -0.03em;
+    color: #0D0D0D;
+  }
+  .biz-headshot {
+    position: absolute;
+    left: 20px;
+    bottom: -46px;
+    width: 92px; height: 92px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+    border: 4px solid var(--bg);
+    box-shadow: 0 0 0 2px var(--gold);
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 700;
     color: var(--gold);
+    font-size: 30px;
     letter-spacing: -0.02em;
+  }
+  .biz-headshot img { width: 100%; height: 100%; object-fit: cover; }
+  .biz-identity {
+    padding: 62px 4px 0;
+    text-align: left;
   }
   .biz-name {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 800;
-    font-size: 28px;
+    font-size: 30px;
     letter-spacing: -0.02em;
     color: var(--text);
-    line-height: 1.15;
+    line-height: 1.1;
   }
-  .biz-tag {
+  .biz-owner-line {
+    font-size: 15px;
+    color: var(--text);
+    margin-top: 8px;
+    font-weight: 500;
+  }
+  .biz-owner-title {
     font-size: 13px;
     color: var(--muted);
-    margin-top: 6px;
-    letter-spacing: 0.02em;
+    margin-top: 3px;
+  }
+  .biz-tag {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 10px;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    font-weight: 500;
+    font-weight: 600;
   }
 
   /* Primary CTAs */
@@ -562,10 +601,16 @@
   <div class="card-shell">
 
     <div class="biz-header">
-      <div class="biz-logo" id="biz-logo">
-        <span class="biz-logo-fallback" id="biz-logo-fallback"></span>
+      <div class="biz-hero" id="biz-hero">
+        <span class="biz-logo-initials" id="biz-logo-fallback"></span>
+        <div class="biz-headshot" id="biz-headshot"></div>
       </div>
+    </div>
+
+    <div class="biz-identity">
       <div class="biz-name" id="biz-name"></div>
+      <div class="biz-owner-line" id="biz-owner-line" style="display:none"></div>
+      <div class="biz-owner-title" id="biz-owner-title" style="display:none"></div>
       <div class="biz-tag" id="biz-tag"></div>
     </div>
 
@@ -578,15 +623,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
         See My Work
       </a>
-    </div>
-
-    <div class="owner-strip" id="owner-strip" style="display:none;">
-      <div class="owner-avatar" id="owner-avatar"></div>
-      <div class="owner-meta">
-        <div class="owner-eyebrow" id="owner-eyebrow">Your detailer</div>
-        <div class="owner-name" id="owner-name"></div>
-        <div class="owner-title" id="owner-title"></div>
-      </div>
     </div>
 
     <div class="contact-list" id="contact-list"></div>
@@ -741,17 +777,54 @@
   }
 
   function render(biz) {
-    // Header
+    // Hero band — big logo on a light chip
+    const hero = e('biz-hero');
+    const fallbackSpan = e('biz-logo-fallback');
     if (biz.logo_url) {
+      // Remove initials fallback, insert full-size logo before the headshot node
+      if (fallbackSpan) fallbackSpan.remove();
+      // Only insert once even if render() gets called again
+      const existing = hero.querySelector('img.biz-logo-large');
+      if (existing) existing.remove();
       const img = document.createElement('img');
+      img.className = 'biz-logo-large';
       img.src = biz.logo_url;
       img.alt = biz.name || 'Logo';
-      e('biz-logo').innerHTML = '';
-      e('biz-logo').appendChild(img);
-    } else {
-      e('biz-logo-fallback').textContent = initials(biz.name);
+      const headshot = e('biz-headshot');
+      hero.insertBefore(img, headshot);
+    } else if (fallbackSpan) {
+      fallbackSpan.textContent = initials(biz.name);
     }
+
+    // Business name
     e('biz-name').textContent = biz.name || 'HyPurShot Business';
+
+    // Owner offset headshot inside the hero band
+    const fullName = ((biz.first_name || '') + ' ' + (biz.last_name || '')).trim();
+    const headshotEl = e('biz-headshot');
+    if (biz.owner_headshot_url) {
+      headshotEl.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = biz.owner_headshot_url;
+      img.alt = fullName || biz.name || 'Owner';
+      headshotEl.appendChild(img);
+    } else {
+      headshotEl.textContent = initials(fullName || biz.name);
+    }
+
+    // Owner name + title (left-aligned under the business name)
+    const ownerLineEl = e('biz-owner-line');
+    const ownerTitleEl = e('biz-owner-title');
+    if (fullName) {
+      ownerLineEl.textContent = fullName;
+      ownerLineEl.style.display = '';
+    }
+    if (biz.owner_title) {
+      ownerTitleEl.textContent = biz.owner_title;
+      ownerTitleEl.style.display = '';
+    }
+
+    // Business type + city tag
     const tagParts = [];
     if (biz.business_type) tagParts.push(String(biz.business_type).replace(/_/g, ' '));
     if (biz.city && biz.state) tagParts.push(biz.city + ', ' + biz.state);
@@ -759,7 +832,6 @@
     e('biz-tag').textContent = tagParts.join(' · ').toUpperCase();
 
     // Page title
-    const fullName = ((biz.first_name || '') + ' ' + (biz.last_name || '')).trim();
     const pageTitle = (fullName ? (fullName + ' — ') : '') + (biz.name || 'HyPurShot Card');
     document.title = pageTitle + ' — HyPurShot';
     const og = document.getElementById('og-title'); if (og) og.setAttribute('content', pageTitle);
@@ -767,23 +839,6 @@
     // Portfolio link (goes to existing /p/{share_token} route via showcase page)
     const portfolioHref = biz.showcase_slug ? ('/showcase.html?slug=' + encodeURIComponent(biz.showcase_slug)) : '#';
     e('portfolio-link').href = portfolioHref;
-
-    // Owner strip
-    const ownerName = fullName;
-    if (ownerName || biz.owner_headshot_url) {
-      e('owner-strip').style.display = 'flex';
-      e('owner-name').textContent = ownerName || biz.name;
-      e('owner-title').textContent = biz.owner_title || '';
-      if (biz.owner_headshot_url) {
-        const img = document.createElement('img');
-        img.src = biz.owner_headshot_url;
-        img.alt = ownerName;
-        e('owner-avatar').innerHTML = '';
-        e('owner-avatar').appendChild(img);
-      } else {
-        e('owner-avatar').textContent = initials(ownerName || biz.name);
-      }
-    }
 
     // Contact list — only render rows that have data
     const list = e('contact-list');
