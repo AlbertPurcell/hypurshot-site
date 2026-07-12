@@ -1525,6 +1525,7 @@
 <!-- TAB BAR -->
 <div class="tab-bar">
   <button class="tab-btn active" data-tab="settings" onclick="switchTab('settings')">Business</button>
+  <button class="tab-btn" data-tab="card" onclick="switchTab('card')">My Card</button>
   <button class="tab-btn" data-tab="directory" onclick="switchTab('directory')">Public listing</button>
   <button class="tab-btn" data-tab="members" onclick="switchTab('members')">Team</button>
   <button class="tab-btn" data-tab="invites" onclick="switchTab('invites')">Invite codes</button>
@@ -1594,6 +1595,155 @@
         </div>
         <button type="button" class="btn btn-ghost-danger" onclick="signOutAccount()">Sign out</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ═══════ MY CARD TAB ═══════ -->
+  <div id="tab-card" class="tab-content">
+    <div class="section-header"><h2>My Digital Card</h2></div>
+
+    <div style="font-size:.86rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5">
+      Your always-on business card. Share the QR at events, drop the link in your bio,
+      or text it to a customer after every job. The public page lives at
+      <span id="card-live-url" style="color:var(--gold);font-weight:600">hypurshot.com/card/—</span>.
+    </div>
+
+    <!-- Live preview -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <label style="font-size:.78rem;font-weight:700;color:var(--text-muted);letter-spacing:.02em;text-transform:uppercase">Live preview</label>
+        <a id="card-open-live" href="#" target="_blank" style="font-size:.78rem;color:var(--gold);text-decoration:none;font-weight:600">Open live card ↗</a>
+      </div>
+      <div style="background:#0D0D0D;border:1px solid var(--border);border-radius:16px;padding:20px 18px;">
+        <div id="card-preview" style="font-family:'Satoshi',sans-serif;">
+          <div style="text-align:center;padding:12px 0 6px">
+            <div id="cp-logo" style="width:72px;height:72px;border-radius:16px;background:#161616;border:1px solid rgba(240,237,232,.10);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;overflow:hidden;color:#D4A017;font-family:'Cabinet Grotesk',sans-serif;font-weight:800;font-size:24px">HS</div>
+            <div id="cp-name" style="font-family:'Cabinet Grotesk',sans-serif;font-weight:800;font-size:20px;color:#F0EDE8;letter-spacing:-.01em">Your business</div>
+            <div id="cp-tag" style="font-size:11px;color:#b8b3aa;margin-top:4px;letter-spacing:.02em;text-transform:uppercase;font-weight:500">Set your business type</div>
+          </div>
+          <div id="cp-owner" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#161616;border-radius:12px;margin:14px 0 8px">
+            <div id="cp-avatar" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#2a2a2a,#1a1a1a);border:2px solid #D4A017;display:flex;align-items:center;justify-content:center;font-family:'Cabinet Grotesk',sans-serif;font-weight:700;color:#D4A017;font-size:14px;overflow:hidden">?</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#b8b3aa;font-weight:600">Your detailer</div>
+              <div id="cp-owner-name" style="font-family:'Cabinet Grotesk',sans-serif;font-weight:700;font-size:14px;color:#F0EDE8;margin-top:1px">Add your name</div>
+              <div id="cp-owner-title" style="font-size:11px;color:#b8b3aa;margin-top:1px">Set your title</div>
+            </div>
+          </div>
+          <div id="cp-rows" style="background:#161616;border-radius:12px;padding:2px 12px;font-size:12px;color:#F0EDE8"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Business identity -->
+    <div class="card" style="padding:18px;margin-bottom:14px">
+      <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:14px;letter-spacing:.02em;text-transform:uppercase">Business identity</div>
+
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Business logo</label>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div id="card-logo-thumb" style="width:56px;height:56px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;color:var(--gold);font-family:'Cabinet Grotesk',sans-serif;font-weight:800;font-size:18px">—</div>
+          <div style="flex:1;display:flex;gap:8px;flex-wrap:wrap">
+            <input id="card-logo-input" type="file" accept="image/jpeg,image/png,image/webp" style="display:none">
+            <button type="button" id="card-logo-btn" onclick="document.getElementById('card-logo-input').click()" style="background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:8px;font-family:inherit;font-size:.86rem;font-weight:600;cursor:pointer">Upload logo</button>
+            <button type="button" id="card-logo-remove" onclick="removeLogo()" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);padding:9px 14px;border-radius:8px;font-family:inherit;font-size:.86rem;font-weight:600;cursor:pointer;display:none">Remove</button>
+          </div>
+        </div>
+        <div style="font-size:.72rem;color:var(--text-muted);margin-top:6px">JPG, PNG, or WebP. Under 10 MB. Square works best.</div>
+      </div>
+    </div>
+
+    <!-- About you -->
+    <div class="card" style="padding:18px;margin-bottom:14px">
+      <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:14px;letter-spacing:.02em;text-transform:uppercase">About you</div>
+
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Your headshot</label>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div id="card-head-thumb" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#2a2a2a,#1a1a1a);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;color:var(--gold);font-family:'Cabinet Grotesk',sans-serif;font-weight:700;font-size:16px">?</div>
+          <div style="flex:1;display:flex;gap:8px;flex-wrap:wrap">
+            <input id="card-head-input" type="file" accept="image/jpeg,image/png,image/webp" style="display:none">
+            <button type="button" id="card-head-btn" onclick="document.getElementById('card-head-input').click()" style="background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:8px;font-family:inherit;font-size:.86rem;font-weight:600;cursor:pointer">Upload headshot</button>
+            <button type="button" id="card-head-remove" onclick="removeHeadshot()" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);padding:9px 14px;border-radius:8px;font-family:inherit;font-size:.86rem;font-weight:600;cursor:pointer;display:none">Remove</button>
+          </div>
+        </div>
+        <div style="font-size:.72rem;color:var(--text-muted);margin-top:6px">Optional. A friendly face gets more save-to-contacts.</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div>
+          <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">First name</label>
+          <input id="card-first-name" type="text" placeholder="Ronnie" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:inherit;font-size:.9rem;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Last name</label>
+          <input id="card-last-name" type="text" placeholder="Purcell" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:inherit;font-size:.9rem;box-sizing:border-box">
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Your title</label>
+        <input id="card-owner-title" type="text" placeholder="Owner · Lead Detailer" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:inherit;font-size:.9rem;box-sizing:border-box">
+      </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="card" style="padding:18px;margin-bottom:14px">
+      <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:14px;letter-spacing:.02em;text-transform:uppercase">Contact</div>
+
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Email</label>
+        <input id="card-owner-email" type="email" placeholder="you@example.com" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:inherit;font-size:.9rem;box-sizing:border-box">
+      </div>
+
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Your mobile</label>
+        <input id="card-owner-mobile" type="tel" placeholder="+1 703-555-0123" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:inherit;font-size:.9rem;box-sizing:border-box">
+      </div>
+
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Sales line <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+        <input id="card-sales-phone" type="tel" placeholder="+1 877-000-0000" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:inherit;font-size:.9rem;box-sizing:border-box">
+      </div>
+
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Website</label>
+        <input id="card-website" type="url" placeholder="yourbusiness.com" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:inherit;font-size:.9rem;box-sizing:border-box">
+      </div>
+
+      <div>
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Booking link <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+        <input id="card-booking-url" type="url" placeholder="calendly.com/you · squareup.com/appointments/…" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:inherit;font-size:.9rem;box-sizing:border-box">
+      </div>
+    </div>
+
+    <!-- Social -->
+    <div class="card" style="padding:18px;margin-bottom:14px">
+      <div style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:14px;letter-spacing:.02em;text-transform:uppercase">Social <span style="color:var(--text-muted);font-weight:400;font-size:.78rem;text-transform:none;letter-spacing:0">· optional</span></div>
+
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Instagram URL</label>
+        <input id="card-instagram-url" type="url" placeholder="instagram.com/yourhandle" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:inherit;font-size:.9rem;box-sizing:border-box">
+      </div>
+
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">TikTok URL</label>
+        <input id="card-tiktok-url" type="url" placeholder="tiktok.com/@yourhandle" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:inherit;font-size:.9rem;box-sizing:border-box">
+      </div>
+
+      <div>
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Facebook URL</label>
+        <input id="card-facebook-url" type="url" placeholder="facebook.com/yourpage" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:inherit;font-size:.9rem;box-sizing:border-box">
+      </div>
+    </div>
+
+    <!-- Save + share -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px">
+      <button class="btn btn-gold" id="card-save-btn" onclick="saveCardSettings()" style="flex:1;min-width:180px">Save card</button>
+      <a id="card-share-btn" href="#" target="_blank" style="flex:1;min-width:180px;background:transparent;border:1px solid rgba(168,212,230,.35);color:#A8D4E6;padding:11px 18px;border-radius:10px;font-family:inherit;font-size:.9rem;font-weight:700;text-align:center;text-decoration:none;box-sizing:border-box;letter-spacing:.02em">Open card → share</a>
+    </div>
+
+    <div style="font-size:.75rem;color:var(--text-muted);line-height:1.6;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px">
+      <strong style="color:var(--gold)">Tip:</strong> Set your business name, city, and slug in the <a href="#" onclick="switchTab('settings');return false" style="color:var(--gold);text-decoration:none;font-weight:600">Business tab</a> first — those show at the top of your card.
     </div>
   </div>
 
@@ -2936,6 +3086,311 @@ async function saveBusinessSettings() {
 // Start session on page load
 document.addEventListener('DOMContentLoaded', initSession);
 
+// ──────────────── MY CARD TAB ────────────────
+const CARD_FIELDS = [
+  ['card-first-name',     'first_name'],
+  ['card-last-name',      'last_name'],
+  ['card-owner-title',    'owner_title'],
+  ['card-owner-email',    'owner_email'],
+  ['card-owner-mobile',   'owner_mobile'],
+  ['card-sales-phone',    'sales_phone'],
+  ['card-website',        'website'],
+  ['card-booking-url',    'booking_url'],
+  ['card-instagram-url',  'instagram_url'],
+  ['card-tiktok-url',     'tiktok_url'],
+  ['card-facebook-url',   'facebook_url'],
+];
+
+let _cardListenersBound = false;
+
+async function loadCardSettings() {
+  if (!_supabase || !currentBusinessId) return;
+  const { data: b, error } = await _supabase
+    .from('businesses')
+    .select('id, name, city, state, business_type, showcase_slug, logo_url, phone, website, first_name, last_name, owner_title, owner_email, owner_mobile, owner_headshot_url, sales_phone, booking_url, instagram_url, tiktok_url, facebook_url')
+    .eq('id', currentBusinessId)
+    .maybeSingle();
+  if (error || !b) { showToast('Could not load card data.', 'error'); return; }
+  currentBusiness = b;
+
+  // Fill inputs from DB
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+  CARD_FIELDS.forEach(([id, col]) => setVal(id, b[col]));
+
+  renderCardMediaThumbs(b);
+  renderCardPreview(b);
+  updateCardLinks(b);
+
+  if (!_cardListenersBound) bindCardListeners();
+}
+
+function bindCardListeners() {
+  _cardListenersBound = true;
+  // Live-update the preview on any input change
+  CARD_FIELDS.forEach(([id]) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => renderCardPreview(gatherCardValues()));
+  });
+  // Wire file inputs
+  const logoInput = document.getElementById('card-logo-input');
+  if (logoInput) logoInput.addEventListener('change', e => handleLogoFile(e.target.files[0]));
+  const headInput = document.getElementById('card-head-input');
+  if (headInput) headInput.addEventListener('change', e => handleHeadshotFile(e.target.files[0]));
+}
+
+// Pull current form state merged onto the stored business row for previewing.
+function gatherCardValues() {
+  const base = Object.assign({}, currentBusiness || {});
+  CARD_FIELDS.forEach(([id, col]) => {
+    const el = document.getElementById(id);
+    if (el) base[col] = el.value.trim() || null;
+  });
+  return base;
+}
+
+function updateCardLinks(b) {
+  const slug = (b && b.showcase_slug) ? b.showcase_slug : '';
+  const url = slug ? ('https://hypurshot.com/card/' + slug) : '';
+  const liveEl = document.getElementById('card-live-url');
+  if (liveEl) liveEl.textContent = slug ? ('hypurshot.com/card/' + slug) : 'hypurshot.com/card/— (set slug in Business tab)';
+  const openEl = document.getElementById('card-open-live');
+  if (openEl) { openEl.href = url || '#'; openEl.style.opacity = slug ? '1' : '0.4'; openEl.style.pointerEvents = slug ? 'auto' : 'none'; }
+  const shareEl = document.getElementById('card-share-btn');
+  if (shareEl) { shareEl.href = url || '#'; shareEl.style.opacity = slug ? '1' : '0.4'; shareEl.style.pointerEvents = slug ? 'auto' : 'none'; }
+}
+
+function renderCardMediaThumbs(b) {
+  const logoThumb = document.getElementById('card-logo-thumb');
+  const logoRemove = document.getElementById('card-logo-remove');
+  const logoBtn = document.getElementById('card-logo-btn');
+  if (logoThumb) {
+    if (b.logo_url) {
+      logoThumb.innerHTML = '<img src="' + escAttr(b.logo_url) + '" alt="Logo" style="width:100%;height:100%;object-fit:cover">';
+      if (logoRemove) logoRemove.style.display = 'inline-flex';
+      if (logoBtn) logoBtn.textContent = 'Replace logo';
+    } else {
+      logoThumb.textContent = initialsFor(b.name) || '—';
+      if (logoRemove) logoRemove.style.display = 'none';
+      if (logoBtn) logoBtn.textContent = 'Upload logo';
+    }
+  }
+  const headThumb = document.getElementById('card-head-thumb');
+  const headRemove = document.getElementById('card-head-remove');
+  const headBtn = document.getElementById('card-head-btn');
+  if (headThumb) {
+    if (b.owner_headshot_url) {
+      headThumb.innerHTML = '<img src="' + escAttr(b.owner_headshot_url) + '" alt="Headshot" style="width:100%;height:100%;object-fit:cover">';
+      if (headRemove) headRemove.style.display = 'inline-flex';
+      if (headBtn) headBtn.textContent = 'Replace headshot';
+    } else {
+      headThumb.textContent = ownerInitials(b) || '?';
+      if (headRemove) headRemove.style.display = 'none';
+      if (headBtn) headBtn.textContent = 'Upload headshot';
+    }
+  }
+}
+
+function initialsFor(name) {
+  if (!name) return '';
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '';
+  const a = parts[0][0] || '';
+  const b = parts.length > 1 ? (parts[parts.length - 1][0] || '') : '';
+  return (a + b).toUpperCase();
+}
+
+function ownerInitials(b) {
+  const f = (b.first_name || '').trim()[0] || '';
+  const l = (b.last_name  || '').trim()[0] || '';
+  return (f + l).toUpperCase();
+}
+
+function escAttr(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function escText(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function renderCardPreview(b) {
+  if (!b) return;
+  // Business logo / initials
+  const logoEl = document.getElementById('cp-logo');
+  if (logoEl) {
+    if (b.logo_url) logoEl.innerHTML = '<img src="' + escAttr(b.logo_url) + '" alt="Logo" style="width:100%;height:100%;object-fit:cover">';
+    else logoEl.textContent = initialsFor(b.name) || 'HS';
+  }
+  const nameEl = document.getElementById('cp-name');
+  if (nameEl) nameEl.textContent = b.name || 'Your business';
+
+  // Business type + city tag
+  const tagEl = document.getElementById('cp-tag');
+  if (tagEl) {
+    const parts = [];
+    if (b.business_type) parts.push(b.business_type);
+    const loc = [b.city, b.state].filter(Boolean).join(', ');
+    if (loc) parts.push(loc);
+    tagEl.textContent = parts.length ? parts.join(' · ') : 'Set your business type';
+  }
+
+  // Owner strip
+  const avatarEl = document.getElementById('cp-avatar');
+  if (avatarEl) {
+    if (b.owner_headshot_url) avatarEl.innerHTML = '<img src="' + escAttr(b.owner_headshot_url) + '" alt="Headshot" style="width:100%;height:100%;object-fit:cover">';
+    else avatarEl.textContent = ownerInitials(b) || '?';
+  }
+  const ownerNameEl = document.getElementById('cp-owner-name');
+  if (ownerNameEl) {
+    const full = [b.first_name, b.last_name].filter(Boolean).join(' ');
+    ownerNameEl.textContent = full || 'Add your name';
+  }
+  const ownerTitleEl = document.getElementById('cp-owner-title');
+  if (ownerTitleEl) ownerTitleEl.textContent = b.owner_title || 'Set your title';
+
+  // Contact rows — only render populated ones (dedupe phones by last 10 digits)
+  const rowsEl = document.getElementById('cp-rows');
+  if (rowsEl) {
+    const seenPhones = new Set();
+    const digits = s => String(s || '').replace(/\D/g, '').slice(-10);
+    const rows = [];
+    const pushRow = (label, value) => rows.push(
+      '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(240,237,232,0.06);gap:12px">'
+      + '<span style="color:#b8b3aa;font-size:10px;text-transform:uppercase;letter-spacing:.08em;font-weight:600;flex-shrink:0">' + escText(label) + '</span>'
+      + '<span style="color:#F0EDE8;font-size:12px;font-weight:500;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">' + escText(value) + '</span>'
+      + '</div>'
+    );
+
+    if (b.owner_email) pushRow('Email', b.owner_email);
+    if (b.owner_mobile) { pushRow('Mobile', b.owner_mobile); seenPhones.add(digits(b.owner_mobile)); }
+    if (b.phone && !seenPhones.has(digits(b.phone))) { pushRow('Business line', b.phone); seenPhones.add(digits(b.phone)); }
+    if (b.sales_phone && !seenPhones.has(digits(b.sales_phone))) pushRow('Sales', b.sales_phone);
+    if (b.website) pushRow('Website', b.website.replace(/^https?:\/\//, ''));
+    if (b.booking_url) pushRow('Book', b.booking_url.replace(/^https?:\/\//, ''));
+    if (b.instagram_url) pushRow('Instagram', b.instagram_url.replace(/^https?:\/\/(www\.)?/, ''));
+    if (b.tiktok_url) pushRow('TikTok', b.tiktok_url.replace(/^https?:\/\/(www\.)?/, ''));
+    if (b.facebook_url) pushRow('Facebook', b.facebook_url.replace(/^https?:\/\/(www\.)?/, ''));
+
+    rowsEl.innerHTML = rows.length
+      ? rows.join('')
+      : '<div style="padding:14px 0;font-size:12px;color:#b8b3aa;text-align:center">Fill in the fields below to build your card.</div>';
+  }
+}
+
+async function handleLogoFile(file) {
+  if (!file) return;
+  await uploadCardMedia(file, 'logo');
+  document.getElementById('card-logo-input').value = '';
+}
+
+async function handleHeadshotFile(file) {
+  if (!file) return;
+  await uploadCardMedia(file, 'headshot');
+  document.getElementById('card-head-input').value = '';
+}
+
+async function uploadCardMedia(file, kind) {
+  if (!currentBusinessId) { showToast('Session not loaded.', 'error'); return; }
+  const okTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  if (!okTypes.includes(file.type)) { showToast('Use JPG, PNG, or WebP.', 'error'); return; }
+  if (file.size > 10 * 1024 * 1024) { showToast('File is over 10 MB.', 'error'); return; }
+
+  const btn = document.getElementById(kind === 'logo' ? 'card-logo-btn' : 'card-head-btn');
+  const originalText = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Uploading…'; btn.style.opacity = '0.7'; }
+
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  const folder = kind === 'logo' ? 'logos' : 'headshots';
+  const path = currentBusinessId + '/' + folder + '/' + Date.now() + '.' + ext;
+
+  try {
+    const { error: upErr } = await _supabase.storage.from('Logos').upload(path, file, {
+      upsert: true,
+      contentType: file.type,
+      cacheControl: '3600',
+    });
+    if (upErr) throw upErr;
+
+    const { data: pub } = _supabase.storage.from('Logos').getPublicUrl(path);
+    const publicUrl = pub && pub.publicUrl;
+    if (!publicUrl) throw new Error('Could not resolve public URL.');
+
+    const column = kind === 'logo' ? 'logo_url' : 'owner_headshot_url';
+    const { error: updErr } = await _supabase.from('businesses').update({ [column]: publicUrl }).eq('id', currentBusinessId);
+    if (updErr) throw updErr;
+
+    currentBusiness = Object.assign({}, currentBusiness || {}, { [column]: publicUrl });
+    renderCardMediaThumbs(currentBusiness);
+    renderCardPreview(gatherCardValues());
+    showToast(kind === 'logo' ? 'Logo uploaded.' : 'Headshot uploaded.', 'success');
+  } catch (e) {
+    console.error(e);
+    showToast((kind === 'logo' ? 'Logo' : 'Headshot') + ' upload failed: ' + (e.message || 'unknown error'), 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.textContent = originalText; }
+  }
+}
+
+async function removeLogo() {
+  if (!confirm('Remove your business logo?')) return;
+  const { error } = await _supabase.from('businesses').update({ logo_url: null }).eq('id', currentBusinessId);
+  if (error) { showToast('Could not remove logo.', 'error'); return; }
+  currentBusiness = Object.assign({}, currentBusiness || {}, { logo_url: null });
+  renderCardMediaThumbs(currentBusiness);
+  renderCardPreview(gatherCardValues());
+  showToast('Logo removed.', 'success');
+}
+
+async function removeHeadshot() {
+  if (!confirm('Remove your headshot?')) return;
+  const { error } = await _supabase.from('businesses').update({ owner_headshot_url: null }).eq('id', currentBusinessId);
+  if (error) { showToast('Could not remove headshot.', 'error'); return; }
+  currentBusiness = Object.assign({}, currentBusiness || {}, { owner_headshot_url: null });
+  renderCardMediaThumbs(currentBusiness);
+  renderCardPreview(gatherCardValues());
+  showToast('Headshot removed.', 'success');
+}
+
+function normalizeUrl(u) {
+  if (!u) return null;
+  const trimmed = u.trim();
+  if (!trimmed) return null;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return 'https://' + trimmed;
+}
+
+async function saveCardSettings() {
+  if (!_supabase || !currentBusinessId) { showToast('Not signed in.', 'error'); return; }
+  const btn = document.getElementById('card-save-btn');
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  const getVal = id => (document.getElementById(id).value || '').trim() || null;
+
+  const payload = {
+    first_name:    getVal('card-first-name'),
+    last_name:     getVal('card-last-name'),
+    owner_title:   getVal('card-owner-title'),
+    owner_email:   getVal('card-owner-email'),
+    owner_mobile:  getVal('card-owner-mobile'),
+    sales_phone:   getVal('card-sales-phone'),
+    website:       normalizeUrl(getVal('card-website')),
+    booking_url:   normalizeUrl(getVal('card-booking-url')),
+    instagram_url: normalizeUrl(getVal('card-instagram-url')),
+    tiktok_url:    normalizeUrl(getVal('card-tiktok-url')),
+    facebook_url:  normalizeUrl(getVal('card-facebook-url')),
+  };
+
+  const { error } = await _supabase.from('businesses').update(payload).eq('id', currentBusinessId);
+  btn.disabled = false; btn.textContent = orig;
+  if (error) { showToast('Save failed: ' + error.message, 'error'); return; }
+
+  currentBusiness = Object.assign({}, currentBusiness || {}, payload);
+  renderCardPreview(currentBusiness);
+  updateCardLinks(currentBusiness);
+  showToast('Card saved.', 'success');
+}
+
 // ──────────────── TAB SWITCHING ────────────────
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -2949,6 +3404,7 @@ function switchTab(tab) {
   document.getElementById('tab-' + tab).classList.add('active');
 
   if (tab === 'settings') loadBusinessSettings();
+  else if (tab === 'card') loadCardSettings();
   else if (tab === 'directory') loadDirectorySettings();
   else if (tab === 'members') loadMembers();
   else if (tab === 'invites') loadInvites();
