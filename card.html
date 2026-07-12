@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-title" content="HyPurShot">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#0D0D0D">
+<title>Digital Card — HyPurShot</title>
+<link rel="icon" type="image/png" href="/logo-nav.webp">
+<meta name="robots" content="noindex">
+<meta name="description" content="A HyPurShot operator shared their digital card with you.">
+<meta property="og:type" content="profile">
+<meta property="og:site_name" content="HyPurShot">
+<meta property="og:title" id="og-title" content="Digital Card — HyPurShot">
+<meta property="og:description" id="og-desc" content="A HyPurShot operator shared their digital card with you. Tap to save it or see their work.">
+<meta property="og:image" content="https://hypurshot.com/og-default.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/app.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/app.js"></script>
+
+<style>
+  :root {
+    --bg: #0D0D0D;
+    --surface: #161616;
+    --surface-2: #1F1F1F;
+    --gold: #D4A017;
+    --gold-hover: #E5B22C;
+    --ice: #A8D4E6;
+    --text: #F0EDE8;
+    --muted: #b8b3aa;
+    --rule: rgba(240,237,232,0.10);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Satoshi', system-ui, -apple-system, Segoe UI, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  .card-shell {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 24px 20px 120px;
+  }
+
+  /* Business header */
+  .biz-header {
+    text-align: center;
+    padding: 24px 0 20px;
+  }
+  .biz-logo {
+    width: 96px; height: 96px;
+    border-radius: 20px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    margin: 0 auto 18px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .biz-logo img { width: 100%; height: 100%; object-fit: contain; }
+  .biz-logo-fallback {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 34px;
+    color: var(--gold);
+    letter-spacing: -0.02em;
+  }
+  .biz-name {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    line-height: 1.15;
+  }
+  .biz-tag {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 6px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  /* Primary CTAs */
+  .primary-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 24px 0 20px;
+  }
+  .btn-primary, .btn-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 15px 20px;
+    border-radius: 12px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+  }
+  .btn-primary {
+    background: var(--gold);
+    color: #1a1000;
+  }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--ice);
+    border: 1px solid rgba(168,212,230,0.35);
+  }
+  .btn-secondary:active { transform: scale(0.98); }
+  .btn-primary svg, .btn-secondary svg { width: 18px; height: 18px; }
+
+  /* Owner strip */
+  .owner-strip {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border-radius: 14px;
+    margin-bottom: 8px;
+  }
+  .owner-avatar {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+    border: 2px solid var(--gold);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 700;
+    color: var(--gold);
+    font-size: 20px;
+    overflow: hidden;
+  }
+  .owner-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .owner-meta { flex: 1; min-width: 0; }
+  .owner-eyebrow {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .owner-name {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .owner-title {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  /* Contact list */
+  .contact-list {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 4px 16px;
+    margin-top: 10px;
+  }
+  .contact-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--rule);
+    text-decoration: none;
+    color: var(--text);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .contact-row:last-child { border-bottom: none; }
+  .contact-row:active { opacity: 0.7; }
+  .contact-icon {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    border: 1px solid rgba(212, 160, 23, 0.35);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+  .contact-icon svg { width: 18px; height: 18px; }
+  .contact-meta { flex: 1; min-width: 0; }
+  .contact-value {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .contact-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  /* Loading / error states */
+  .state {
+    text-align: center;
+    padding: 80px 24px;
+    color: var(--muted);
+  }
+  .state h1 {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    color: var(--text);
+    font-size: 22px;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  .state p { font-size: 14px; line-height: 1.5; margin: 0 0 20px; }
+  .state a {
+    display: inline-block;
+    background: var(--gold);
+    color: #1a1000;
+    padding: 12px 24px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 700;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    font-size: 13px;
+  }
+
+  /* Footer strip */
+  .card-footer {
+    text-align: center;
+    padding: 24px 20px 20px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .card-footer a {
+    color: var(--gold);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  /* Hide the whole card until loaded */
+  .card-content { display: none; }
+  .card-content.loaded { display: block; }
+</style>
+</head>
+<body>
+
+<!-- Loading state (default) -->
+<div class="state" id="loading-state">
+  <p>Loading card…</p>
+</div>
+
+<!-- Error state -->
+<div class="state" id="error-state" style="display:none;">
+  <h1>Card not found</h1>
+  <p>This card doesn't exist or has been made private.</p>
+  <a href="/">Go to HyPurShot</a>
+</div>
+
+<!-- The card -->
+<div class="card-content" id="card-content">
+  <div class="card-shell">
+
+    <div class="biz-header">
+      <div class="biz-logo" id="biz-logo">
+        <span class="biz-logo-fallback" id="biz-logo-fallback"></span>
+      </div>
+      <div class="biz-name" id="biz-name"></div>
+      <div class="biz-tag" id="biz-tag"></div>
+    </div>
+
+    <div class="primary-actions">
+      <button class="btn-primary" id="save-contact-btn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+        Save to Contacts
+      </button>
+      <a class="btn-secondary" id="portfolio-link" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+        See My Work
+      </a>
+    </div>
+
+    <div class="owner-strip" id="owner-strip" style="display:none;">
+      <div class="owner-avatar" id="owner-avatar"></div>
+      <div class="owner-meta">
+        <div class="owner-eyebrow" id="owner-eyebrow">Your detailer</div>
+        <div class="owner-name" id="owner-name"></div>
+        <div class="owner-title" id="owner-title"></div>
+      </div>
+    </div>
+
+    <div class="contact-list" id="contact-list"></div>
+
+    <div class="card-footer">
+      Powered by <a href="/" target="_blank" rel="noopener">HyPurShot</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // Icons
+  const ICONS = {
+    email: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+    phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.6a2 2 0 0 1-.5 2.1L7.9 9.7a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.8.3 1.7.5 2.6.6A2 2 0 0 1 22 16.9z"/></svg>',
+    web: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
+    calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+    star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 7h7l-6 4 2 8-6-4-6 4 2-8-6-4h7z"/></svg>',
+    instagram: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>',
+    tiktok: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 8.4a5.9 5.9 0 0 1-3.4-1.1v7a5 5 0 1 1-5-5c.3 0 .6 0 .9.1v2.6a2.4 2.4 0 1 0 1.6 2.3V3h2.5a3.4 3.4 0 0 0 3.4 3.4z"/></svg>',
+    facebook: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 22v-8h3l.5-4H13V7.5c0-1.1.3-1.9 2-1.9h2V2.1a29 29 0 0 0-3-.2c-3 0-5 1.8-5 5.1V10H6v4h3v8z"/></svg>',
+  };
+
+  // Route: read the slug from either /card.html?slug=... or /card/{slug}
+  const params = new URLSearchParams(window.location.search);
+  let slug = params.get('slug') || '';
+  if (!slug) {
+    const m = window.location.pathname.match(/^\/card\/([A-Za-z0-9_-]{2,120})\/?$/);
+    if (m) slug = m[1];
+  }
+  slug = (slug || '').trim().toLowerCase();
+
+  const $loading = document.getElementById('loading-state');
+  const $error = document.getElementById('error-state');
+  const $content = document.getElementById('card-content');
+
+  function showError() {
+    $loading.style.display = 'none';
+    $error.style.display = 'block';
+    $content.classList.remove('loaded');
+  }
+
+  function e(id) { return document.getElementById(id); }
+
+  function initials(name) {
+    if (!name) return 'HS';
+    const parts = String(name).trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return 'HS';
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  function safeUrl(u) {
+    if (!u) return '';
+    const s = String(u).trim();
+    if (!s) return '';
+    if (/^https?:\/\//i.test(s)) return s;
+    return 'https://' + s;
+  }
+
+  function displayUrl(u) {
+    return String(u || '').replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, '');
+  }
+
+  function contactRow(icon, value, label, href) {
+    const row = document.createElement(href ? 'a' : 'div');
+    row.className = 'contact-row';
+    if (href) { row.href = href; if (/^https?:\/\//i.test(href)) row.target = '_blank'; row.rel = 'noopener noreferrer'; }
+    row.innerHTML =
+      '<div class="contact-icon">' + icon + '</div>' +
+      '<div class="contact-meta">' +
+        '<div class="contact-value"></div>' +
+        '<div class="contact-label"></div>' +
+      '</div>';
+    row.querySelector('.contact-value').textContent = value;
+    row.querySelector('.contact-label').textContent = label;
+    return row;
+  }
+
+  function vcardEscape(v) {
+    return String(v || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+  }
+
+  function buildVCard(biz) {
+    const lines = ['BEGIN:VCARD', 'VERSION:3.0'];
+    const firstName = biz.first_name || '';
+    const lastName = biz.last_name || '';
+    const fullName = (firstName + ' ' + lastName).trim() || biz.name;
+    // N (last;first;middle;prefix;suffix), FN (full name)
+    lines.push('N:' + vcardEscape(lastName) + ';' + vcardEscape(firstName) + ';;;');
+    lines.push('FN:' + vcardEscape(fullName));
+    if (biz.name) lines.push('ORG:' + vcardEscape(biz.name));
+    if (biz.owner_title) lines.push('TITLE:' + vcardEscape(biz.owner_title));
+    if (biz.owner_email) lines.push('EMAIL;TYPE=WORK:' + vcardEscape(biz.owner_email));
+    if (biz.owner_mobile) lines.push('TEL;TYPE=CELL:' + vcardEscape(biz.owner_mobile));
+    // Only add business line if it's a different number than owner_mobile.
+    const vcLastTen = s => String(s || '').replace(/\D/g, '').slice(-10);
+    if (biz.phone && vcLastTen(biz.phone) && vcLastTen(biz.phone) !== vcLastTen(biz.owner_mobile)) {
+      lines.push('TEL;TYPE=WORK:' + vcardEscape(biz.phone));
+    }
+    if (biz.sales_phone) lines.push('TEL;TYPE=WORK,VOICE:' + vcardEscape(biz.sales_phone));
+    if (biz.website) lines.push('URL:' + vcardEscape(safeUrl(biz.website)));
+    if (biz.booking_url) lines.push('URL;TYPE=BOOKING:' + vcardEscape(safeUrl(biz.booking_url)));
+    if (biz.city || biz.state) {
+      lines.push('ADR;TYPE=WORK:;;;' + vcardEscape(biz.city || '') + ';' + vcardEscape(biz.state || '') + ';;');
+    }
+    if (biz.instagram_url) lines.push('X-SOCIALPROFILE;TYPE=instagram:' + vcardEscape(safeUrl(biz.instagram_url)));
+    if (biz.tiktok_url) lines.push('X-SOCIALPROFILE;TYPE=tiktok:' + vcardEscape(safeUrl(biz.tiktok_url)));
+    if (biz.facebook_url) lines.push('X-SOCIALPROFILE;TYPE=facebook:' + vcardEscape(safeUrl(biz.facebook_url)));
+    // Note URL back to the card so recipient always has a live link
+    lines.push('NOTE:' + vcardEscape('HyPurShot card: https://hypurshot.com/card/' + (biz.showcase_slug || '')));
+    lines.push('END:VCARD');
+    return lines.join('\r\n');
+  }
+
+  function downloadVCard(biz) {
+    const vcard = buildVCard(biz);
+    const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const safeName = (biz.first_name && biz.last_name)
+      ? (biz.first_name + '-' + biz.last_name)
+      : (biz.name || 'contact');
+    const filename = safeName.replace(/[^A-Za-z0-9-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') + '.vcf';
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 3000);
+  }
+
+  async function loadCard() {
+    if (!slug) { showError(); return; }
+    if (!window.HPS || !window.HPS.sb) { showError(); return; }
+
+    const { data, error } = await window.HPS.sb
+      .from('businesses')
+      .select('id, name, phone, logo_url, showcase_slug, first_name, last_name, business_type, city, state, website, gbp_review_link, google_rating_avg, google_rating_count, visibility, owner_title, owner_headshot_url, owner_email, owner_mobile, sales_phone, booking_url, instagram_url, tiktok_url, facebook_url')
+      .ilike('showcase_slug', slug)
+      .limit(1)
+      .maybeSingle();
+
+    if (error || !data) { showError(); return; }
+    if (data.visibility === 'private') { showError(); return; }
+
+    render(data);
+  }
+
+  function render(biz) {
+    // Header
+    if (biz.logo_url) {
+      const img = document.createElement('img');
+      img.src = biz.logo_url;
+      img.alt = biz.name || 'Logo';
+      e('biz-logo').innerHTML = '';
+      e('biz-logo').appendChild(img);
+    } else {
+      e('biz-logo-fallback').textContent = initials(biz.name);
+    }
+    e('biz-name').textContent = biz.name || 'HyPurShot Business';
+    const tagParts = [];
+    if (biz.business_type) tagParts.push(String(biz.business_type).replace(/_/g, ' '));
+    if (biz.city && biz.state) tagParts.push(biz.city + ', ' + biz.state);
+    else if (biz.city) tagParts.push(biz.city);
+    e('biz-tag').textContent = tagParts.join(' · ').toUpperCase();
+
+    // Page title
+    const fullName = ((biz.first_name || '') + ' ' + (biz.last_name || '')).trim();
+    const pageTitle = (fullName ? (fullName + ' — ') : '') + (biz.name || 'HyPurShot Card');
+    document.title = pageTitle + ' — HyPurShot';
+    const og = document.getElementById('og-title'); if (og) og.setAttribute('content', pageTitle);
+
+    // Portfolio link (goes to existing /p/{share_token} route via showcase page)
+    const portfolioHref = biz.showcase_slug ? ('/showcase.html?slug=' + encodeURIComponent(biz.showcase_slug)) : '#';
+    e('portfolio-link').href = portfolioHref;
+
+    // Owner strip
+    const ownerName = fullName;
+    if (ownerName || biz.owner_headshot_url) {
+      e('owner-strip').style.display = 'flex';
+      e('owner-name').textContent = ownerName || biz.name;
+      e('owner-title').textContent = biz.owner_title || '';
+      if (biz.owner_headshot_url) {
+        const img = document.createElement('img');
+        img.src = biz.owner_headshot_url;
+        img.alt = ownerName;
+        e('owner-avatar').innerHTML = '';
+        e('owner-avatar').appendChild(img);
+      } else {
+        e('owner-avatar').textContent = initials(ownerName || biz.name);
+      }
+    }
+
+    // Contact list — only render rows that have data
+    const list = e('contact-list');
+    list.innerHTML = '';
+
+    if (biz.owner_email) {
+      list.appendChild(contactRow(ICONS.email, biz.owner_email, 'Email', 'mailto:' + biz.owner_email));
+    }
+    if (biz.owner_mobile) {
+      list.appendChild(contactRow(ICONS.phone, biz.owner_mobile, 'Mobile', 'tel:' + biz.owner_mobile.replace(/[^\d+]/g, '')));
+    }
+    // Show business line only if it's a different number than the owner mobile.
+    // Compare last 10 digits to normalize away country code and formatting.
+    const lastTen = s => {
+      const d = String(s || '').replace(/\D/g, '');
+      return d.slice(-10);
+    };
+    if (biz.phone && lastTen(biz.phone) && lastTen(biz.phone) !== lastTen(biz.owner_mobile)) {
+      list.appendChild(contactRow(ICONS.phone, biz.phone, 'Business line', 'tel:' + biz.phone.replace(/[^\d+]/g, '')));
+    }
+    if (biz.sales_phone) {
+      list.appendChild(contactRow(ICONS.phone, biz.sales_phone, 'Sales line', 'tel:' + biz.sales_phone.replace(/[^\d+]/g, '')));
+    }
+    if (biz.website) {
+      list.appendChild(contactRow(ICONS.web, displayUrl(biz.website), 'Website', safeUrl(biz.website)));
+    }
+    if (biz.booking_url) {
+      list.appendChild(contactRow(ICONS.calendar, 'Book an appointment', 'Booking site', safeUrl(biz.booking_url)));
+    }
+    if (biz.gbp_review_link) {
+      const stars = (biz.google_rating_avg && biz.google_rating_count)
+        ? (Number(biz.google_rating_avg).toFixed(1) + ' \u2605 \u00b7 ' + biz.google_rating_count + ' reviews')
+        : 'Leave a review';
+      list.appendChild(contactRow(ICONS.star, stars, 'Google Business', safeUrl(biz.gbp_review_link)));
+    }
+    if (biz.instagram_url) {
+      list.appendChild(contactRow(ICONS.instagram, displayUrl(biz.instagram_url).replace(/^instagram\.com\//i, '@'), 'Instagram', safeUrl(biz.instagram_url)));
+    }
+    if (biz.tiktok_url) {
+      list.appendChild(contactRow(ICONS.tiktok, displayUrl(biz.tiktok_url).replace(/^tiktok\.com\//i, ''), 'TikTok', safeUrl(biz.tiktok_url)));
+    }
+    if (biz.facebook_url) {
+      list.appendChild(contactRow(ICONS.facebook, displayUrl(biz.facebook_url).replace(/^facebook\.com\//i, ''), 'Facebook', safeUrl(biz.facebook_url)));
+    }
+
+    // If the contact list ended up empty, hide the container
+    if (!list.children.length) list.style.display = 'none';
+
+    // Wire the Save to Contacts button
+    document.getElementById('save-contact-btn').addEventListener('click', function() {
+      downloadVCard(biz);
+    });
+
+    // Reveal
+    $loading.style.display = 'none';
+    $content.classList.add('loaded');
+  }
+
+  // Wait for HPS to be ready
+  function boot() {
+    if (window.HPS && window.HPS.sb) {
+      loadCard();
+    } else {
+      setTimeout(boot, 50);
+    }
+  }
+  boot();
+})();
+</script>
+
+</body>
+</html>

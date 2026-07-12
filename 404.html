@@ -55,6 +55,17 @@
       document.getElementById('title').textContent = 'Loading…';
       document.getElementById('body').textContent = 'One moment.';
       document.getElementById('cta').style.display = 'none';
+      return;
+    }
+
+    // /card/{slug} routing for the digital card feature.
+    var cm = path.match(/^\/card\/([A-Za-z0-9_-]{2,120})\/?$/);
+    if (cm && cm[1]) {
+      window.location.replace('/card.html?slug=' + encodeURIComponent(cm[1]));
+      document.getElementById('title').textContent = 'Loading…';
+      document.getElementById('body').textContent = 'One moment.';
+      document.getElementById('cta').style.display = 'none';
+      return;
     }
   })();
 </script>
