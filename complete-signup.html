@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0D0D0D">
+  <title>Complete your setup — HyPurShot</title>
+  <link rel="icon" type="image/png" href="/icon-192.png">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@700,800,900&f[]=satoshi@400,500,700&display=swap">
+  <style>
+    :root {
+      --bg: #0D0D0D;
+      --surface: #161616;
+      --gold: #D4A017;
+      --gold-hover: #E5B62A;
+      --ice: #A8D4E6;
+      --text: #F0EDE8;
+      --text-dim: #d5cfc4;
+      --muted: #b8b3aa;
+      --rule: rgba(240, 237, 232, 0.10);
+      --font-heading: 'Cabinet Grotesk', system-ui, sans-serif;
+      --font-body: 'Satoshi', system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px;
+    }
+    .card {
+      width: 100%;
+      max-width: 460px;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      padding: 40px 32px 32px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .brand img { height: 32px; width: auto; }
+    .brand-name {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: 0.02em;
+    }
+    h1 {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 26px;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .sub {
+      color: var(--muted);
+      font-size: 15px;
+      margin-bottom: 28px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+      letter-spacing: 0.01em;
+    }
+    .field { margin-bottom: 18px; }
+    input, select {
+      width: 100%;
+      background: #0F0F0F;
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 15px;
+      padding: 12px 14px;
+      transition: border-color 140ms;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+    input::placeholder { color: #5c574f; }
+    .btn-gold {
+      width: 100%;
+      background: var(--gold);
+      color: var(--bg);
+      border: none;
+      border-radius: 6px;
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: 15px;
+      padding: 14px 20px;
+      cursor: pointer;
+      transition: background 140ms;
+      margin-top: 8px;
+      letter-spacing: 0.01em;
+    }
+    .btn-gold:hover:not(:disabled) { background: var(--gold-hover); }
+    .btn-gold:disabled { opacity: 0.55; cursor: not-allowed; }
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(13, 13, 13, 0.3);
+      border-top-color: #0D0D0D;
+      border-radius: 50%;
+      animation: spin 700ms linear infinite;
+      margin-left: 8px;
+      vertical-align: -2px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .toast {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: var(--surface);
+      color: var(--text);
+      padding: 12px 20px;
+      border-radius: 6px;
+      border: 1px solid var(--rule);
+      font-size: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms, transform 200ms;
+      z-index: 1000;
+      max-width: 90vw;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.error { border-color: rgba(220, 80, 80, 0.4); }
+    .footnote {
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+    .footnote a { color: var(--text-dim); text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="card">
+    <div class="brand">
+      <img src="/logo-full.webp" alt="HyPurShot">
+    </div>
+    <h1>One quick step</h1>
+    <p class="sub">Tell us about your detailing business so we can set up your public card.</p>
+
+    <form id="complete-form" autocomplete="on" novalidate>
+      <div class="field">
+        <label for="cs-business">Business name</label>
+        <input type="text" id="cs-business" required autocomplete="organization" placeholder="e.g. FlyMyRide Ashburn">
+      </div>
+
+      <div class="field">
+        <label for="cs-first">Your first name</label>
+        <input type="text" id="cs-first" required autocomplete="given-name" placeholder="e.g. Ronnie">
+      </div>
+
+      <div class="field">
+        <label for="cs-city">City</label>
+        <input type="text" id="cs-city" autocomplete="address-level2" placeholder="e.g. Ashburn, VA">
+      </div>
+
+      <div class="field">
+        <label for="cs-phone">Phone (optional)</label>
+        <input type="tel" id="cs-phone" autocomplete="tel" placeholder="(555) 555-5555">
+      </div>
+
+      <button type="submit" class="btn-gold" id="btn-submit">
+        <span class="btn-text">Continue to dashboard</span>
+      </button>
+    </form>
+
+    <p class="footnote">You can add logos, headshots, and social links after this step.</p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://xjsicupdpzawxlwcvxzv.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhqc2ljdXBkcHphd3hsd2N2eHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MjgxNjEsImV4cCI6MjA5MDMwNDE2MX0.ZIuEFOCz1T7aVv6a39hXzvUucSZKgTJhDW5iPyXh1KM';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function toast(msg, type) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = 'toast show' + (type === 'error' ? ' error' : '');
+      setTimeout(() => { el.className = 'toast' + (type === 'error' ? ' error' : ''); }, 3200);
+    }
+
+    // Split OAuth display_name into first/last so we can prefill.
+    function splitName(fullName) {
+      if (!fullName) return { first: '', last: '' };
+      const parts = fullName.trim().split(/\s+/);
+      return { first: parts[0] || '', last: parts.slice(1).join(' ') };
+    }
+
+    (async function init() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) {
+        window.location.replace('/auth.html');
+        return;
+      }
+
+      // If a business already exists for this user, skip straight to app.
+      const { data: existing } = await sb
+        .from('businesses')
+        .select('id')
+        .eq('owner_id', session.user.id)
+        .maybeSingle();
+      if (existing) {
+        window.location.replace('/projects.html');
+        return;
+      }
+
+      // Prefill from Google identity data
+      const meta = session.user.user_metadata || {};
+      const email = session.user.email || '';
+      const { first, last } = splitName(meta.full_name || meta.name || '');
+      if (first) document.getElementById('cs-first').value = first;
+
+      window.__hps_email = email;
+      window.__hps_last = last;
+      window.__hps_userId = session.user.id;
+    })();
+
+    document.getElementById('complete-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-submit');
+      const btnText = btn.querySelector('.btn-text');
+      const businessName = document.getElementById('cs-business').value.trim();
+      const firstName = document.getElementById('cs-first').value.trim();
+      const city = document.getElementById('cs-city').value.trim();
+      const phone = document.getElementById('cs-phone').value.trim();
+
+      if (!businessName) { toast('Business name is required.', 'error'); return; }
+      if (!firstName) { toast('Please add your first name.', 'error'); return; }
+
+      btn.disabled = true;
+      btnText.textContent = 'Setting up…';
+      btn.insertAdjacentHTML('beforeend', '<span class="spinner" id="csp"></span>');
+
+      try {
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session) throw new Error('Session lost. Please sign in again.');
+
+        const { data, error } = await sb.functions.invoke('register-user', {
+          body: {
+            user_id: session.user.id,
+            first_name: firstName,
+            last_name: window.__hps_last || '',
+            business_name: businessName,
+            business_type: 'auto_detailing',
+            city: city,
+            phone: phone,
+            social_accounts: []
+          }
+        });
+
+        if (error) throw error;
+        window.location.replace('/projects.html');
+      } catch (err) {
+        console.error(err);
+        toast(err.message || 'Setup failed. Please try again.', 'error');
+        btn.disabled = false;
+        btnText.textContent = 'Continue to dashboard';
+        const sp = document.getElementById('csp'); if (sp) sp.remove();
+      }
+    });
+  </script>
+</body>
+</html>
