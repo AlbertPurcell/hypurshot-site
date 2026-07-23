@@ -127,13 +127,93 @@
     }
     .nav-lang:hover { color: var(--ice); }
 
+    /* Hamburger toggle — hidden on desktop, visible on mobile */
+    .nav-burger {
+      display: none;
+      background: transparent;
+      border: 1px solid rgba(240,237,232,0.14);
+      color: var(--text);
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      margin-left: 10px;
+    }
+    .nav-burger:hover { background: rgba(240,237,232,0.06); }
+    .nav-burger svg { width: 20px; height: 20px; display: block; }
+
+    /* Mobile drawer */
+    .nav-drawer {
+      position: fixed;
+      top: 0; right: 0;
+      width: 82%; max-width: 320px;
+      height: 100vh; height: 100dvh;
+      background: var(--bg);
+      border-left: 1px solid var(--rule);
+      transform: translateX(100%);
+      transition: transform 240ms ease-out;
+      z-index: 1200;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 20px;
+      overflow-y: auto;
+    }
+    .nav-drawer.open { transform: translateX(0); }
+    .nav-drawer-close {
+      align-self: flex-end;
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 6px 10px;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+    .nav-drawer-close:hover { color: var(--text); }
+    .nav-drawer a {
+      display: block;
+      color: var(--text);
+      font-size: 17px;
+      font-weight: 600;
+      padding: 14px 4px;
+      border-bottom: 1px solid var(--rule);
+      text-decoration: none;
+    }
+    .nav-drawer a:last-of-type { border-bottom: none; }
+    .nav-drawer .drawer-cta {
+      background: var(--gold);
+      color: var(--bg);
+      text-align: center;
+      border-radius: 6px;
+      padding: 14px;
+      margin-top: 20px;
+      border: none;
+    }
+    .nav-drawer .drawer-cta:hover { background: var(--gold-hover); }
+    .nav-drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms;
+      z-index: 1100;
+    }
+    .nav-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+
     @media (max-width: 720px) {
-      .nav-links a:not(.nav-cta):not(.nav-lang) { display: none; }
+      /* On mobile: hide inline nav links AND the Sign in CTA — hamburger owns them */
+      .nav-links a:not(.nav-lang) { display: none; }
       .nav-lang { font-size: 12px; }
+      .nav-burger { display: inline-flex; }
+      .nav-links { gap: 12px; }
     }
     @media (max-width: 400px) {
-      .nav-links { gap: 14px; }
-      .nav-cta { padding: 7px 12px; font-size: 13px; }
+      .nav-links { gap: 10px; }
       .nav-lang { font-size: 11px; }
     }
 
@@ -169,6 +249,65 @@
       gap: 14px;
       flex-wrap: wrap;
       align-items: center;
+    }
+
+    /* Two-column hero on desktop: copy left, phone mockup right */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+    .hero-copy { min-width: 0; }
+    .hero-visual {
+      display: none; /* Hidden on mobile — desktop only */
+      justify-content: center;
+      align-items: center;
+    }
+    .hero-visual img {
+      max-width: 100%;
+      width: 340px;
+      height: auto;
+      display: block;
+    }
+    @media (min-width: 960px) {
+      .hero-grid {
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 56px;
+      }
+      .hero-visual { display: flex; }
+      .hero-visual img { width: 380px; }
+    }
+    @media (min-width: 1280px) {
+      .hero-visual img { width: 420px; }
+    }
+
+    /* Attribution line under the CTAs — trust signal */
+    .hero-attribution {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 24px;
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 0.005em;
+    }
+    .hero-attribution-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      flex-shrink: 0;
+    }
+    .hero-attribution a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-weight: 600;
+      border-bottom: 1px solid transparent;
+      transition: border-color 160ms, color 160ms;
+    }
+    .hero-attribution a:hover {
+      color: var(--text);
+      border-bottom-color: var(--gold);
     }
     .btn {
       display: inline-block;
@@ -741,23 +880,52 @@
         <a href="#pricing">Pricing</a>
         <a href="#" class="nav-lang" id="nav-lang" aria-label="Ver en español">Español</a>
         <a href="/auth.html" class="nav-cta">Sign in</a>
+        <button type="button" class="nav-burger" id="nav-burger" aria-label="Open menu" aria-controls="nav-drawer" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="4" y1="7" x2="20" y2="7"/>
+            <line x1="4" y1="12" x2="20" y2="12"/>
+            <line x1="4" y1="17" x2="20" y2="17"/>
+          </svg>
+        </button>
       </div>
     </div>
   </nav>
+
+  <!-- Mobile drawer + backdrop -->
+  <div class="nav-drawer-backdrop" id="nav-drawer-backdrop" aria-hidden="true"></div>
+  <aside class="nav-drawer" id="nav-drawer" role="dialog" aria-modal="true" aria-label="Menu">
+    <button type="button" class="nav-drawer-close" id="nav-drawer-close" aria-label="Close menu">Close</button>
+    <a href="/directory.html">Find a professional</a>
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="/auth.html">Sign in</a>
+    <a href="/auth.html" class="drawer-cta">Start free</a>
+  </aside>
 
   <!-- ============================================================
        HERO
   ============================================================ -->
   <header class="hero reveal">
     <div class="container">
-      <div class="hero-eyebrow">Built for solo owner-operators</div>
-      <h1>Capture. Post. <span class="ice">Get Reviewed.</span></h1>
-      <p class="hero-sub">The mobile toolkit for detailers, painters, and every solo pro.</p>
-      <div class="hero-ctas">
-        <a href="/auth.html" class="btn btn-primary">Start free</a>
-      </div>
-      <div>
-        <a href="#features" class="hero-cta-link">See how it works →</a>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <div class="hero-eyebrow">Built for solo owner-operators</div>
+          <h1>Capture. Post. <span class="ice">Get Reviewed.</span></h1>
+          <p class="hero-sub">The mobile toolkit for detailers, painters, and every solo pro.</p>
+          <div class="hero-ctas">
+            <a href="/auth.html" class="btn btn-primary">Start free</a>
+          </div>
+          <div>
+            <a href="#features" class="hero-cta-link">See how it works →</a>
+          </div>
+          <div class="hero-attribution">
+            <span class="hero-attribution-dot" aria-hidden="true"></span>
+            <span>Built by <a href="/card/detail-test">Ronnie Purcell, FlyMyRide Ashburn</a></span>
+          </div>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <img src="/hero-phone-mockup.png" alt="HyPurShot digital card on iPhone" width="420" height="860" loading="eager">
+        </div>
       </div>
     </div>
   </header>
@@ -1159,6 +1327,44 @@
   })();
   </script>
   <script src="polish.js"></script>
+
+  <script>
+  // Mobile nav drawer
+  (function(){
+    var burger = document.getElementById('nav-burger');
+    var drawer = document.getElementById('nav-drawer');
+    var backdrop = document.getElementById('nav-drawer-backdrop');
+    var closeBtn = document.getElementById('nav-drawer-close');
+    if (!burger || !drawer || !backdrop) return;
+
+    function open() {
+      drawer.classList.add('open');
+      backdrop.classList.add('open');
+      burger.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    }
+    function close() {
+      drawer.classList.remove('open');
+      backdrop.classList.remove('open');
+      burger.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    }
+
+    burger.addEventListener('click', open);
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    backdrop.addEventListener('click', close);
+
+    // Close on drawer link tap (so # anchors work)
+    drawer.querySelectorAll('a').forEach(function(a){
+      a.addEventListener('click', function(){ setTimeout(close, 50); });
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && drawer.classList.contains('open')) close();
+    });
+  })();
+  </script>
 
 </body>
 </html>
