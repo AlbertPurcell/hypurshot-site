@@ -69,9 +69,15 @@
     }
 
     // /review/{token} routing for SMS/email review-request links.
+    // Hits the review-redirect edge function which server-side 302s to
+    // Google Reviews. Keeps the branded hypurshot.com/review/... URL in
+    // SMS while getting a single-round-trip redirect (no HTML render).
     var rm = path.match(/^\/review\/([A-Za-z0-9_-]{8,64})\/?$/);
     if (rm && rm[1]) {
-      window.location.replace('/review.html?token=' + encodeURIComponent(rm[1]));
+      window.location.replace(
+        'https://xjsicupdpzawxlwcvxzv.supabase.co/functions/v1/review-redirect?token=' +
+        encodeURIComponent(rm[1])
+      );
       document.getElementById('title').textContent = 'Loading…';
       document.getElementById('body').textContent = 'One moment.';
       document.getElementById('cta').style.display = 'none';
