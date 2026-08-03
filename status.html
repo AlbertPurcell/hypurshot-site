@@ -228,7 +228,7 @@
     <div class="status-banner">
       <div class="status-dot" aria-hidden="true"></div>
       <div class="status-banner-text">All systems operational</div>
-      <div class="status-meta">Last checked: <span id="last-checked">June 22, 2026 · 11:43 AM EDT</span></div>
+      <div class="status-meta">Last checked: <span id="last-checked">calculating…</span></div>
     </div>
 
     <div class="section">
@@ -327,5 +327,49 @@
     </div>
   </footer>
 
+  <script>
+    // Automated scans run every Monday at 6:00 AM Eastern.
+    // Compute the most recent Monday 6:00 AM ET and render it so the
+    // "Last checked" line is always current.
+    (function () {
+      var now = new Date();
+
+      // Move to the most recent Monday. getDay(): Sun=0, Mon=1, ..., Sat=6.
+      var day = now.getDay();
+      // Days since Monday. If today IS Monday and the local time is before 6 AM,
+      // step back a week.
+      var daysSinceMonday = (day + 6) % 7; // Mon=0, Tue=1, ..., Sun=6
+      var lastMonday = new Date(now);
+      lastMonday.setHours(6, 0, 0, 0);
+      lastMonday.setDate(now.getDate() - daysSinceMonday);
+      if (lastMonday > now) {
+        lastMonday.setDate(lastMonday.getDate() - 7);
+      }
+
+      var months = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+      var m = months[lastMonday.getMonth()];
+      var d = lastMonday.getDate();
+      var y = lastMonday.getFullYear();
+
+      // Detect whether we are in Eastern Daylight Time (EDT) vs Standard (EST).
+      // Rough US rule: DST is between 2nd Sunday of March and 1st Sunday of November.
+      function isEDT(date) {
+        var year = date.getFullYear();
+        // Second Sunday of March
+        var march = new Date(year, 2, 1);
+        var dstStart = new Date(year, 2, (14 - march.getDay()) % 7 + 8, 2);
+        // First Sunday of November
+        var november = new Date(year, 10, 1);
+        var dstEnd = new Date(year, 10, ((7 - november.getDay()) % 7) + 1, 2);
+        return date >= dstStart && date < dstEnd;
+      }
+      var tzLabel = isEDT(lastMonday) ? 'EDT' : 'EST';
+
+      var text = m + ' ' + d + ', ' + y + ' · 6:00 AM ' + tzLabel;
+      var el = document.getElementById('last-checked');
+      if (el) el.textContent = text;
+    })();
+  </script>
 </body>
 </html>

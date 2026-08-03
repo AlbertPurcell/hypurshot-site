@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ronnie Purcell — FlyMyRide Ashburn — HyPurShot</title>
+  <meta name="description" content="FlyMyRide Ashburn — premium mobile detailing in Ashburn, VA. Owner Ronnie Purcell. Book a detail, save the contact, or leave a review.">
+  <link rel="canonical" href="https://hypurshot.com/card.html?slug=detail-test">
+
+  <!-- Open Graph so link previews render even before JS runs -->
+  <meta property="og:type" content="profile">
+  <meta property="og:title" content="Ronnie Purcell — FlyMyRide Ashburn">
+  <meta property="og:description" content="Premium mobile detailing in Ashburn, VA. Save the contact, view work, or leave a review.">
+  <meta property="og:url" content="https://hypurshot.com/card/detail-test">
+  <meta property="og:image" content="https://hypurshot.com/logo-full.webp">
+  <meta name="theme-color" content="#0D0D0D">
+
+  <link rel="icon" type="image/png" href="/logo-nav.webp">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="stylesheet" href="/app.css">
+
+  <!-- Load the real card renderer with the slug already in query -->
+  <script>
+    (function () {
+      var target = '/card.html?slug=detail-test';
+      // Preserve any tracking / utm query params if present
+      var extra = window.location.search;
+      if (extra && extra.length > 1) {
+        target += '&' + extra.slice(1);
+      }
+      // If someone hits this URL directly, do the client-side swap immediately.
+      window.location.replace(target);
+    })();
+  </script>
+
+  <style>
+    body {
+      background: #0D0D0D;
+      color: #F0EDE8;
+      font-family: 'Satoshi', system-ui, -apple-system, sans-serif;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      text-align: center;
+    }
+    .loading { color: #b8b3aa; font-size: 15px; }
+    a { color: #D4A017; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <noscript>
+    <p style="color:#F0EDE8;font-size:16px">
+      This page requires JavaScript to view.
+      Continue to <a href="/card.html?slug=detail-test">Ronnie Purcell — FlyMyRide Ashburn</a>.
+    </p>
+  </noscript>
+  <p class="loading">Loading…</p>
+</body>
+</html>
