@@ -96,8 +96,8 @@ footer{padding:24px 0;text-align:center;font-size:12px;color:#888680;opacity:.5;
       var cta = document.getElementById("cta");
       cta.href = data.google_url;
       cta.hidden = false;
-      // Auto-redirect after a short beat so slower devices still get a visual.
-      setTimeout(function(){ location.replace(data.google_url); }, 900);
+      // Redirect immediately — the greeting flashes briefly during network handoff.
+      location.replace(data.google_url);
     })
     .catch(function(){ showError(); });
 })();
