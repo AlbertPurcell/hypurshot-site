@@ -641,6 +641,11 @@
   });
 
   // ── Supabase Operations ──
+  //
+  // COMPLIANCE NOTE: Google's review policy prohibits selectively soliciting
+  // positive reviews or filtering customers before sending them to Google.
+  // Every customer who opens this link goes straight to Google Reviews.
+  // No star-rating step, no branching, no private-feedback gate.
   async function loadReview() {
     var token = getToken();
     if (!token || !db) {
@@ -651,7 +656,7 @@
     try {
       var { data, error } = await db
         .from('review_requests')
-        .select('*, businesses(name, google_place_id, logo_url)')
+        .select('id, opened_at, customer_name, businesses(name, google_place_id, logo_url, gbp_review_link)')
         .eq('review_token', token)
         .single();
 
@@ -661,15 +666,21 @@
       }
 
       reviewData = data;
-
-      // Populate UI
+      var biz = data.businesses || {};
       var customerName = data.customer_name || 'there';
-      var businessName = (data.businesses && data.businesses.name) || 'us';
+      var businessName = biz.name || 'us';
 
-      greetingText.textContent = 'Hi ' + customerName + '!';
-      subtextEl.textContent = 'How was your experience with ' + businessName + '?';
+      // Build the Google Reviews URL. Prefer an explicit gbp_review_link
+      // (short g.co/kgs link the operator set on their profile). Fall back
+      // to the standard writereview URL from the google_place_id.
+      var googleUrl = null;
+      if (biz.gbp_review_link) {
+        googleUrl = biz.gbp_review_link;
+      } else if (biz.google_place_id) {
+        googleUrl = 'https://search.google.com/local/writereview?placeid=' + encodeURIComponent(biz.google_place_id);
+      }
 
-      // Track SMS opened
+      // Track SMS opened (fire and forget)
       if (!data.opened_at) {
         db.from('review_requests')
           .update({ opened_at: new Date().toISOString() })
@@ -677,11 +688,43 @@
           .then(function () {});
       }
 
-      showScreen('rating');
+      // If we cannot resolve a Google URL, show a friendly redirect page with
+      // the business name so at least the customer knows what happened.
+      if (!googleUrl) {
+        showFallback(customerName, businessName, null);
+        return;
+      }
+
+      // Show a short branded splash while we redirect to Google. This is
+      // purely a two-second courtesy so the customer sees the business name.
+      showFallback(customerName, businessName, googleUrl);
+      setTimeout(function () {
+        window.location.replace(googleUrl);
+      }, 1200);
 
     } catch (err) {
       showScreen('error');
     }
+  }
+
+  function showFallback(customerName, businessName, googleUrl) {
+    var loading = document.getElementById('screen-loading');
+    if (!loading) return;
+    // Replace the loading dots with a branded splash that also acts as a
+    // manual link if the auto-redirect is blocked.
+    var linkHtml = googleUrl
+      ? '<a class="btn-primary" href="' + googleUrl + '" target="_self" rel="noopener noreferrer" style="margin-top:20px;display:inline-block">Continue to Google Reviews</a>'
+      : '<p class="result-subtext" style="margin-top:16px">This business has not connected their Google Business Profile yet. Please reach out to ' + escapeHtml(businessName) + ' directly.</p>';
+    loading.innerHTML =
+      '<h1 class="greeting">Hi ' + escapeHtml(customerName) + ',</h1>' +
+      '<p class="subtext">Taking you to Google Reviews for ' + escapeHtml(businessName) + '…</p>' +
+      linkHtml;
+  }
+
+  function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
   }
 
   async function recordRating(rating) {

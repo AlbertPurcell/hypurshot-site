@@ -67,6 +67,16 @@
       document.getElementById('cta').style.display = 'none';
       return;
     }
+
+    // /review/{token} routing for SMS/email review-request links.
+    var rm = path.match(/^\/review\/([A-Za-z0-9_-]{8,64})\/?$/);
+    if (rm && rm[1]) {
+      window.location.replace('/review.html?token=' + encodeURIComponent(rm[1]));
+      document.getElementById('title').textContent = 'Loading…';
+      document.getElementById('body').textContent = 'One moment.';
+      document.getElementById('cta').style.display = 'none';
+      return;
+    }
   })();
 </script>
 
