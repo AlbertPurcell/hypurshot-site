@@ -645,7 +645,7 @@
   /* ───── TOAST ───── */
   .toast-container {
     position: fixed;
-    top: 20px;
+    top: calc(20px + env(safe-area-inset-top));
     right: 20px;
     z-index: 1000;
     display: flex;

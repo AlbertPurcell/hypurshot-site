@@ -309,7 +309,7 @@
   /* Floating Share button (top-right on the card page) */
   .share-btn {
     position: fixed;
-    top: 16px;
+    top: calc(16px + env(safe-area-inset-top));
     right: 16px;
     display: flex;
     align-items: center;

@@ -272,9 +272,9 @@
     background: rgba(13,13,13,0.92);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
-    height: var(--nav-h);
+    height: calc(var(--nav-h) + env(safe-area-inset-top));
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 20px;
+    padding: env(safe-area-inset-top) 20px 0;
   }
   .pub-nav-logo { display: flex; align-items: center; gap: 10px; font-family: var(--font-heading); font-weight: 800; font-size: 1.05rem; color: var(--text); }
   .pub-nav-logo img { height: 30px; }

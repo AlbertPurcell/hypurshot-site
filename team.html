@@ -46,13 +46,13 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 60px;
+    height: calc(60px + env(safe-area-inset-top));
     background: var(--surface);
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 28px;
+    padding: env(safe-area-inset-top) 28px 0;
     z-index: 100;
   }
 
@@ -112,7 +112,7 @@
   /* ───── TABS ───── */
   .tab-bar {
     position: fixed;
-    top: 60px;
+    top: calc(60px + env(safe-area-inset-top));
     left: 0;
     right: 0;
     height: 48px;
@@ -176,7 +176,7 @@
 
   /* ───── MAIN CONTENT ───── */
   .main {
-    padding-top: 132px;
+    padding-top: calc(132px + env(safe-area-inset-top));
     max-width: 900px;
     margin: 0 auto;
     padding-left: 24px;
@@ -788,7 +788,7 @@
 
   /* ───── RESPONSIVE ───── */
   @media (max-width: 700px) {
-    .navbar { padding: 0 16px; }
+    .navbar { padding: env(safe-area-inset-top) 16px 0; }
     .tab-bar { padding: 0 16px; }
     .main { padding-left: 16px; padding-right: 16px; }
     .nav-title { display: none; }
