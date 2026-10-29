@@ -277,7 +277,10 @@
     padding: env(safe-area-inset-top) 20px 0;
   }
   .pub-nav-logo { display: flex; align-items: center; gap: 10px; font-family: var(--font-heading); font-weight: 800; font-size: 1.05rem; color: var(--text); }
-  .pub-nav-logo img { height: 30px; }
+  .pub-nav-logo img { height: 42px; width: auto; max-width: min(168px, 58vw); object-fit: contain; }
+  @media (min-width: 800px) {
+    .pub-nav-logo img { height: 48px; max-width: none; }
+  }
   .pub-nav-cta {
     height: 36px; padding: 0 14px;
     border: 1px solid var(--border-strong);

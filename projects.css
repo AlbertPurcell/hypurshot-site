@@ -332,25 +332,6 @@ body.jobs :focus-visible {
     padding-right: max(16px, env(safe-area-inset-right));
   }
 
-  body.jobs .navbar {
-    padding-left: max(16px, env(safe-area-inset-left));
-    padding-right: max(16px, env(safe-area-inset-right));
-  }
-
-  body.jobs .nav-logo { min-width: 0; }
-  body.jobs .nav-logo img { height: 26px; max-width: 96px; }
-
-  body.jobs .nav-title {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    max-width: 42%;
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
   #list-container {
     flex: 1 1 auto;
     display: flex;
