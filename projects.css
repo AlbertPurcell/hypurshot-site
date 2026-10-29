@@ -46,6 +46,7 @@ body.jobs .page {
   padding-bottom: calc(var(--bottom-nav-h) + 72px + env(safe-area-inset-bottom));
   padding-left: max(16px, env(safe-area-inset-left));
   padding-right: max(16px, env(safe-area-inset-right));
+  min-width: 0;
 }
 
 /* Margin notes — not marketing banners */
@@ -84,6 +85,7 @@ body.jobs .filter-row {
   padding: 0;
   border-bottom: 1px solid var(--rule);
   overflow-x: auto;
+  max-width: 100%;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -261,6 +263,13 @@ a.job.is-active .job-status { color: var(--gold); }
   text-align: left;
 }
 
+.board-note p,
+.jobs-empty p,
+.job-service,
+.job-meta {
+  overflow-wrap: anywhere;
+}
+
 .jobs-empty h3 {
   font-family: var(--font-body);
   font-weight: 600;
@@ -307,6 +316,64 @@ a.job.is-active .job-status { color: var(--gold); }
 body.jobs :focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 2px;
+}
+
+/* Phone: the open area is the list. An empty list centers its message there,
+   and New job is a bar on the thumb, flush above the nav — not a tag floating
+   in the black. */
+@media (max-width: 640px) {
+  body.jobs .page {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    padding-top: calc(var(--nav-h) + env(safe-area-inset-top) + 8px);
+    padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 68px);
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+
+  body.jobs .navbar {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+
+  body.jobs .nav-logo { min-width: 0; }
+  body.jobs .nav-logo img { height: 26px; max-width: 96px; }
+
+  body.jobs .nav-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 42%;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #list-container {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .jobs-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8px 0 4px;
+  }
+
+  .board-note { margin-bottom: 8px; }
+
+  .new-job {
+    left: max(16px, env(safe-area-inset-left));
+    right: max(16px, env(safe-area-inset-right));
+    bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 8px);
+    min-height: 48px;
+  }
 }
 
 @media (min-width: 800px) {
