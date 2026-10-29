@@ -309,13 +309,13 @@
       '@keyframes hpsFade{from{opacity:0}to{opacity:1}}' +
       '.hps-modal{background:#161616;border:1px solid rgba(255,255,255,.08);' +
         'border-radius:14px;padding:32px 28px;max-width:420px;width:100%;' +
-        'color:#F0EDE8;font-family:\'Satoshi\',sans-serif;text-align:center;' +
+        'color:#F0EDE8;font-family:\'Source Sans 3\', \'Source Sans 3 Fallback\', \'Segoe UI\', sans-serif;text-align:center;' +
         'box-shadow:0 20px 60px rgba(0,0,0,.5)}' +
       '.hps-modal-icon{width:56px;height:56px;border-radius:50%;' +
         'background:rgba(212,160,23,.12);border:1px solid rgba(212,160,23,.35);' +
         'color:#D4A017;display:flex;align-items:center;justify-content:center;' +
         'margin:0 auto 18px}' +
-      '.hps-modal h2{font-family:\'Cabinet Grotesk\',sans-serif;font-weight:800;' +
+      '.hps-modal h2{font-family:\'Source Serif 4\', \'Source Serif 4 Fallback\', Georgia, serif;font-weight:650;' +
         'font-size:1.35rem;margin-bottom:10px;letter-spacing:-.01em}' +
       '.hps-modal p{color:#888680;font-size:.92rem;line-height:1.55;margin-bottom:14px}' +
       '.upg-usage{font-size:.82rem;color:#888680;margin-bottom:20px;' +
@@ -324,11 +324,11 @@
       '.upg-usage b{color:#F0EDE8;font-weight:700}' +
       '.hps-modal-actions{display:flex;gap:10px;justify-content:center;margin-top:8px}' +
       '.hps-btn-gold{background:#D4A017;color:#000;border:none;border-radius:8px;' +
-        'padding:12px 22px;font-family:\'Satoshi\',sans-serif;font-weight:700;font-size:.92rem;' +
+        'padding:12px 22px;font-family:\'Source Sans 3\', \'Source Sans 3 Fallback\', \'Segoe UI\', sans-serif;font-weight:700;font-size:.92rem;' +
         'cursor:pointer;transition:background .15s}' +
       '.hps-btn-gold:hover{background:#c2920f}' +
       '.hps-btn-ghost{background:transparent;color:#888680;border:1px solid rgba(255,255,255,.1);' +
-        'border-radius:8px;padding:12px 22px;font-family:\'Satoshi\',sans-serif;font-weight:500;' +
+        'border-radius:8px;padding:12px 22px;font-family:\'Source Sans 3\', \'Source Sans 3 Fallback\', \'Segoe UI\', sans-serif;font-weight:500;' +
         'font-size:.92rem;cursor:pointer;transition:color .15s,border-color .15s}' +
       '.hps-btn-ghost:hover{color:#F0EDE8;border-color:rgba(255,255,255,.2)}';
     document.head.appendChild(css);
