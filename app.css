@@ -22,7 +22,7 @@
   --success: #5DB875;
   --font-heading: 'Cabinet Grotesk', sans-serif;
   --font-body: 'Satoshi', sans-serif;
-  --nav-h: 60px;
+  --nav-h: 64px;
   --bottom-nav-h: 64px;
 }
 
@@ -47,8 +47,11 @@ button { font-family: inherit; }
   -webkit-backdrop-filter: blur(14px) saturate(160%);
   backdrop-filter: blur(14px) saturate(160%);
   border-bottom: 1px solid rgba(255,255,255,0.06);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: env(safe-area-inset-top) 20px 0; z-index: 100;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 12px;
+  padding: env(safe-area-inset-top) 16px 0; z-index: 100;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 .navbar.scrolled,
@@ -61,16 +64,32 @@ button { font-family: inherit; }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .navbar { background: var(--surface); }
 }
-.nav-logo { display: flex; align-items: center; gap: 10px; }
-.nav-logo img { height: 32px; width: auto; object-fit: contain; }
+.nav-logo { display: flex; align-items: center; justify-self: start; min-width: 0; max-width: 100%; }
+.nav-logo img {
+  display: block;
+  height: 42px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
 .nav-back {
+  justify-self: start;
+  min-width: 0;
   background: none; border: none; color: var(--text); cursor: pointer;
   font-size: 1rem; padding: 6px 10px 6px 0; display: flex; align-items: center; gap: 6px;
 }
 .nav-back:hover { color: var(--gold); }
 .nav-title {
+  justify-self: center;
+  text-align: center;
+  min-width: 0;
   font-family: var(--font-heading); font-weight: 700; font-size: 0.95rem;
   color: var(--text); letter-spacing: -0.01em;
+}
+.navbar > :last-child { justify-self: end; }
+@media (min-width: 800px) {
+  .navbar { padding-left: 20px; padding-right: 20px; }
+  .nav-logo img { height: 48px; }
 }
 .nav-avatar {
   width: 34px; height: 34px; border-radius: 50%;
