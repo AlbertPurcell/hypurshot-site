@@ -89,6 +89,7 @@ function renderSharePage({ title, description, url, image, canonical, schema, re
   <meta name="description" content="${escape(description)}">
   <link rel="canonical" href="${escape(canonical)}">
   <link rel="icon" type="image/webp" href="/logo-nav.webp">
+  <link rel="stylesheet" href="/fonts.css">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
   <!-- Open Graph -->
@@ -118,9 +119,9 @@ function renderSharePage({ title, description, url, image, canonical, schema, re
 
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{background:#0D0D0D;color:#F0EDE8;font-family:system-ui,-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;text-align:center}
+    body{background:#0D0D0D;color:#F0EDE8;font-family:"Source Sans 3","Segoe UI",sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;text-align:center}
     .wrap{max-width:520px}
-    h1{font-size:1.5rem;margin-bottom:.5rem;color:#D4A017}
+    h1{font-family:"Source Serif 4",Georgia,serif;font-weight:600;letter-spacing:-0.02em;font-size:1.5rem;margin-bottom:.5rem;color:#D4A017}
     p{color:#888680;line-height:1.6}
     a{color:#A8D4E6}
   </style>
