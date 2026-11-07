@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="preload" href="/fonts/source-sans-3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/source-serif-4-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/fonts.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="apple-mobile-web-app-title" content="HyPurShot">
@@ -10,7 +13,6 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="theme-color" content="#0D0D0D">
-<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=cabinet-grotesk@700,800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -27,8 +29,8 @@
     --text-muted: #888680;
     --error: #E05C6C;
     --success: #5DB875;
-    --font-heading: 'Cabinet Grotesk', sans-serif;
-    --font-body: 'Satoshi', sans-serif;
+    --font-heading: "Source Serif 4", "Source Serif 4 Fallback", Georgia, serif;
+    --font-body: "Source Sans 3", "Source Sans 3 Fallback", "Segoe UI", sans-serif;
   }
 
   html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
@@ -1615,17 +1617,17 @@
         <a id="card-open-live" href="#" target="_blank" style="font-size:.78rem;color:var(--gold);text-decoration:none;font-weight:600">Open live card ↗</a>
       </div>
       <div style="background:#0D0D0D;border:1px solid var(--border);border-radius:16px;padding:20px 18px;">
-        <div id="card-preview" style="font-family:'Satoshi',sans-serif;">
+        <div id="card-preview" style="font-family:'Source Sans 3','Segoe UI',sans-serif;">
           <div style="text-align:center;padding:12px 0 6px">
-            <div id="cp-logo" style="width:72px;height:72px;border-radius:16px;background:#161616;border:1px solid rgba(240,237,232,.10);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;overflow:hidden;color:#D4A017;font-family:'Cabinet Grotesk',sans-serif;font-weight:800;font-size:24px">HS</div>
-            <div id="cp-name" style="font-family:'Cabinet Grotesk',sans-serif;font-weight:800;font-size:20px;color:#F0EDE8;letter-spacing:-.01em">Your business</div>
+            <div id="cp-logo" style="width:72px;height:72px;border-radius:16px;background:#161616;border:1px solid rgba(240,237,232,.10);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;overflow:hidden;color:#D4A017;font-family:'Source Serif 4',Georgia,serif;font-weight:800;font-size:24px">HS</div>
+            <div id="cp-name" style="font-family:'Source Serif 4',Georgia,serif;font-weight:800;font-size:20px;color:#F0EDE8;letter-spacing:-.01em">Your business</div>
             <div id="cp-tag" style="font-size:11px;color:#b8b3aa;margin-top:4px;letter-spacing:.02em;text-transform:uppercase;font-weight:500">Set your business type</div>
           </div>
           <div id="cp-owner" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#161616;border-radius:12px;margin:14px 0 8px">
-            <div id="cp-avatar" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#2a2a2a,#1a1a1a);border:2px solid #D4A017;display:flex;align-items:center;justify-content:center;font-family:'Cabinet Grotesk',sans-serif;font-weight:700;color:#D4A017;font-size:14px;overflow:hidden">?</div>
+            <div id="cp-avatar" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#2a2a2a,#1a1a1a);border:2px solid #D4A017;display:flex;align-items:center;justify-content:center;font-family:'Source Serif 4',Georgia,serif;font-weight:700;color:#D4A017;font-size:14px;overflow:hidden">?</div>
             <div style="flex:1;min-width:0">
               <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#b8b3aa;font-weight:600">Your detailer</div>
-              <div id="cp-owner-name" style="font-family:'Cabinet Grotesk',sans-serif;font-weight:700;font-size:14px;color:#F0EDE8;margin-top:1px">Add your name</div>
+              <div id="cp-owner-name" style="font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:14px;color:#F0EDE8;margin-top:1px">Add your name</div>
               <div id="cp-owner-title" style="font-size:11px;color:#b8b3aa;margin-top:1px">Set your title</div>
             </div>
           </div>
@@ -1641,7 +1643,7 @@
       <div style="margin-bottom:14px">
         <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Business logo</label>
         <div style="display:flex;align-items:center;gap:12px">
-          <div id="card-logo-thumb" style="width:56px;height:56px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;color:var(--gold);font-family:'Cabinet Grotesk',sans-serif;font-weight:800;font-size:18px">—</div>
+          <div id="card-logo-thumb" style="width:56px;height:56px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;color:var(--gold);font-family:'Source Serif 4',Georgia,serif;font-weight:800;font-size:18px">—</div>
           <div style="flex:1;display:flex;gap:8px;flex-wrap:wrap">
             <input id="card-logo-input" type="file" accept="image/jpeg,image/png,image/webp" style="display:none">
             <button type="button" id="card-logo-btn" onclick="document.getElementById('card-logo-input').click()" style="background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:8px;font-family:inherit;font-size:.86rem;font-weight:600;cursor:pointer">Upload logo</button>
@@ -1659,7 +1661,7 @@
       <div style="margin-bottom:14px">
         <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.02em">Your headshot</label>
         <div style="display:flex;align-items:center;gap:12px">
-          <div id="card-head-thumb" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#2a2a2a,#1a1a1a);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;color:var(--gold);font-family:'Cabinet Grotesk',sans-serif;font-weight:700;font-size:16px">?</div>
+          <div id="card-head-thumb" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#2a2a2a,#1a1a1a);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;color:var(--gold);font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:16px">?</div>
           <div style="flex:1;display:flex;gap:8px;flex-wrap:wrap">
             <input id="card-head-input" type="file" accept="image/jpeg,image/png,image/webp" style="display:none">
             <button type="button" id="card-head-btn" onclick="document.getElementById('card-head-input').click()" style="background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:8px;font-family:inherit;font-size:.86rem;font-weight:600;cursor:pointer">Upload headshot</button>
@@ -3666,11 +3668,11 @@ function showUpgradeModal(info) {
   modal.id = 'hps-upgrade-modal';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
   modal.innerHTML =
-    '<div style="background:#161616;border:1px solid #2a2a2a;border-radius:14px;padding:32px;max-width:440px;width:100%;color:#F0EDE8;font-family:Satoshi,system-ui,sans-serif;">' +
+    '<div style="background:#161616;border:1px solid #2a2a2a;border-radius:14px;padding:32px;max-width:440px;width:100%;color:#F0EDE8;font-family:\'Source Sans 3\',\'Segoe UI\',sans-serif;">' +
       '<div style="width:48px;height:48px;border-radius:50%;background:rgba(212,160,23,0.15);color:#D4A017;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">' +
         '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 19h20L12 2z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
       '</div>' +
-      '<h2 style="font-family:&quot;Cabinet Grotesk&quot;,system-ui,sans-serif;font-size:22px;margin:0 0 12px;">' + title + '</h2>' +
+      '<h2 style="font-family:&quot;Source Serif 4&quot;, &quot;Source Serif 4 Fallback&quot;, Georgia, serif;font-size:22px;margin:0 0 12px;">' + title + '</h2>' +
       '<p style="font-size:15px;line-height:1.5;color:#c8c2bd;margin:0 0 4px;">' + body + '</p>' +
       usageLine +
       '<div style="display:flex;gap:10px;margin-top:22px;">' +
