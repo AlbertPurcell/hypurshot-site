@@ -1,11 +1,9 @@
 /* Job detail and new-job. Scoped to body.job so the list, library, and
    marketing pages keep app.css. Same job-book rules as the projects list:
-   system type, solid header, hairlines, square controls. No glass, no pills,
+   solid header, hairlines, square controls. No glass, no pills,
    no glow, no radial gradients. */
 
 body.job {
-  --font-heading: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --sheet: 1040px;
   --rule: rgba(240, 237, 232, 0.12);
   --ink: #F0EDE8;
@@ -20,6 +18,10 @@ body.job h1,
 body.job h2,
 body.job h3,
 body.job .nav-title,
+body.job .title {
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+}
 body.job .nav-back,
 body.job .btn,
 body.job .input,
