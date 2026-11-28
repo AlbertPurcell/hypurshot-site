@@ -20,8 +20,8 @@
   --text-dim: #5A5854;
   --error: #E05C6C;
   --success: #5DB875;
-  --font-heading: 'Cabinet Grotesk', sans-serif;
-  --font-body: 'Satoshi', sans-serif;
+  --font-heading: "Source Serif 4", "Source Serif 4 Fallback", Georgia, serif;
+  --font-body: "Source Sans 3", "Source Sans 3 Fallback", "Segoe UI", sans-serif;
   --nav-h: 64px;
   --bottom-nav-h: 64px;
 }
@@ -83,8 +83,8 @@ button { font-family: inherit; }
   justify-self: center;
   text-align: center;
   min-width: 0;
-  font-family: var(--font-heading); font-weight: 700; font-size: 0.95rem;
-  color: var(--text); letter-spacing: -0.01em;
+  font-family: var(--font-heading); font-weight: 600; font-size: 0.95rem;
+  color: var(--text); letter-spacing: -0.02em;
 }
 .navbar > :last-child { justify-self: end; }
 @media (min-width: 800px) {
@@ -127,7 +127,7 @@ button { font-family: inherit; }
 .bottom-nav svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; }
 
 /* ─── Headings ─── */
-h1, h2, h3 { font-family: var(--font-heading); font-weight: 700; letter-spacing: -0.015em; }
+h1, h2, h3 { font-family: var(--font-heading); font-weight: 600; letter-spacing: -0.02em; }
 h1 { font-size: 1.6rem; }
 h2 { font-size: 1.2rem; }
 h3 { font-size: 1rem; }

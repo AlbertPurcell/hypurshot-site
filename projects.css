@@ -3,8 +3,6 @@
    No glass, no pills, no glow, no radial gradients. */
 
 body.jobs {
-  --font-heading: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --sheet: 1040px;
   --rule: rgba(240, 237, 232, 0.12);
   --ink: #F0EDE8;
@@ -23,10 +21,10 @@ body.jobs .navbar.scrolled {
 }
 
 body.jobs .nav-title {
-  font-family: var(--font-body);
+  font-family: var(--font-heading);
   font-weight: 600;
-  font-size: 0.95rem;
-  letter-spacing: 0;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
 }
 
 body.jobs .nav-avatar {
@@ -181,10 +179,10 @@ a.job:active { background: rgba(240, 237, 232, 0.06); }
 }
 
 .job-head h3 {
-  font-family: var(--font-body);
+  font-family: var(--font-heading);
   font-weight: 600;
-  font-size: 1.05rem;
-  letter-spacing: -0.011em;
+  font-size: 1.12rem;
+  letter-spacing: -0.02em;
   line-height: 1.25;
   color: var(--ink);
   margin: 0;
@@ -271,10 +269,10 @@ a.job.is-active .job-status { color: var(--gold); }
 }
 
 .jobs-empty h3 {
-  font-family: var(--font-body);
+  font-family: var(--font-heading);
   font-weight: 600;
-  font-size: 1.15rem;
-  letter-spacing: -0.011em;
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
   color: var(--ink);
   margin: 0 0 6px;
 }

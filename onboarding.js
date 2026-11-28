@@ -218,7 +218,7 @@
       #hps-onboard {
         position: fixed; inset: 0; z-index: 9999;
         background: #0D0D0D;
-        font-family: 'Satoshi', system-ui, -apple-system, sans-serif;
+        font-family: "Source Sans 3", "Source Sans 3 Fallback", "Segoe UI", sans-serif;
         color: #F0EDE8;
         overflow-y: auto;
         animation: hps-onboard-fade 220ms ease-out;
@@ -282,7 +282,7 @@
         margin-bottom: 12px;
       }
       .hps-onboard-title {
-        font-family: 'Cabinet Grotesk', sans-serif;
+        font-family: "Source Serif 4", "Source Serif 4 Fallback", Georgia, serif;
         font-weight: 800;
         font-size: 2rem;
         line-height: 1.08;
@@ -317,7 +317,7 @@
         border-radius: 50%;
         border: 1.5px solid #D4A017;
         color: #D4A017;
-        font-family: 'Cabinet Grotesk', sans-serif;
+        font-family: "Source Serif 4", "Source Serif 4 Fallback", Georgia, serif;
         font-weight: 700;
         font-size: .9rem;
         display: flex; align-items: center; justify-content: center;
@@ -342,7 +342,7 @@
       .hps-onboard-url-text {
         flex: 1;
         min-width: 0;
-        font-family: 'Cabinet Grotesk', sans-serif;
+        font-family: "Source Serif 4", "Source Serif 4 Fallback", Georgia, serif;
         font-weight: 700;
         color: #D4A017;
         font-size: .95rem;
